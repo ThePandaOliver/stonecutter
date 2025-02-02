@@ -1,6 +1,6 @@
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.data.StonecutterProject
-import dev.kikugie.stonecutter.data.setup.VersionConfiguration
+import dev.kikugie.stonecutter.data.tree.TreeSettings
 import kotlinx.serialization.json.Json
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions
@@ -81,7 +81,7 @@ object VersionConfigurationTest {
     }
 
     private fun check(entry: TestEntry) {
-        val parsed = Json.decodeFromString<VersionConfiguration>(entry.input)
+        val parsed = Json.decodeFromString<TreeSettings>(entry.input)
         Assertions.assertEquals(entry.output, parsed.entries)
     }
 

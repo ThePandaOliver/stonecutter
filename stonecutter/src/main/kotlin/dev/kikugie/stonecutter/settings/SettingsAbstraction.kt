@@ -45,7 +45,7 @@ public abstract class SettingsAbstraction(private val settings: Settings) {
 
     /**Configures the specified [projects] to be versioned with setup provided by [file].*/
     @StonecutterAPI public fun create(projects: Iterable<ProjectDescriptor>, file: File) {
-        require(file.extension == "json") { "Version setup file must be in JSON format. See Stonecutter wiki for more information." }
+        require(file.extension.let { it == "json" || it == "json5" }) { "Version setup file must be in JSON or JSON5 format. See Stonecutter wiki for more information." }
         val data: TreeSettings = file.inputStream().use { LENIENT_JSON.decodeFromStream(it) }
         create(projects, Action(data::toTree))
     }
@@ -58,7 +58,7 @@ public abstract class SettingsAbstraction(private val settings: Settings) {
     /**Configures the specified [project] to be versioned with setup provided by [action] or [shared].*/
     @StonecutterAPI @JvmOverloads public fun create(project: ProjectDescriptor, action: Action<TreeBuilder> = shared): Unit =
         create(listOf(project), action)
-    
+
     /**Configures the specified [projects] to be versioned with setup provided by [action] or [shared].*/
     @StonecutterAPI @JvmOverloads public fun create(vararg projects: ProjectPath, action: Action<TreeBuilder> = shared): String =
         create(projects.map { it.project() }, action).let { BNAN }

@@ -8,9 +8,9 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
 internal fun TreeSettings.toTree(builder: TreeBuilder) = builder.apply {
-    vcs?.let { vcsVersion = it }
     nodes.putAll(entries.mapValues { (_, it) -> it.toMutableSet() })
     versions.putAll(entries.values.flatten().associateWith { it })
+    vcs?.let { vcsVersion = it }
 }
 
 /**
