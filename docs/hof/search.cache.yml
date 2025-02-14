@@ -1171,3 +1171,59 @@
   curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/vinyls
   internal:
     curseforge_id: 1097085
+- id: txnimc/ChunkActivityTracker
+  name: (!) Chunk Activity Tracker
+  source: (!) https://github.com/txnimc/ChunkActivityTracker
+  modrinth: (!) https://modrinth.com/mod/chunk-activity-tracker
+- id: JackFred2/JacksServerSideTweaks
+  name: (?) JacksServerSideTweaks
+  source: (!) https://github.com/JackFred2/JacksServerSideTweaks
+- id: BlueSheep2804/ToggleVisualize
+  name: (!) Toggle Visualize
+  source: (!) https://github.com/BlueSheep2804/ToggleVisualize
+  modrinth: (!) https://modrinth.com/mod/toggle-visualize
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/toggle-visualize
+  internal:
+    curseforge_id: 1195905
+- id: JumperOnJava/CustomCursor
+  name: (!) Custom Cursor
+  source: (!) https://github.com/JumperOnJava/CustomCursor
+  modrinth: (!) https://modrinth.com/mod/custom-cursor
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/custom-cursor
+  internal:
+    curseforge_id: 922951
+- id: nvb-uy/OpacPvP
+  name: (!) Open Parties and Claims PvP Support
+  source: (!) https://github.com/nvb-uy/OpacPvP
+  modrinth: (!) https://modrinth.com/mod/opacpvp
+- id: nvb-uy/WelcomeScreen
+  name: (!) WelcomeScreen
+  source: (!) https://github.com/nvb-uy/WelcomeScreen
+  modrinth: (!) https://modrinth.com/mod/welcomescreen
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/welcomescreen
+  internal:
+    curseforge_id: 909161
+- id: txnimc/Redirected
+  name: (!) Redirected
+  source: (!) https://github.com/txnimc/Redirected
+  modrinth: (!) https://modrinth.com/mod/redirected
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/redirected
+  internal:
+    curseforge_id: 1191845
+- id: PieKing1215/InvMoveCompats
+  name: (!) InvMoveCompats
+  source: (!) https://github.com/PieKing1215/InvMoveCompats
+  modrinth: (!) https://modrinth.com/mod/invmovecompats
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/invmovecompats
+  internal:
+    curseforge_id: 581875
+- id: PieKing1215/InvMove
+  name: (!) InvMove
+  source: (!) https://github.com/PieKing1215/InvMove
+  modrinth: (!) https://modrinth.com/mod/invmove
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/invmove
+  internal:
+    curseforge_id: 581854
+- id: JackFredMods/JacksServerSideTweaks
+  name: (?) JacksServerSideTweaks
+  source: (!) https://github.com/JackFredMods/JacksServerSideTweaks
