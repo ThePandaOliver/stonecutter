@@ -31,21 +31,20 @@ public open class StonecutterBuild(private val project: Project) : BuildAbstract
 
     /**Project tree instance containing the necessary data and safe to use with configuration cache.
      * @see [withProject]*/
-    @StonecutterAPI public val tree: ProjectTree = StonecutterPlugin.SERVICE.of(parent.hierarchy).tree?.withProject(project)
-        ?: error("Tree for '${project.hierarchy}' not found. Present keys:\n%s"
-            .format(StonecutterPlugin.SERVICE().parameters.projectTrees.keysToString()))
+    @StonecutterAPI public val tree: ProjectTree = StonecutterPlugin.SERVICE().parameters.projectTrees.getChecked(parent.hierarchy) {
+        "Tree for '${project.hierarchy}' not found in ${keysToString()}"
+    }.withProject(project)
 
     /**Branch this node belongs to containing the necessary data and safe to use with configuration cache.
      * @see [withProject]*/
-    @StonecutterAPI public val branch: ProjectBranch = tree[parent.hierarchy]
-        ?: error("Branch for '${parent.hierarchy}' not found in ${tree.hierarchy}. Present keys:\n%s"
-            .format(tree.keysToString()))
-
+    @StonecutterAPI public val branch: ProjectBranch = tree.getChecked(parent.hierarchy) {
+        "Branch for '$it' not found in ${tree.hierarchy}: ${keysToString()}"
+    }
     /**This project's node containing only the necessary data and safe to use with configuration cache.
      * @see [withProject]*/
-    @StonecutterAPI public val node: ProjectNode = branch[project.hierarchy]
-        ?: error("Node for '${project.hierarchy}' not found in ${branch.hierarchy}. Present keys:\n%s"
-            .format(branch.keysToString()))
+    @StonecutterAPI public val node: ProjectNode = branch.getChecked(project.hierarchy) {
+        "Node for '$it' not found in ${branch.hierarchy}: ${keysToString()}"
+    }
 
     /**All versions in this project's branch.*/
     @StonecutterAPI public val versions: Collection<StonecutterProject> get() = branch.versions
@@ -59,7 +58,7 @@ public open class StonecutterBuild(private val project: Project) : BuildAbstract
     init {
         createSetupTask()
         project.afterEvaluate {
-            configureProject()
+            configureSources()
             serializeNode()
         }
     }
@@ -83,53 +82,53 @@ public open class StonecutterBuild(private val project: Project) : BuildAbstract
         }
     }
 
-    private fun configureProject() = with(project) {
-        try {
-            val globalParameters = StonecutterPlugin.SERVICE.of(hierarchy).global
-                ?: error("No global parameters for '${hierarchy}'")
-            val useChiseledSrc =
-                globalParameters.process && globalParameters.hasChiseled(gradle.startParameter.taskNames)
-            val formatter: (Path) -> Any = when {
-                useChiseledSrc -> { src -> projectDir.resolve("build/chiseledSrc/$src") }
-                current.isActive -> { src -> "../../src/$src" }
-                else -> return
-            }
+    private fun configureSources() {
+        val globalParameters = StonecutterPlugin.SERVICE.of(hierarchy).global
+            ?: error("No global parameters for '${hierarchy}'")
+        val useChiseledSrc =
+            globalParameters.process && globalParameters.hasChiseled(project.gradle.startParameter.taskNames)
+        val formatter: (Path) -> Any = when {
+            useChiseledSrc -> { src -> project.projectDir.resolve("build/chiseledSrc/$src") }
+            current.isActive -> { src -> "../../src/$src" }
+            else -> return
+        }
 
-            val parentDir = parent!!.projectDir.resolve("src").toPath()
-            val thisDir = projectDir.resolve("src").toPath()
+        val parentDir = parent.projectDir.resolve("src").toPath()
+        val thisDir = project.projectDir.resolve("src").toPath()
 
-            fun applyChiseled(from: SourceDirectorySet, to: SourceDirectorySet = from) {
-                from.sourceDirectories.mapNotNull {
-                    val relative = thisDir.relativize(it.toPath())
-                    if (relative.startsWith(".."))
-                        return@mapNotNull if (current.isActive) null
-                        else parentDir.relativize(it.toPath())
-                    else relative
-                }.forEach {
-                    to.srcDir(formatter(it))
-                }
-            }
+        fun applyChiseled(from: SourceDirectorySet, to: SourceDirectorySet = from) = from.sourceDirectories.mapNotNull {
+            val relative = thisDir.relativize(it.toPath())
+            if (relative.startsWith(".."))
+                return@mapNotNull if (current.isActive) null
+                else parentDir.relativize(it.toPath())
+            else relative
+        }.forEach {
+            to.srcDir(formatter(it))
+        }
 
-            for (src in property("sourceSets") as SourceSetContainer) {
-                applyChiseled(src.allJava, src.java)
-                applyChiseled(src.resources)
-                src.extensions.extensionsSchema
-                    .filter { it.publicType.concreteClass.interfaces.contains(SourceDirectorySet::class.java) }
-                    .forEach { applyChiseled(src.extensions[it.name] as SourceDirectorySet) }
-            }
-        } catch (_: MissingPropertyException) {
+        project.sourceSets?.onEach {
+            applyChiseled(allJava, java)
+            applyChiseled(resources)
+            extensions.extensionsSchema
+                .filter { it.publicType.concreteClass.interfaces.contains(SourceDirectorySet::class.java) }
+                .forEach { applyChiseled(extensions[it.name] as SourceDirectorySet) }
         }
     }
 
     private fun serializeNode() {
-        NodeModel(
+        val model = NodeModel(
             current,
             node.location.relativize(tree.location),
             BranchInfo(branch.id, node.location.relativize(branch.location)),
             current.isActive,
             data
-        ).save(tree.location.resolve("build/stonecutter-cache")).onFailure {
+        )
+
+        model.save(node.location.resolve("build/stonecutter-cache")).onFailure {
             project.logger.warn("Failed to save node model for '${branch.id}:${current.project}'", it)
+        }
+        if (current.isActive) model.save(branch.location.resolve("build/stonecutter-cache")).onFailure {
+            project.logger.warn("Failed to save active node model for '${branch.id}:${current.project}'", it)
         }
     }
 }

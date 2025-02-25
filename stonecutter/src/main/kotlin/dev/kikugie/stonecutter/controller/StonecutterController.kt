@@ -12,6 +12,7 @@ import dev.kikugie.stonecutter.process.StonecutterTask
 import org.gradle.api.Project
 import org.gradle.internal.DefaultTaskExecutionRequest
 import org.gradle.kotlin.dsl.register
+import kotlin.io.path.deleteIfExists
 
 /**
  * Stonecutter plugin applied to `stonecutter.gradle[.kts]`.
@@ -141,6 +142,11 @@ public open class StonecutterController(root: Project) :
     }
 
     private fun serializeBranches() = tree.branches.onEach {
+        location.resolve("build/stonecutter-cache/${NodeModel.FILENAME}").runCatching {
+            deleteIfExists()
+        }.onFailure {
+            root.logger.warn("Failed to delete outdated active version model for '$id'", it)
+        }
         BranchModel(
             id,
             location.relativize(tree.location),
