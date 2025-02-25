@@ -49,4 +49,7 @@ public data class StonecutterProject internal constructor(
         result = 31 * result + version.hashCode()
         return result
     }
+
+    /**Represents the projects as '[project]:[version]'.*/
+    override fun toString(): String = "$project:$version"
 }

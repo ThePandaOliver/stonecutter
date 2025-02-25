@@ -3,6 +3,7 @@
 package dev.kikugie.stonecutter.data.tree
 
 import com.charleskorn.kaml.Yaml
+import com.charleskorn.kaml.YamlConfiguration
 import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.data.parameters.BuildParameters
 import dev.kikugie.stitcher.util.PathSerializer
@@ -17,9 +18,15 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.notExists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
+private val YAML = Yaml(
+    configuration = YamlConfiguration(
+        encodeDefaults = false,
+        strictMode = false
+    )
+)
 
 private fun <T> save(location: Path, model: T, serializer: KSerializer<T>): Result<Unit> = location.runCatching {
-    val yaml = Yaml.default.encodeToString(serializer, model)
+    val yaml = YAML.encodeToString(serializer, model)
     parent.createDirectories()
     writeText(
         yaml,
@@ -33,7 +40,7 @@ private fun <T> save(location: Path, model: T, serializer: KSerializer<T>): Resu
 private fun <T> load(location: Path, serializer: KSerializer<T>): Result<T> = location.runCatching {
     if (location.notExists()) throw NoSuchFileException(location.toFile())
     val text = readText(Charsets.UTF_8)
-    Yaml.default.decodeFromString(serializer, text)
+    YAML.decodeFromString(serializer, text)
 }
 
 @Serializable
@@ -49,6 +56,12 @@ public data class BranchInfo(
     val path: Path,
 )
 
+/**
+ * Represents serialised information about a versioned subproject.
+ * This is stored in:
+ * - `build/stonecutter-cache/node.yml` for the active node.
+ * - `versions/{project}/build/stonecutter-cache/node.yml` for each node in the branch.
+ */
 @Serializable
 public data class NodeModel(
     val metadata: StonecutterProject,
@@ -58,8 +71,10 @@ public data class NodeModel(
     val parameters: BuildParameters
 ) {
     public companion object {
+        /**Literally `node.yml`.*/
         public const val FILENAME: String = "node.yml"
 
+        /**Loads the `node.yml` file as [NodeModel] from the given [directory].*/
         @JvmStatic @StonecutterAPI
         public fun load(directory: Path): Result<NodeModel> =
             load(directory.resolve(FILENAME), serializer())
@@ -76,8 +91,10 @@ public data class BranchModel(
     val nodes: List<NodeInfo>,
 ) {
     public companion object {
+        /**Literally `branch.yml`.*/
         public const val FILENAME: String = "branch.yml"
 
+        /**Loads the `branch.yml` file as [BranchModel] from the given [directory].*/
         @JvmStatic @StonecutterAPI
         public fun load(directory: Path): Result<BranchModel> =
             load(directory.resolve(FILENAME), serializer())
@@ -97,8 +114,10 @@ public data class TreeModel(
     val parameters: GlobalParameters,
 ) {
     public companion object {
+        /**Literally `tree.yml`.*/
         public const val FILENAME: String = "tree.yml"
 
+        /**Loads the `tree.yml` file as [TreeModel] from the given [directory].*/
         @JvmStatic @StonecutterAPI
         public fun load(directory: Path): Result<TreeModel> =
             load(directory.resolve(FILENAME), serializer())

@@ -1,11 +1,16 @@
 package dev.kikugie.stonecutter
 
+import dev.kikugie.stonecutter.data.ProjectHierarchy
+import dev.kikugie.stonecutter.data.tree.BranchPrototype
+import dev.kikugie.stonecutter.data.tree.NodePrototype
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import dev.kikugie.stonecutter.data.tree.TreeModel
+import dev.kikugie.stonecutter.data.tree.TreePrototype
 import org.gradle.api.provider.MapProperty
 import kotlinx.serialization.json.Json
+import org.gradle.api.tasks.SourceSetContainer
 import java.nio.file.Path
 
 /**
@@ -19,7 +24,7 @@ public const val BNAN: String = "🍌"
 /**
  * Currently running Stonecutter version, serialised in [TreeModel].
  */
-public const val STONECUTTER: String = "0.6-alpha.7"
+public const val STONECUTTER: String = "0.6-alpha.8"
 
 internal val LENIENT_JSON = Json {
     ignoreUnknownKeys = true
@@ -38,6 +43,8 @@ internal fun String.removeStarting(char: Char): String {
     return substring(index)
 }
 
+internal val Project.sourceSets: SourceSetContainer?
+    get() = project.findProperty("sourceSets") as? SourceSetContainer
 internal val Project.projectPath: Path get() = projectDir.toPath()
 internal val Project.buildDirectoryFile
     get() = layout.buildDirectory.asFile.get()
@@ -65,3 +72,13 @@ internal fun readResource(path: String): Result<String> = runCatching {
 
 internal fun MapProperty<*, *>.keysToString() = get().keysToString()
 internal fun Map<*, *>.keysToString() = keys.joinToString(prefix = "[", postfix = "]") { "'$it'" }
+internal inline fun <K, V> MapProperty<K, V>.getChecked(key: K, message: Map<K, V>.(K) -> String) =
+    get().getChecked(key, message)
+internal inline fun <T> TreePrototype<T>.getChecked(key: ProjectHierarchy, message: TreePrototype<T>.(ProjectHierarchy) -> String) where T : BranchPrototype<out NodePrototype> =
+    requireNotNull(get(key)) { message(key) }
+internal inline fun <T> BranchPrototype<T>.getChecked(key: ProjectHierarchy, message: BranchPrototype<T>.(ProjectHierarchy) -> String) where T : NodePrototype =
+    requireNotNull(get(key)) { message(key) }
+internal inline fun <K, V> Map<K, V>.getChecked(
+    key: K,
+    message: Map<K, V>.(K) -> String = { "Key '$key' not found in ${keysToString()}" }
+): V = requireNotNull(get(key)) { message(key) }

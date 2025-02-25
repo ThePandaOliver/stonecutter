@@ -12,7 +12,9 @@ import dev.kikugie.stonecutter.data.parameters.BuildParameters.ReplacementGraph
 import dev.kikugie.stonecutter.data.parameters.GlobalParameters
 import dev.kikugie.stonecutter.data.tree.LightBranch
 import dev.kikugie.stonecutter.data.tree.BranchPrototype
+import dev.kikugie.stonecutter.getChecked
 import dev.kikugie.stonecutter.invoke
+import dev.kikugie.stonecutter.keysToString
 import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.ListProperty
@@ -51,6 +53,7 @@ internal abstract class StonecutterTask : DefaultTask() {
     @get:Input abstract val sources: ListProperty<LightBranch>
 
     private val statistics: ProcessStatistics = ProcessStatistics()
+    private val root: Path by lazy { Path(input()) }
 
     @TaskAction
     fun run() {
@@ -91,10 +94,10 @@ internal abstract class StonecutterTask : DefaultTask() {
             dirs = DirectoryData(
                 input = branch.location.resolve(input()),
                 output = branch.location.resolve(output()),
-                debug = branch[fromVersion().project]!!.location.resolve("build/stonecutter-cache/debug"),
-                temp = branch[toVersion().project]!!.location.resolve("build/stonecutter-cache/temp")
+                debug = getCacheDirectory(branch, fromVersion()).resolve("debug"),
+                temp = getCacheDirectory(branch, fromVersion()).resolve("temp")
             ),
-            filter = buildParameters.toFileFilter(),
+            filter = { buildParameters.checkFile(root.relativize(it)) },
             parameters = buildParameters.toTransformParameters(toVersion().version, globalParameters.receiver),
             recognizers = CommentRecognizers.DEFAULT,
             statistics = statistics,
@@ -104,25 +107,9 @@ internal abstract class StonecutterTask : DefaultTask() {
         return FileProcessor(processParameters).runCatching { process() }
     }
 
-    private fun BuildParameters.allowFile(file: Path): Boolean =
-        file.invariantSeparatorsPathString.removePrefix(input()).let { path ->
-            file.extension in extensions && path !in exclusions
-        }
-
-    private fun BuildParameters.toFileFilter(): (Path) -> Boolean = { allowFile(it) }
-
-    private fun BuildParameters.toTransformParameters(version: String, key: String) = with(dependencies) {
-        getOrElse(key) { VersionParser.parseLenient(version).value }.let {
-            put(key, it)
-            put("", it)
-        }
-        TransformParameters(swaps, constants, this, toReplacementData())
-    }
-
-    private fun BuildParameters.toReplacementData() = Replacements.ReplacementData(
-        replacements.string.map(ReplacementGraph::lock),
-        replacements.regex.toList()
-    )
+    private fun getCacheDirectory(branch: LightBranch, version: StonecutterProject): Path =
+        branch[version.project]?.location?.resolve("build/stonecutter-cache")
+            ?: branch.location.resolve("build/stonecutter-cache/oob/${version.project}")
 
     private fun printErrors(vararg errors: Throwable): Unit = printErrors(0, *errors)
     private fun printErrors(indent: Int, vararg errors: Throwable): Unit = errors.forEach {
