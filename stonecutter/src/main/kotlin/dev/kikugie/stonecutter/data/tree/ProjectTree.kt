@@ -88,14 +88,15 @@ public class ProjectBranch(public val light: LightBranch, public val project: Pr
  */
 public class ProjectTree(public val light: LightTree, public val project: Project) :
     TreePrototype<ProjectBranch> by light as TreePrototype<ProjectBranch> {
+    /**True whenever the active version was configured in any way in `stonecutter.gradle[.kts]`*/
     internal var configured: Boolean = false
+    /**File provider for the active version.*/
     internal var provider: File? = null
         set(value) {
-            if (value == null) return.also { field = null }
-            val line = requireNotNull(value.useLines { it.firstOrNull() }) {
+            if (value != null) current = requireNotNull(value.useLines { it.firstOrNull() }) {
                 "Provided file ${value.invariantSeparatorsPath} must specify the active version in the first line"
-            }
-            current = getByName(line.trim())
+            }.trim().let(::getByName)
+            field = value
         }
 
     private val cache: (Identifier) -> ProjectBranch? = memoize { id ->
