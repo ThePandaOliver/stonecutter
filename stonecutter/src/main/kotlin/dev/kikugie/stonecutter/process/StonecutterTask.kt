@@ -1,20 +1,13 @@
 package dev.kikugie.stonecutter.process
 
-import dev.kikugie.semver.VersionParser
 import dev.kikugie.stitcher.scanner.CommentRecognizers
-import dev.kikugie.stitcher.transformer.Replacements
-import dev.kikugie.stitcher.transformer.TransformParameters
 import dev.kikugie.stonecutter.data.ProjectHierarchy
 import dev.kikugie.stonecutter.data.StonecutterProject
 import dev.kikugie.stonecutter.data.container.ConfigurationService
 import dev.kikugie.stonecutter.data.parameters.BuildParameters
-import dev.kikugie.stonecutter.data.parameters.BuildParameters.ReplacementGraph
 import dev.kikugie.stonecutter.data.parameters.GlobalParameters
 import dev.kikugie.stonecutter.data.tree.LightBranch
-import dev.kikugie.stonecutter.data.tree.BranchPrototype
-import dev.kikugie.stonecutter.getChecked
 import dev.kikugie.stonecutter.invoke
-import dev.kikugie.stonecutter.keysToString
 import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.ListProperty
@@ -22,7 +15,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import java.nio.file.Path
-import kotlin.io.path.*
+import kotlin.io.path.Path
 import kotlin.system.measureTimeMillis
 
 /**Task responsible for scanning versioned comments and modifying files to match the given version.*/
@@ -43,7 +36,7 @@ internal abstract class StonecutterTask : DefaultTask() {
     /**Version to be used after the switch, which is also used to retrieve [BuildParameters].*/
     @get:Input abstract val toVersion: Property<StonecutterProject>
 
-    /**Source directory relative to each [BranchPrototype.location] in [sources].*/
+    /**Source directory relative to each [dev.kikugie.stonecutter.data.tree.BranchPrototype.location] in [sources].*/
     @get:Input abstract val input: Property<String>
 
     /**File destination directory relative to each [BranchPrototype.location] in [sources].*/

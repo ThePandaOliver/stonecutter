@@ -5,9 +5,8 @@ import dev.kikugie.stonecutter.data.StonecutterProject
 import dev.kikugie.stonecutter.settings.ProjectProvider
 import dev.kikugie.stonecutter.settings.StonecutterSettings
 import org.gradle.api.Action
-
-internal typealias Nodes = MutableSet<StonecutterProject>
-internal typealias NodeMap = MutableMap<Identifier, Nodes>
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 
 /**
  * Represents a project tree structure in the `settings.gradle[.kts]` file.
@@ -15,30 +14,27 @@ internal typealias NodeMap = MutableMap<Identifier, Nodes>
  */
 public class TreeBuilder internal constructor() : ProjectProvider {
     internal val versions: MutableMap<StonecutterProject, StonecutterProject> = mutableMapOf()
-    internal val nodes: NodeMap = mutableMapOf()
+    internal val nodes: MutableMap<Identifier, MutableMap<Identifier, StonecutterProject>> = mutableMapOf()
     internal val branches: MutableMap<Identifier, BranchBuilder> = mutableMapOf()
 
     /**Version used by the `Reset active project` task. Defaults to the first registered version.*/
-    @StonecutterAPI public var vcsVersion: AnyVersion? = null
-        get() = field ?: versions.values.firstOrNull()?.project
-        set(value) {
-            requireNotNull(value) { "`vcsVersion` must be set to a non-null value." }
-            require(value in versions.values.map { it.project }) { "Version $value is not registered." }
-            field = value
+    @StonecutterAPI public var vcsVersion: Identifier by VcsDelegate()
+    internal val vcsProject: StonecutterProject
+        get() {
+            check(versions.isNotEmpty()) { "No versions registered" }
+            val vcs = versions.values.find { it.project == vcsVersion }
+            checkNotNull(vcs) { "VCS version '$vcsVersion' not registered" }
+            return vcs
         }
-    internal val vcsProject
-        get() = versions.values.find { it.project == vcsVersion }
-            ?: error("No versions registered")
 
-
-    internal fun add(branch: Identifier, project: StonecutterProject) =
-        nodes.getOrPut(branch, ::mutableSetOf).let { node ->
-            require(node.none { it.project == project.project }) { "Duplicate project identifier '${project.project}' in branch '$branch'" }
-            node += versions.getOrPut(project) { project }
-        }
+    internal fun add(branch: Identifier, project: StonecutterProject) {
+        val identity = versions.getOrPut(project) { project }
+        val previous = nodes.getOrPut(branch) { mutableMapOf() }.put(identity.project, identity)
+        require(previous == null) { "Duplicate project path for '$previous' and '$identity' in branch '$branch'" }
+    }
 
     override fun vers(name: Identifier, version: AnyVersion): Unit =
-        add("", StonecutterProject(name, version))
+        add("", StonecutterProject.create(name, version))
 
     /**Creates an inherited branch, which copies all the versions specified in this block.*/
     @StonecutterAPI public fun branch(name: Identifier): Unit = branch(name) { inherit() }
@@ -48,6 +44,18 @@ public class TreeBuilder internal constructor() : ProjectProvider {
         require(name.isNotBlank()) { "Branch name cannot be blank" }
         require(name.isValid()) { "Invalid branch name: '$name'" }
         branches.getOrPut(name) { BranchBuilder(this, name) }.let(action::execute)
+    }
+
+    private inner class VcsDelegate() : ReadWriteProperty<Any?, Identifier> {
+        var value: Identifier? = null
+        override fun getValue(thisRef: Any?, property: KProperty<*>): Identifier =
+            value ?: checkNotNull(versions.values.firstOrNull()?.project) { "No versions registered" }
+
+        override fun setValue(thisRef: Any?, property: KProperty<*>, value: Identifier) {
+            require(value.isNotBlank()) { "VCS version cannot be blank" }
+            require(value.isValid()) { "Invalid VCS version: '$value'" }
+            this.value = value
+        }
     }
 }
 
@@ -64,11 +72,11 @@ public class BranchBuilder internal constructor(private val tree: TreeBuilder, p
     public lateinit var buildscript: String
 
     override fun vers(name: Identifier, version: AnyVersion): Unit =
-        tree.add(id, StonecutterProject(name, version))
+        tree.add(id, StonecutterProject.create(name, version))
 
     /**
      * Copies nodes registered in [TreeBuilder] to this branch
      */
-    @StonecutterAPI public fun inherit(): Unit = tree.nodes[""]?.forEach { tree.add(id, it) }
-        ?: error("No root node to inherit from")
+    @StonecutterAPI public fun inherit(): Unit = tree.nodes.getChecked("") { "Main branch has no registered nodes" }
+        .forEach { tree.add(id, it.value) }
 }

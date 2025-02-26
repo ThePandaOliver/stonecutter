@@ -7,10 +7,15 @@ import dev.kikugie.stonecutter.controller.manager.ControllerManager
 import dev.kikugie.stonecutter.controller.manager.controller
 import dev.kikugie.stonecutter.data.ProjectHierarchy
 import dev.kikugie.stonecutter.data.StonecutterProject
+import dev.kikugie.stonecutter.data.StonecutterProject.Companion.link
+import dev.kikugie.stonecutter.data.StonecutterProject.Companion.linked
 import dev.kikugie.stonecutter.data.container.TreeBuilderContainer
 import dev.kikugie.stonecutter.data.container.getContainer
 import dev.kikugie.stonecutter.data.parameters.GlobalParameters
 import dev.kikugie.stonecutter.data.tree.*
+import dev.kikugie.stonecutter.getChecked
+import dev.kikugie.stonecutter.keysToString
+import dev.kikugie.stonecutter.onEach
 import dev.kikugie.stonecutter.projectPath
 import org.gradle.api.Action
 import org.gradle.api.Project
@@ -114,17 +119,22 @@ public abstract class ControllerAbstraction(protected val root: Project) {
         val builder: TreeBuilder = checkNotNull(root.gradle.getContainer<TreeBuilderContainer>()[root]) {
             "Project ${root.path} is not registered. This might've been caused by removing a project while its active"
         }
-        val branches = builder.nodes.mapValues { (name, nodes) ->
-            val branch = if (name.isEmpty()) root else root.project(name)
-            val versions = nodes.associate {
-                it.project to LightNode(branch.project(it.project).projectPath, it)
+        val mapping: Map<StonecutterProject, StonecutterProject> = builder.versions
+            .mapValues { (_, v) -> v.linked() }
+        val branches: Map<Identifier, LightBranch> = builder.nodes.mapValues { (id, versions) ->
+            val project: Project = if (id.isEmpty()) root else root.project(id)
+            val nodes: Map<Identifier, LightNode> = versions.mapValues { (id, vers) ->
+                val identity = mapping.getChecked(vers) { "Unknown version '$vers' in ${keysToString()}"}
+                LightNode(project.project(id).projectPath, identity)
             }
-            LightBranch(branch.projectPath, name, versions).also {
-                versions.forEach { (_, v) -> v.branch = it }
+            LightBranch(project.projectPath, id, nodes).also {
+                nodes.values.onEach { branch = it }
             }
         }
-        return LightTree(root.projectPath, ProjectHierarchy(root.path), builder.vcsProject, branches)
-            .also { branches.forEach { (_, b) -> b.tree = it } }
-            .withProject(root)
+        val tree: LightTree = LightTree(root.projectPath, ProjectHierarchy(root.path), builder.vcsProject, branches).also {
+            branches.values.onEach { tree = it }
+            mapping.values.onEach { link(it) }
+        }
+        return tree.withProject(root)
     }
 }

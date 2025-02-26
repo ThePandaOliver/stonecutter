@@ -8,8 +8,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
 internal fun TreeSettings.toTree(builder: TreeBuilder) = builder.apply {
-    nodes.putAll(entries.mapValues { (_, it) -> it.toMutableSet() })
-    versions.putAll(entries.values.flatten().associateWith { it })
+    for ((branch, projects) in entries)
+        for (it in projects) add(branch, it)
     vcs?.let { vcsVersion = it }
 }
 
@@ -171,8 +171,8 @@ internal sealed interface ExpandedProject {
 
         private fun parseVersion(it: List<String>) = when (it.size) {
             0 -> error("Empty strings are not allowed")
-            1 -> StonecutterProject(it.first(), it.first())
-            2 -> StonecutterProject(it.first(), it[1])
+            1 -> StonecutterProject.create(it.first(), it.first())
+            2 -> StonecutterProject.create(it.first(), it[1])
             else -> error("Unreachable")
         }
     }
@@ -180,7 +180,7 @@ internal sealed interface ExpandedProject {
     @Serializable
     data class CompositeProject(val project: String, val version: String = project) : ExpandedProject {
         override val entry: StonecutterProject
-            get() = StonecutterProject(project, version)
+            get() = StonecutterProject.create(project, version)
     }
 
     object JsonSerializer : JsonContentPolymorphicSerializer<ExpandedProject>(ExpandedProject::class) {

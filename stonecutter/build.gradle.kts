@@ -4,6 +4,7 @@
 import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.readLines
@@ -65,6 +66,8 @@ java {
 tasks.compileKotlin {
     explicitApiMode = ExplicitApiMode.Strict
     compilerOptions {
+        languageVersion = KotlinVersion.KOTLIN_2_0
+        apiVersion = KotlinVersion.KOTLIN_2_0
         jvmTarget.set(JvmTarget.JVM_16)
     }
     dependsOn(rootProject.tasks.named("updateVersion"))

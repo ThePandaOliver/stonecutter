@@ -2,12 +2,14 @@
 
 package dev.kikugie.stonecutter.data.tree
 
-import dev.kikugie.stonecutter.*
+import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.build.StonecutterBuild
 import dev.kikugie.stonecutter.data.ProjectHierarchy
 import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.locate
 import dev.kikugie.stonecutter.data.StonecutterProject
-import dev.kikugie.stonecutter.process.FileProcessor
+import dev.kikugie.stonecutter.get
+import dev.kikugie.stonecutter.memoize
+import dev.kikugie.stonecutter.removeStarting
 import org.gradle.api.Project
 import org.gradle.api.UnknownDomainObjectException
 import org.gradle.kotlin.dsl.getByType
@@ -111,10 +113,8 @@ public class ProjectTree(public val light: LightTree, public val project: Projec
 
     override var current: StonecutterProject
         get() = light.current
-        internal set(value) = with(light) {
+        internal set(value) {
             configured = true
-            current.isActive = false
-            value.isActive = true
             light.current = value
         }
     override val branches: Collection<ProjectBranch> get() = values

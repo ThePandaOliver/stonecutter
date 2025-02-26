@@ -49,11 +49,11 @@ public open class StonecutterSettings(settings: Settings) : SettingsAbstraction(
 
         project.buildFileName = controller.filename
         with(project.projectDir.resolve(controller.filename).toPath()) {
-            if (notExists()) controller.createHeader(this, setup.vcsVersion!!)
+            if (notExists()) controller.createHeader(this, setup.vcsProject.project)
         }
 
         setup.nodes.forEach { (name, branch) ->
-            createBranch(name, project, setup, branch)
+            createBranch(name, project, setup, branch.values)
         }
     }
 
