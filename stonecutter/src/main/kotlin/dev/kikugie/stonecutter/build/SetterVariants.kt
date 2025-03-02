@@ -1,11 +1,21 @@
 package dev.kikugie.stonecutter.build
 
 import dev.kikugie.semver.Version
+import dev.kikugie.stitcher.data.Replacement
 import dev.kikugie.semver.SemanticVersion as SemanticVersionImpl
 import dev.kikugie.stonecutter.*
-import dev.kikugie.stonecutter.ReplacementPhase.LAST
 import dev.kikugie.stonecutter.data.parameters.BuildParameters
-import org.intellij.lang.annotations.Language
+import groovy.lang.Closure
+import org.gradle.api.Action
+import org.gradle.api.provider.Property
+
+private inline fun <reified T> Map<String, Any>.getAs(key: String): T = requireAs<T>(this[key]) {
+    if (it == null) "Missing property '$key'"
+    else "Property '$key' is not of type ${T::class.simpleName}"
+}
+
+private fun Map<String, *>.containsAny(vararg keys: String): Boolean =
+    keys.any { it in this }
 
 internal class CheckedMap<K, V>(
     private val delegate: MutableMap<K, V>,
@@ -239,83 +249,98 @@ public interface DependencyVariants {
 }
 
 public interface ReplacementVariants {
-    /**
-     * Creates a plain string find&replace entry for the file processor.
-     * When [direction] is `true` it will replace [source] with [target],
-     * or vice versa when [direction] is `false`.
-     *
-     * @sample stonecutter_samples.replacements.basic_correct
-     * @sample stonecutter_samples.replacements.basic_ambiguous
-     * @sample stonecutter_samples.replacements.basic_circular
-     * @throws IllegalArgumentException If [source] already has a registered replacement
-     * or if [source] and [target] create a circular reference with registered entries.
-     */
-    @StonecutterAPI public fun replacement(
-        phase: ReplacementPhase,
-        direction: Boolean,
-        source: String,
-        target: String
-    )
+    public val replacements: Collection<Replacement>
 
-    /**
-     * Creates a plain string find&replace entry for the file processor.
-     * When [direction] is `true` it will replace [source] with [target],
-     * or vice versa when [direction] is `false`.
-     *
-     * @sample stonecutter_samples.replacements.basic_correct
-     * @sample stonecutter_samples.replacements.basic_ambiguous
-     * @sample stonecutter_samples.replacements.basic_circular
-     * @throws IllegalArgumentException If [source] already has a registered replacement
-     * or if [source] and [target] create a circular reference with registered entries.
-     */
     @StonecutterAPI public fun replacement(
         direction: Boolean,
         source: String,
-        target: String
-    ): Unit = replacement(LAST, direction, source, target)
-
-    /**
-     * Creates a regex replacement entry for the file processor.
-     * When [direction] is `true` it will find all occurrences of the [sourcePattern]
-     * and replace them with [targetValue].
-     * Otherwise, it will do the same for [targetPattern] and [sourceValue].
-     *
-     * **This public functionality doesn't have the same safety features as plain-string replacements**, namely:
-     * - It doesn't group entries or check for ambiguous replacements, therefore, **replacements are order-dependent**.
-     * - It doesn't verify whenever the replaced value can be reversed when switching back to the original version.
-     *   **When using this, it's your responsibility to make sure replacements are reversible.**
-     *
-     * Provided expressions are evaluated after plain-text ones.
-     */
-    @StonecutterDelicate public fun replacement(
-        phase: ReplacementPhase = LAST,
-        direction: Boolean,
-        @Language("regex") sourcePattern: String,
-        targetValue: String,
-        @Language("regex") targetPattern: String,
-        sourceValue: String
+        target: String,
+        phase: String = "FIRST",
+        identifier: Identifier? = null
     )
 
-    /**
-     * Creates a regex replacement entry for the file processor.
-     * When [direction] is `true` it will find all occurrences of the [sourcePattern]
-     * and replace them with [targetValue].
-     * Otherwise, it will do the same for [targetPattern] and [sourceValue].
-     *
-     * **This public functionality doesn't have the same safety features as plain-string replacements**, namely:
-     * - It doesn't group entries or check for ambiguous replacements, therefore, **replacements are order-dependent**.
-     * - It doesn't verify whenever the replaced value can be reversed when switching back to the original version.
-     *   **When using this, it's your responsibility to make sure replacements are reversible.**
-     *
-     * Provided expressions are evaluated after plain-text ones.
-     */
-    @StonecutterDelicate public fun replacement(
+    @StonecutterAPI public fun replacement(
         direction: Boolean,
-        @Language("regex") sourcePattern: String,
+        sourcePattern: String,
         targetValue: String,
-        @Language("regex") targetPattern: String,
+        targetPattern: String,
+        sourceValue: String,
+        phase: String = "FIRST",
+        identifier: Identifier? = null
+    )
+
+    @StonecutterAPI public fun replacement(
+        direction: Boolean,
+        source: String,
+        target: String,
+    ): Unit = replacement(direction, source, target, "FIRST", null)
+
+    @StonecutterAPI public fun replacement(
+        direction: Boolean,
+        sourcePattern: String,
+        targetValue: String,
+        targetPattern: String,
         sourceValue: String
-    ): Unit = replacement(LAST, direction, sourcePattern, targetValue, targetPattern, sourceValue)
+    ): Unit = replacement(direction, sourcePattern, targetValue, targetPattern, sourceValue, "FIRST", null)
+
+    @StonecutterAPI public infix fun replacement(properties: Map<String, Any>) {
+        val direction: Boolean = properties.getAs("direction")
+        val phase: String = properties.takeIf { "phase" in it }?.getAs("phase") ?: "FIRST"
+        val identifier: Identifier? = properties.takeIf { "identifier" in it }?.getAs("identifier")
+        when {
+            properties.containsAny("source", "target") ->
+                replacement(direction, properties.getAs("source"), properties.getAs("target"), phase, identifier)
+            properties.containsAny("sourcePattern", "targetValue", "targetPattern", "sourceValue") ->
+                replacement(direction, properties.getAs("sourcePattern"), properties.getAs("targetValue"),
+                    properties.getAs("targetPattern"), properties.getAs("sourceValue"), phase, identifier)
+            else ->
+                throw IllegalArgumentException("Missing required replacement properties. Please check the documentation for the correct format.")
+        }
+    }
+
+    @StonecutterAPI public fun stringReplacement(action: Action<StringReplacementBuilder>)
+    @StonecutterAPI public fun stringReplacement(action: Closure<StringReplacementBuilder>): Unit =
+        stringReplacement(action::call)
+
+    @StonecutterAPI public fun regexReplacement(action: Action<RegexReplacementBuilder>)
+    @StonecutterAPI public fun regexReplacement(action: Closure<RegexReplacementBuilder>): Unit =
+        regexReplacement(action::call)
+
+    public abstract class StringReplacementBuilder {
+        public abstract val direction: Property<Boolean>
+        public abstract val source: Property<String>
+        public abstract val target: Property<String>
+        public abstract val phase: Property<String>
+        public abstract val identifier: Property<Identifier>
+
+        internal fun build(instance: ReplacementVariants) = instance.replacement(
+            direction.get(),
+            source.get(),
+            target.get(),
+            phase.getOrElse("FIRST"),
+            identifier.orNull,
+        )
+    }
+
+    public abstract class RegexReplacementBuilder {
+        public abstract val direction: Property<Boolean>
+        public abstract val sourcePattern: Property<String>
+        public abstract val targetValue: Property<String>
+        public abstract val targetPattern: Property<String>
+        public abstract val sourceValue: Property<String>
+        public abstract val phase: Property<String>
+        public abstract val identifier: Property<Identifier>
+
+        internal fun build(instance: ReplacementVariants) = instance.replacement(
+            direction.get(),
+            sourcePattern.get(),
+            targetValue.get(),
+            targetPattern.get(),
+            sourceValue.get(),
+            phase.getOrElse("FIRST"),
+            identifier.orNull,
+        )
+    }
 }
 
 /**Declutters file filtering public function variants, directing them to a single implementation.*/

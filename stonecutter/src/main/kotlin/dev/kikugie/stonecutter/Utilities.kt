@@ -12,6 +12,7 @@ import org.gradle.api.provider.MapProperty
 import kotlinx.serialization.json.Json
 import org.gradle.api.tasks.SourceSetContainer
 import java.nio.file.Path
+import kotlin.reflect.KClass
 
 /**
  * Used as a return value by some configuration methods.
@@ -63,7 +64,8 @@ internal operator fun <T> Provider<T>.invoke() = get()
 internal operator fun <T> Property<T>.invoke(value: T) = set(value)
 
 internal inline fun <T> Iterable<T>.onEach(action: T.() -> Unit) = forEach(action)
-internal infix fun <T> Any?.then(other: T): T = other
+@Suppress("NOTHING_TO_INLINE")
+internal inline infix fun <T> Any?.then(other: T): T = other
 
 internal fun readResource(path: String): Result<String> = runCatching {
     StonecutterPlugin::class.java.classLoader.getResourceAsStream(path)?.use { it.reader().readText() }
@@ -82,3 +84,8 @@ internal inline fun <K, V> Map<K, V>.getChecked(
     key: K,
     message: Map<K, V>.(K) -> String = { "Key '$key' not found in ${keysToString()}" }
 ): V = requireNotNull(get(key)) { message(key) }
+internal inline fun <reified T> requireAs(value: Any?, message: (KClass<*>?) -> String): T = when (value) {
+    is T -> value
+    null -> throw kotlin.IllegalArgumentException(message(null))
+    else -> throw IllegalArgumentException(message(T::class))
+}

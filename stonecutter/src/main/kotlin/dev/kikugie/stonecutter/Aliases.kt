@@ -1,6 +1,5 @@
 package dev.kikugie.stonecutter
 
-import dev.kikugie.stitcher.lexer.TokenMatcher
 import dev.kikugie.semver.SemanticVersion
 import dev.kikugie.semver.StringVersion
 import dev.kikugie.semver.VersionParser
@@ -11,7 +10,6 @@ import dev.kikugie.stitcher.lexer.TokenMatcher.Companion.isValidIdentifier
 @Deprecated("Use `stonecutter { }` instead")
 public typealias StonecutterSettings = dev.kikugie.stonecutter.settings.StonecutterSettings
 
-public typealias ReplacementPhase = dev.kikugie.stitcher.transformer.Replacements.ReplacementPhase
 public typealias RunConfigType = dev.kikugie.stonecutter.ide.RunConfigType
 
 /**

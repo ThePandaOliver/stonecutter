@@ -110,7 +110,7 @@ public abstract class ControllerAbstraction(protected val root: Project) {
 
     private fun parametersImpl(configuration: (ParameterHolder) -> Unit) = tree.branches.asSequence()
         .flatMap { versions.map { v -> it to v } }
-        .map { configurations.getOrPut(it) { ParameterHolder(it.first, it.second) } }
+        .map { configurations.getOrPut(it) { ParameterHolder(it.first, it.second, root.objects) } }
         .forEach { configuration(it) }
 
     protected fun updateController(version: StonecutterProject): Unit = tree.provider

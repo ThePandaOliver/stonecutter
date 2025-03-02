@@ -6,10 +6,8 @@ import dev.kikugie.stonecutter.data.StonecutterProject
 import dev.kikugie.stonecutter.data.container.ConfigurationService.Companion.of
 import dev.kikugie.stonecutter.data.tree.*
 import dev.kikugie.stonecutter.process.StonecutterTask
-import groovy.lang.MissingPropertyException
 import org.gradle.api.Project
 import org.gradle.api.file.SourceDirectorySet
-import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.register
 import java.nio.file.Path
@@ -26,7 +24,7 @@ import kotlin.io.path.invariantSeparatorsPathString
  * @see <a href="https://stonecutter.kikugie.dev/stonecutter/guide/setup#versioning-build-gradle-kts">Wiki page</a>
  */
 @OptIn(ExperimentalPathApi::class)
-public open class StonecutterBuild(private val project: Project) : BuildAbstraction(project.hierarchy), StonecutterUtility {
+public open class StonecutterBuild(private val project: Project) : BuildAbstraction(project.hierarchy, project.objects), StonecutterUtility {
     private val parent: Project = requireNotNull(project.parent) { "No parent project for '${project.hierarchy}'" }
 
     /**Project tree instance containing the necessary data and safe to use with configuration cache.

@@ -6,7 +6,6 @@ import dev.kikugie.stonecutter.controller.manager.KotlinController
 import dev.kikugie.stonecutter.data.StonecutterProject
 import dev.kikugie.stonecutter.settings.ProjectProvider
 import dev.kikugie.stonecutter.settings.SettingsAbstraction
-import dev.kikugie.stonecutter.settings.StonecutterSettings
 import org.gradle.api.Action
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -91,7 +90,7 @@ public class BranchBuilder internal constructor(private val tree: TreeBuilder, p
 
     /**
      * Buildscript filename overrides for this branch.
-     * Defaults to [StonecutterSettings.centralScript].
+     * Defaults to [TreeBuilder.centralScript].
      */
     public var buildscript: String
         get() = _buildscript ?: tree.centralScript

@@ -34,6 +34,10 @@ sourceSets {
         kotlin.srcDir("src/samples/kotlin")
         compileClasspath += sourceSets.main.get().output
     }
+
+    main {
+        compileClasspath += samples.get().output
+    }
 }
 
 repositories {
