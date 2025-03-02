@@ -1,10 +1,12 @@
 package dev.kikugie.stonecutter.data
 
-import dev.kikugie.stonecutter.*
+import dev.kikugie.stonecutter.AnyVersion
+import dev.kikugie.stonecutter.Identifier
+import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.data.tree.TreePrototype
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Transient
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
@@ -16,16 +18,16 @@ import kotlinx.serialization.encoding.Encoder
 public sealed interface StonecutterProject {
     /**The name of this project's directory, as in `versions/${project}`.*/
     @StonecutterAPI public val project: Identifier
-    /**
-     * The assigned version of this project. Can be either [SemanticVersion] or [AnyVersion].
-     * By default, its equal to [project], unless assigned by using `vers()` in the project settings.
-     */
+    /**The assigned version of this project, used in comment evaluation.*/
     @StonecutterAPI public val version: AnyVersion
-
+    /**The active status of this version, transient in the serialization process.*/
     @StonecutterAPI public val isActive: Boolean
 
+    /**Returns the [project] component.*/
     public operator fun component1(): Identifier = project
+    /**Returns the [version] component.*/
     public operator fun component2(): AnyVersion = version
+    /**Returns the [isActive] component.*/
     public operator fun component3(): Boolean = isActive
 
     @Serializable
@@ -33,8 +35,10 @@ public sealed interface StonecutterProject {
         override val version: AnyVersion,
         override val project: Identifier
     ) : StonecutterProject {
+        /**Represents the active status with a mutable value defaulting to `false`*/
         @Transient
         override var isActive: Boolean = false
+        /**Represents the project as '[project]:[version]'.*/
         override fun toString(): String = "$project:$version"
     }
 
@@ -42,8 +46,12 @@ public sealed interface StonecutterProject {
     public class LinkedStonecutterProject(
         internal val delegate: DataStonecutterProject
     ) : StonecutterProject by delegate {
+        /**Project tree initialized by [dev.kikugie.stonecutter.controller.ControllerAbstraction.constructTree]*/
+        @Transient
         internal lateinit var tree: TreePrototype<*>
+        /**Represents the active status by comparing the current instance to [TreePrototype.current] in [dev.kikugie.stonecutter.controller.StonecutterController.tree].*/
         override val isActive: Boolean get() = this == tree.current
+        /**Represents the project as '[project]:[version]'.*/
         override fun toString(): String = "$project:$version"
     }
 
