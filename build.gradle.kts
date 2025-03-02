@@ -5,6 +5,7 @@ import org.jetbrains.dokka.gradle.AbstractDokkaParentTask
 import org.jetbrains.dokka.versioning.VersioningConfiguration
 import org.jetbrains.dokka.versioning.VersioningPlugin
 import tasks.HallOfFameTask
+import tasks.UpdateVersionTask
 import java.net.URI
 import java.nio.file.StandardOpenOption
 import kotlin.io.path.writeText
@@ -55,16 +56,16 @@ tasks.register("extractOldDocs") {
     }
 }
 
-tasks.register("updateVersion") {
-    val version4 = project.property("version4").toString()
-    doLast {
-        rename("docs/.vitepress/sidebars/versioned", "0\\.4\\.\\d.json", "$version4.json")
-        rename("docs/versions", "0\\.4\\.\\d", version4)
-        replace("build.gradle.kts", "/0\\.4\\.\\d", "/$version4")
-        replace("docs/.vitepress/config.mts", "latestVersion: '.+'", "latestVersion: '$version'")
-        replace("docs/stonecutter/guide/setup.md", "stonecutter\"\\ version \".+\"", "stonecutter\" version \"$version\"")
-        replace("docs/stonecutter/guide/setup.md", "stonecutter\"\\) version \".+\"", "stonecutter\") version \"$version\"")
-        replace("stonecutter/src/main/kotlin/dev/kikugie/stonecutter/Utilities.kt", "val STONECUTTER: String = .+\"", "val STONECUTTER: String = \"$version\"")
+tasks.register<UpdateVersionTask>("updateVersion") {
+    val ver = project.version.toString()
+    version = ver
+    replacements {
+        file("stonecutter/src/main/kotlin/dev/kikugie/stonecutter/Utilities.kt") replace "val STONECUTTER: String = .+\"" with "val STONECUTTER: String = \"$ver\""
+        file("docs/.vitepress/config.mts") replace "latestVersion: '.+'" with "latestVersion: '$ver'"
+        file("docs/stonecutter/guide/setup.md") replace listOf(
+            "stonecutter\"\\ version \".+\"" to "stonecutter\" version \"$ver\"",
+            "stonecutter\"\\) version \".+\"" to "stonecutter\") version \"$ver\""
+        )
     }
 }
 
