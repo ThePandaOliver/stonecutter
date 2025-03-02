@@ -10,7 +10,10 @@ internal object GroovyController : ControllerManager {
     override fun createHeader(file: Path, version: Identifier) {
         file.writeText(
             """
-            plugins.apply "dev.kikugie.stonecutter"
+            plugins {
+                id "dev.kikugie.stonecutter"
+            }
+            
             stonecutter.active "$version" $KEY
             
             stonecutter.registerChiseled tasks.register("chiseledBuild", stonecutter.chiseled) { 
