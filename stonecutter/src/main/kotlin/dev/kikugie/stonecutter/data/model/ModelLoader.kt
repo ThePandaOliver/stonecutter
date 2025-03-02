@@ -10,8 +10,15 @@ import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
 object ModelLoader {
+    private val YAML = Yaml(
+        configuration = Yaml.default.configuration.copy(
+            strictMode = false,
+            encodeDefaults = false
+        )
+    )
+
     internal fun <T> save(location: Path, model: T, serializer: KSerializer<T>): Result<Unit> = location.runCatching {
-        val yaml = Yaml.default.encodeToString(serializer, model)
+        val yaml = YAML.encodeToString(serializer, model)
         parent.createDirectories()
         writeText(
             yaml,
@@ -25,6 +32,6 @@ object ModelLoader {
     internal fun <T> load(location: Path, serializer: KSerializer<T>): Result<T> = location.runCatching {
         if (location.notExists()) throw NoSuchFileException(location.toFile())
         val text = readText(Charsets.UTF_8)
-        Yaml.default.decodeFromString(serializer, text)
+        YAML.decodeFromString(serializer, text)
     }
 }

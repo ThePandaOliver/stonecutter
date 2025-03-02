@@ -141,13 +141,18 @@ open class StonecutterBuild(val project: Project) : BuildConfiguration(project.p
     }
 
     private fun serializeNode() {
-        NodeModel(
+        val model = NodeModel(
             current,
             node.location.relativize(tree.path),
             branch.toBranchInfo(node.location.relativize(branch.path)),
             current.isActive,
             data,
-        ).save(node.stonecutterCachePath).onFailure {
+        )
+
+        model.save(node.stonecutterCachePath).onFailure {
+            node.logger.warn("Failed to save node model for '${branch.name}:${current.project}'", it)
+        }
+        if (current.isActive) model.save(branch.stonecutterCachePath).onFailure {
             node.logger.warn("Failed to save node model for '${branch.name}:${current.project}'", it)
         }
     }

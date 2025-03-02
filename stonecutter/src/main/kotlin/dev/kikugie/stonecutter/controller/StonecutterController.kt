@@ -26,6 +26,7 @@ import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.getByType
 import org.jetbrains.annotations.ApiStatus
+import kotlin.io.path.deleteIfExists
 
 internal typealias BranchEntry = Pair<ProjectBranch, StonecutterProject>
 
@@ -263,10 +264,16 @@ open class StonecutterController(internal val root: Project) : StonecutterUtilit
     }
 
     private fun serializeBranches() = tree.branches.onEach {
+        stonecutterCachePath.resolve("node.yml").runCatching {
+            deleteIfExists()
+        }.onFailure {
+            logger.warn("Failed to reset active node data for '$name'", it)
+        }
+
         BranchModel(
             id,
             path.relativize(tree.path),
-            nodes.map { it.toNodeInfo(it.location.relativize(tree.path), current) },
+            nodes.map { it.toNodeInfo(path.relativize(it.location), current) },
         ).save(stonecutterCachePath).onFailure {
             logger.warn("Failed to save branch model for '$name'", it)
         }
