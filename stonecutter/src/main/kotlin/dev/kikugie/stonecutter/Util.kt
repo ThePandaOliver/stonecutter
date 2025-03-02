@@ -22,7 +22,7 @@ const val BNAN = "🍌"
 /**
  * Currently running Stonecutter version, serialised in [TreeModel].
  */
-const val STONECUTTER = "0.5.1"
+const val STONECUTTER = "0.5.2"
 
 internal val Project.buildDirectoryFile
     get() = layout.buildDirectory.asFile.get()
