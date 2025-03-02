@@ -17,6 +17,7 @@ import dev.kikugie.stonecutter.getChecked
 import dev.kikugie.stonecutter.keysToString
 import dev.kikugie.stonecutter.onEach
 import dev.kikugie.stonecutter.projectPath
+import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskProvider
@@ -94,11 +95,23 @@ public abstract class ControllerAbstraction(protected val root: Project) {
      * @see <a href="https://stonecutter.kikugie.dev/stonecutter/guide/setup#global-parameters">Wiki page</a>
      */
     @StonecutterAPI public infix fun parameters(configuration: Action<ParameterHolder>): Unit =
-        tree.branches.asSequence()
-            .flatMap { b -> versions.map { b to it } }
-            .forEach {
-                configurations.getOrPut(it) { ParameterHolder(it.first, it.second) }.let(configuration::execute)
-            }
+        parametersImpl(configuration::execute)
+
+    // link: wiki-controller-params
+    /**
+     * Specifies configurations for all combinations of versions and branches.
+     * This provides parameters for the processor to use non-existing versions.
+     * If the given version exists, it will be applied to the [StonecutterBuild].
+     *
+     * @see <a href="https://stonecutter.kikugie.dev/stonecutter/guide/setup#global-parameters">Wiki page</a>
+     */
+    @StonecutterAPI public infix fun parameters(configuration: Closure<ParameterHolder>): Unit =
+        parametersImpl(configuration::call)
+
+    private fun parametersImpl(configuration: (ParameterHolder) -> Unit) = tree.branches.asSequence()
+        .flatMap { versions.map { v -> it to v } }
+        .map { configurations.getOrPut(it) { ParameterHolder(it.first, it.second) } }
+        .forEach { configuration(it) }
 
     protected fun updateController(version: StonecutterProject): Unit = tree.provider
         ?.run { toPath().writeText(version.project, Charsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING) }

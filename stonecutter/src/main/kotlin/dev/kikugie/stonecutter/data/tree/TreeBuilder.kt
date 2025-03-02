@@ -1,8 +1,11 @@
 package dev.kikugie.stonecutter.data.tree
 
 import dev.kikugie.stonecutter.*
+import dev.kikugie.stonecutter.controller.manager.GroovyController
+import dev.kikugie.stonecutter.controller.manager.KotlinController
 import dev.kikugie.stonecutter.data.StonecutterProject
 import dev.kikugie.stonecutter.settings.ProjectProvider
+import dev.kikugie.stonecutter.settings.SettingsAbstraction
 import dev.kikugie.stonecutter.settings.StonecutterSettings
 import org.gradle.api.Action
 import kotlin.properties.ReadWriteProperty
@@ -13,6 +16,24 @@ import kotlin.reflect.KProperty
  * This tree only supports three layers of depth: `root -> branch -> node`.
  */
 public class TreeBuilder internal constructor() : ProjectProvider {
+    internal constructor(settings: SettingsAbstraction) : this() {
+        kotlinController = settings.kotlinController
+        centralScript = settings.centralScript
+    }
+
+    /**
+     * Enables Kotlin buildscripts for the controller.
+     * - `stonecutter.gradle` -> `stonecutter.gradle.kts`
+     */
+    @StonecutterAPI public var kotlinController: Boolean = false
+
+    /**Buildscript used by all subprojects. Defaults to `build.gradle`.*/
+    @StonecutterAPI public var centralScript: String = "build.gradle"
+        set(value) {
+            require(!value.startsWith("stonecutter.gradle")) { "Build script must not override the controller" }
+            field = value
+        }
+
     internal val versions: MutableMap<StonecutterProject, StonecutterProject> = mutableMapOf()
     internal val nodes: MutableMap<Identifier, MutableMap<Identifier, StonecutterProject>> = mutableMapOf()
     internal val branches: MutableMap<Identifier, BranchBuilder> = mutableMapOf()
@@ -26,6 +47,7 @@ public class TreeBuilder internal constructor() : ProjectProvider {
             checkNotNull(vcs) { "VCS version '$vcsVersion' not registered" }
             return vcs
         }
+    internal val controller get() = if (kotlinController) KotlinController else GroovyController
 
     internal fun add(branch: Identifier, project: StonecutterProject) {
         val identity = versions.getOrPut(project) { project }
@@ -65,11 +87,18 @@ public class TreeBuilder internal constructor() : ProjectProvider {
  * @param id Subproject's name for this branch
  */
 public class BranchBuilder internal constructor(private val tree: TreeBuilder, private val id: Identifier) : ProjectProvider {
+    private var _buildscript: String? = null
+
     /**
      * Buildscript filename overrides for this branch.
      * Defaults to [StonecutterSettings.centralScript].
      */
-    public lateinit var buildscript: String
+    public var buildscript: String
+        get() = _buildscript ?: tree.centralScript
+        set(value) {
+            require(!value.startsWith("stonecutter.gradle")) { "Build script must not override the controller" }
+            _buildscript = value
+        }
 
     override fun vers(name: Identifier, version: AnyVersion): Unit =
         tree.add(id, StonecutterProject.create(name, version))

@@ -16,6 +16,19 @@ import java.io.File
 public abstract class SettingsAbstraction(private val settings: Settings) {
     private lateinit var shared: Action<TreeBuilder>
 
+    /**
+     * Enables Kotlin buildscripts for the controller.
+     * - `stonecutter.gradle` -> `stonecutter.gradle.kts`
+     */
+    @StonecutterAPI public var kotlinController: Boolean = false
+
+    /**Buildscript used by all subprojects. Defaults to `build.gradle`.*/
+    @StonecutterAPI public var centralScript: String = "build.gradle"
+        set(value) {
+            require(!value.startsWith("stonecutter.gradle")) { "Build script must not override the controller" }
+            field = value
+        }
+
     /* Shared configuration */
     /**Stores the provided configuration to be used in [create] methods.*/
     @StonecutterAPI public fun shared(action: Action<TreeBuilder>) {
@@ -73,7 +86,7 @@ public abstract class SettingsAbstraction(private val settings: Settings) {
 
     /**Configures the specified [projects] to be versioned with setup provided by [action] or [shared].*/
     @StonecutterAPI @JvmOverloads public fun create(projects: Iterable<ProjectDescriptor>, action: Action<TreeBuilder> = shared): Unit =
-        projects.forEach { create(it, TreeBuilder().also(action::execute)) }
+        projects.forEach { create(it, TreeBuilder(this).also(action::execute)) }
 
     /* Base configuration */
     protected abstract fun create(project: ProjectDescriptor, setup: TreeBuilder)
