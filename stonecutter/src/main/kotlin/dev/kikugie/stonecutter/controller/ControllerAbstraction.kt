@@ -100,17 +100,6 @@ public abstract class ControllerAbstraction(protected val root: Project) {
                 configurations.getOrPut(it) { ParameterHolder(it.first, it.second) }.let(configuration::execute)
             }
 
-    /**
-     * Executes the provided [action] on each node.
-     * This may miss the configuration required for a multi-branch setups
-     * and may have issues accessing versioned project properties.
-     */
-    @Suppress("DeprecatedCallableAddReplaceWith")
-    @Deprecated("Use `parameters {}` for global configuration.")
-    @StonecutterAPI public infix fun configureEach(action: Action<StonecutterBuild>) {
-        builds += action
-    }
-
     protected fun updateController(version: StonecutterProject): Unit = tree.provider
         ?.run { toPath().writeText(version.project, Charsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING) }
         ?: manager.updateHeader(root.buildFile.toPath(), version.project)
