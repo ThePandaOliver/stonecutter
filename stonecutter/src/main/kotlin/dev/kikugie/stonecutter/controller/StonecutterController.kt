@@ -18,6 +18,7 @@ import dev.kikugie.stonecutter.data.model.BranchModel
 import dev.kikugie.stonecutter.data.model.TreeModel
 import dev.kikugie.stonecutter.process.StonecutterTask
 import dev.kikugie.stonecutter.settings.builder.TreeBuilder
+import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskProvider
@@ -113,11 +114,22 @@ open class StonecutterController(internal val root: Project) : StonecutterUtilit
      *
      * @see <a href="https://stonecutter.kikugie.dev/stonecutter/guide/setup#global-parameters">Wiki page</a>
      */
-    infix fun parameters(configuration: Action<ParameterHolder>) = tree.branches.asSequence().flatMap { br ->
-        versions.map { br to it }
-    }.forEach {
-        configurations.getOrPut(it) { ParameterHolder(it.first, it.second) }.let(configuration::execute)
-    }
+    infix fun parameters(configuration: Action<ParameterHolder>) = parametersImpl(configuration::execute)
+
+    // link: wiki-controller-params
+    /**
+     * Specifies configurations for all combinations of versions and branches.
+     * This provides parameters for the processor to use non-existing versions.
+     * If the given version exists, it will be applied to the [StonecutterBuild].
+     *
+     * @see <a href="https://stonecutter.kikugie.dev/stonecutter/guide/setup#global-parameters">Wiki page</a>
+     */
+    infix fun parameters(configuration: Closure<ParameterHolder>) = parametersImpl(configuration::call)
+
+    private fun parametersImpl(configuration: (ParameterHolder) -> Unit) = tree.branches.asSequence()
+        .flatMap { versions.map { v -> it to v } }
+        .map { configurations.getOrPut(it) { ParameterHolder(it.first, it.second) } }
+        .forEach { configuration(it) }
 
     /**
      * Executes the provided action on each node after the nodes are configured.
@@ -130,6 +142,19 @@ open class StonecutterController(internal val root: Project) : StonecutterUtilit
     @Deprecated(message = "Use `parameters {}` for global configuration.")
     infix fun configureEach(configuration: Action<StonecutterBuild>) {
         builds += configuration
+    }
+
+    /**
+     * Executes the provided action on each node after the nodes are configured.
+     *
+     * This may miss configurations required for a multi-branch setup
+     * and may have issues accessing versioned project properties.
+     *
+     * @param configuration Versioned plugin configuration
+     */
+    @Deprecated(message = "Use `parameters {}` for global configuration.")
+    infix fun configureEach(configuration: Closure<StonecutterBuild>) {
+        builds += Action { configuration.call(this) }
     }
 
     private fun constructTree(model: TreeBuilder): ProjectTree = model.nodes.mapValues { (name, nodes) ->
