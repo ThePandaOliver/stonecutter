@@ -22,6 +22,23 @@ import kotlin.io.path.notExists
  */
 @Suppress("MemberVisibilityCanBePrivate")
 open class StonecutterSettings(settings: Settings) : SettingsConfiguration(settings), StonecutterUtility {
+    private companion object {
+        val GROOVY_COMPLAINT_DOT_TXT = """
+            NOTICE: Limited Groovy DSL support for Stonecutter
+            --------------------------------------------------------------------------------------------------------
+            While functional, the plugin's features are limited by the Groovy syntax and it has reduced IDE support.
+            
+            For the best experience, including enhanced syntax, autocompletion, documentation lookup and debugging, 
+            it's recommended to use Kotlin DSL.
+            
+            See for more info:
+                https://stonecutter.kikugie.dev/stonecutter/guide/setup
+                https://docs.gradle.org/current/userguide/migrating_from_groovy_to_kotlin_dsl.html
+            --------------------------------------------------------------------------------------------------------
+        """.trimIndent()
+    }
+
+    private var groovy = false
     private val container: TreeBuilderContainer
     private val controller get() = if (kotlinController) KotlinController else GroovyController
 
@@ -47,12 +64,14 @@ open class StonecutterSettings(settings: Settings) : SettingsConfiguration(setti
             create<ProjectTreeContainer>("stonecutterProjectTrees")
             create<ProjectParameterContainer>("stonecutterProjectParameters")
         }
+        settings.gradle.settingsEvaluated {
+            if (groovy) println(GROOVY_COMPLAINT_DOT_TXT)
+        }
     }
 
     override fun create(project: ProjectDescriptor, setup: TreeBuilder) {
-        require(container.register(project.path, setup)) {
-            "Project ${project.path} is already registered"
-        }
+        require(container.register(project.path, setup)) { "Project ${project.path} is already registered" }
+        groovy = groovy || isGroovyUsed(setup)
 
         project.buildFileName = controller.filename
         with(project.projectDir.resolve(controller.filename).toPath()) {
@@ -63,6 +82,10 @@ open class StonecutterSettings(settings: Settings) : SettingsConfiguration(setti
             createBranch(name, project, setup, branch)
         }
     }
+
+    private fun isGroovyUsed(setup: TreeBuilder) = !kotlinController
+            || centralScript.endsWith(".gradle")
+            || setup.branches.values.any { it.buildscript.endsWith(".gradle") }
 
     private fun createBranch(
         name: Identifier,
