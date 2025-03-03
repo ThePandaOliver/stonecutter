@@ -255,7 +255,7 @@ public interface ReplacementVariants {
         direction: Boolean,
         source: String,
         target: String,
-        phase: String = "FIRST",
+        phase: String = "LAST",
         identifier: Identifier? = null
     )
 
@@ -265,7 +265,7 @@ public interface ReplacementVariants {
         targetValue: String,
         targetPattern: String,
         sourceValue: String,
-        phase: String = "FIRST",
+        phase: String = "LAST",
         identifier: Identifier? = null
     )
 
@@ -273,7 +273,7 @@ public interface ReplacementVariants {
         direction: Boolean,
         source: String,
         target: String,
-    ): Unit = replacement(direction, source, target, "FIRST", null)
+    ): Unit = replacement(direction, source, target, "LAST", null)
 
     @StonecutterAPI public fun replacement(
         direction: Boolean,
@@ -281,11 +281,11 @@ public interface ReplacementVariants {
         targetValue: String,
         targetPattern: String,
         sourceValue: String
-    ): Unit = replacement(direction, sourcePattern, targetValue, targetPattern, sourceValue, "FIRST", null)
+    ): Unit = replacement(direction, sourcePattern, targetValue, targetPattern, sourceValue, "LAST", null)
 
     @StonecutterAPI public infix fun replacement(properties: Map<String, Any>) {
         val direction: Boolean = properties.getAs("direction")
-        val phase: String = properties.takeIf { "phase" in it }?.getAs("phase") ?: "FIRST"
+        val phase: String = properties.takeIf { "phase" in it }?.getAs("phase") ?: "LAST"
         val identifier: Identifier? = properties.takeIf { "identifier" in it }?.getAs("identifier")
         when {
             properties.containsAny("source", "target") ->
@@ -317,7 +317,7 @@ public interface ReplacementVariants {
             direction.get(),
             source.get(),
             target.get(),
-            phase.getOrElse("FIRST"),
+            phase.getOrElse("LAST"),
             identifier.orNull,
         )
     }
@@ -337,7 +337,7 @@ public interface ReplacementVariants {
             targetValue.get(),
             targetPattern.get(),
             sourceValue.get(),
-            phase.getOrElse("FIRST"),
+            phase.getOrElse("LAST"),
             identifier.orNull,
         )
     }
