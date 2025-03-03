@@ -7,8 +7,6 @@ import org.jetbrains.dokka.versioning.VersioningPlugin
 import tasks.HallOfFameTask
 import tasks.UpdateVersionTask
 import java.net.URI
-import java.nio.file.StandardOpenOption
-import kotlin.io.path.writeText
 
 plugins {
     alias(libs.plugins.kotlin.jvm)

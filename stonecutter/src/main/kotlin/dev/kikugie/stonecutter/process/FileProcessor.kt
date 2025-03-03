@@ -3,6 +3,9 @@ package dev.kikugie.stonecutter.process
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlConfiguration
 import com.charleskorn.kaml.encodeToStream
+import dev.kikugie.stitcher.data.Replacement
+import dev.kikugie.stitcher.data.Replacement.Companion.getReplacementTokens
+import dev.kikugie.stitcher.data.Replacement.Companion.replace
 import dev.kikugie.stitcher.data.scope.Scope
 import dev.kikugie.stitcher.eval.join
 import dev.kikugie.stitcher.exception.ErrorHandler
@@ -10,7 +13,6 @@ import dev.kikugie.stitcher.exception.StoringErrorHandler
 import dev.kikugie.stitcher.exception.join
 import dev.kikugie.stitcher.parser.FileParser
 import dev.kikugie.stitcher.transformer.Transformer
-import dev.kikugie.stonecutter.ReplacementPhase
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
@@ -47,8 +49,12 @@ internal class FileProcessor(private val params: ProcessParameters) {
 
             val handler = StoringErrorHandler()
             params.statistics.processed++
-            text = ReplacementPhase.FIRST.replace(text, params.parameters.replacements)
-            val parser = FileParser.create(text, handler, params.recognizers, params.parameters)
+
+            var result: CharSequence = text
+            val tokens = result.getReplacementTokens(params.recognizers)
+
+            result = params.parameters.replacements.replace(result, Replacement.Phase.FIRST, tokens)
+            val parser = FileParser.create(result, handler, params.recognizers, params.parameters)
             val ast = parser.parse().also {
                 if (params.debug) writeDebugAst(it)
             }
@@ -59,7 +65,7 @@ internal class FileProcessor(private val params: ProcessParameters) {
             collector.push("Transformed AST, ${handler.errors.size} errors")
             handler.throwIfHasErrors()
 
-            val result = ReplacementPhase.LAST.replace(ast.join(), params.parameters.replacements)
+            result = params.parameters.replacements.replace(result, Replacement.Phase.LAST, tokens)
             return if (result == text) null logging "Skipping, matches input"
             else result logging "Successfully processed"
         }
