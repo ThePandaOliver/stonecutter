@@ -1175,6 +1175,9 @@
   name: (!) Chunk Activity Tracker
   source: (!) https://github.com/txnimc/ChunkActivityTracker
   modrinth: (!) https://modrinth.com/mod/chunk-activity-tracker
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/chunk-activity-tracker
+  internal:
+    curseforge_id: 1193454
 - id: JackFred2/JacksServerSideTweaks
   name: (?) JacksServerSideTweaks
   source: (!) https://github.com/JackFred2/JacksServerSideTweaks
@@ -1227,3 +1230,70 @@
 - id: JackFredMods/JacksServerSideTweaks
   name: (?) JacksServerSideTweaks
   source: (!) https://github.com/JackFredMods/JacksServerSideTweaks
+- id: txnimc/DistractionFreeRecipes
+  name: (!) Distraction Free Recipes (EMI / REI / JEI)
+  source: (!) https://github.com/txnimc/DistractionFreeRecipes
+  modrinth: (!) https://modrinth.com/mod/distraction-free-recipes
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/distraction-free-recipes
+  internal:
+    curseforge_id: 1167848
+- id: JumperOnJava/Stonecutter-Arch-Template
+  valid: false
+  name: (?) Stonecutter-Arch-Template
+  source: (!) https://github.com/JumperOnJava/Stonecutter-Arch-Template
+- id: txnimc/BlueprintFix
+  name: (?) BlueprintFix
+  source: (!) https://github.com/txnimc/BlueprintFix
+- id: 0mods/ECR
+  name: (!) ECR
+  source: (!) https://github.com/0mods/ECR
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/ecr
+  internal:
+    curseforge_id: 536407
+- id: IMB11/SmartItemHighlight
+  name: (?) SmartItemHighlight
+  source: (!) https://github.com/IMB11/SmartItemHighlight
+- id: txnimc/BetterEndElytraFix
+  name: (!) BetterEnd Elytra Fix
+  source: (!) https://github.com/txnimc/BetterEndElytraFix
+  modrinth: (!) https://modrinth.com/mod/betterend-elytra-fix
+- id: JumperOnJava/ImagineBook
+  name: (!) ImagineBook
+  source: (!) https://github.com/JumperOnJava/ImagineBook
+  modrinth: (!) https://modrinth.com/mod/imaginebook
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/imaginebook
+  internal:
+    curseforge_id: 1180064
+- id: Awakened-Redstone/default-components
+  name: (!) Default Components
+  source: (!) https://github.com/Awakened-Redstone/default-components
+  modrinth: (!) https://modrinth.com/mod/default-components
+- id: Danrus1100/DRHud
+  name: (?) DRHud
+  source: (!) https://github.com/Danrus1100/DRHud
+- id: txnimc/RandomEnchantFix
+  name: (!) Random Enchant Fix
+  source: (!) https://github.com/txnimc/RandomEnchantFix
+  modrinth: (!) https://modrinth.com/mod/random-enchant-fix
+- id: topi-banana/unitemplate
+  valid: false
+  name: (?) unitemplate
+  source: (!) https://github.com/topi-banana/unitemplate
+- id: Danrus1100/durability_visibility_options
+  name: (!) Durability Visibility Options
+  source: (!) https://github.com/Danrus1100/durability_visibility_options
+  modrinth: (!) https://modrinth.com/mod/durability_visibility_options
+- id: LopyMine/Particle-Effects
+  name: (!) Particle Effects
+  source: (!) https://github.com/LopyMine/Particle-Effects
+  modrinth: (!) https://modrinth.com/mod/particle-effects
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/particle-effects
+  internal:
+    curseforge_id: 1120746
+- id: MaiKokain/StackUpper
+  name: (!) StackUpper
+  source: (!) https://github.com/MaiKokain/StackUpper
+  modrinth: (!) https://modrinth.com/mod/stackupper
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/stackupper
+  internal:
+    curseforge_id: 1083896
