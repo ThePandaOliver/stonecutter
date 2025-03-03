@@ -3,14 +3,16 @@
 package stonecutter_samples
 
 import dev.kikugie.stonecutter.build.StonecutterBuild
+import kotlin.collections.set
+import kotlin.to
 
-private val stonecutter: StonecutterBuild = TODO("This is a sample, it must not be instantiated.")
+private val stonecutter: StonecutterBuild get() = TODO("This is a sample, it must not be instantiated.")
 private fun stonecutter(action: StonecutterBuild.() -> Unit) {}
 private fun property(name: String): Any {
     throw UnsupportedOperationException("Not yet implemented.")
 }
 
-object swaps {
+private object swaps {
     fun setter() {
         stonecutter {
             swaps["my_swap"] = when {
@@ -65,7 +67,7 @@ object swaps {
     }
 }
 
-object constants {
+private object constants {
     fun setter() {
         stonecutter {
             consts["my_const"] = eval(current.version, ">=1.21")
@@ -130,7 +132,7 @@ object constants {
     }
 }
 
-object dependencies {
+private object dependencies {
     fun setter() {
         stonecutter {
             dependencies["my_dependency"] = property("dependency") as String
@@ -181,7 +183,7 @@ object dependencies {
     }
 }
 
-object allowExtensions {
+private object allowExtensions {
     fun vararg() {
         stonecutter.allowExtensions("yml", "yaml")
     }
@@ -192,7 +194,7 @@ object allowExtensions {
     }
 }
 
-object overrideExtensions {
+private object overrideExtensions {
     fun vararg() {
         stonecutter.overrideExtensions("scala", "sc")
     }
@@ -203,7 +205,7 @@ object overrideExtensions {
     }
 }
 
-object excludeFiles {
+private object excludeFiles {
     fun vararg() {
         stonecutter.excludeFiles("src/main/resources/properties.json5")
     }
@@ -214,7 +216,7 @@ object excludeFiles {
     }
 }
 
-object replacements {
+private object replacements {
     fun basic_correct() {
         /* Multiple replacements without ambiguity
            1.21: ['A', 'B'] -> 'C'

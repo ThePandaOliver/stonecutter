@@ -4,9 +4,9 @@ package stonecutter_samples
 
 import dev.kikugie.stonecutter.StonecutterUtility
 
-private val stonecutter: StonecutterUtility = TODO("This is a sample, it must not be instantiated.")
+private val stonecutter: StonecutterUtility get() = TODO("This is a sample, it must not be instantiated.")
 
-object eval {
+private object eval {
     fun strict() {
         stonecutter.eval("1.1", ">=1.0 <2.0") // == true
         stonecutter.eval("v1", ">=1.0 <2.0") // -> VersionParsingException

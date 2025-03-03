@@ -3,14 +3,17 @@
 package stonecutter_samples
 
 import dev.kikugie.stonecutter.settings.StonecutterSettings
+import kotlin.collections.map
+import kotlin.text.split
+import kotlin.to
 
-private val rootProject: String = TODO("This is a sample, it must not be instantiated.") // Project in real case
-private val subProject: String = TODO("This is a sample, it must not be instantiated.") // Project in real case
-private val stonecutter: StonecutterSettings = TODO("This is a sample, it must not be instantiated.")
+private val rootProject: String get() = TODO("This is a sample, it must not be instantiated.") // Project in real case
+private val subProject: String get() = TODO("This is a sample, it must not be instantiated.") // Project in real case
+private val stonecutter: StonecutterSettings get() = TODO("This is a sample, it must not be instantiated.")
 private fun stonecutter(action: StonecutterSettings.() -> Unit) {}
 private fun property(name: String): Any = TODO("This is a sample, it must not be instantiated.")
 
-object create {
+private object create {
     fun shared_single_project() {
         stonecutter {
             shared {
@@ -68,7 +71,7 @@ object create {
     }
 }
 
-object settings {
+private object settings {
     fun single() {
         stonecutter {
             create(rootProject) {
