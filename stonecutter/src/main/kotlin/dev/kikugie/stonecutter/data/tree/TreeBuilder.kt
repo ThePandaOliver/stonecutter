@@ -54,8 +54,10 @@ public class TreeBuilder internal constructor() : ProjectProvider {
         require(previous == null) { "Duplicate project path for '$previous' and '$identity' in branch '$branch'" }
     }
 
-    override fun vers(name: Identifier, version: AnyVersion): Unit =
+    override fun vers(name: Identifier, version: AnyVersion) {
+        if ("" !in branches) branches[""] = BranchBuilder(this, "")
         add("", StonecutterProject.create(name, version))
+    }
 
     /**Creates an inherited branch, which copies all the versions specified in this block.*/
     @StonecutterAPI public fun branch(name: Identifier): Unit = branch(name) { inherit() }

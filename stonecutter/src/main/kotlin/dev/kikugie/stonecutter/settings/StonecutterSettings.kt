@@ -68,7 +68,7 @@ public open class StonecutterSettings(settings: Settings) : SettingsAbstraction(
         project.projectDir.toPath().createDirectories()
         project.buildFileName = setup.controller.filename
 
-        val buildscript = checkNotNull(setup.branches[name]?.buildscript) { "Branch $name was not registered correctly" }
+        val buildscript = checkNotNull(setup.branches[name]?.buildscript) { "Branch '$name' was not registered correctly" }
         for (it in branch) createProject(project, it, buildscript)
     }
 
