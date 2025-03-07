@@ -3,11 +3,11 @@ package dev.kikugie.stonecutter.process
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlConfiguration
 import com.charleskorn.kaml.encodeToStream
-import dev.kikugie.stitcher.data.Replacement
-import dev.kikugie.stitcher.data.Replacement.Companion.getReplacementTokens
-import dev.kikugie.stitcher.data.Replacement.Companion.replace
+import dev.kikugie.stitcher.data.replacement.Replacement
+import dev.kikugie.stitcher.data.replacement.ReplacementExecutor.Companion.getReplacementTokens
+import dev.kikugie.stitcher.data.replacement.ReplacementExecutor.Companion.replaceWithScannedTokens
+import dev.kikugie.stitcher.data.replacement.ReplacementPhase
 import dev.kikugie.stitcher.data.scope.Scope
-import dev.kikugie.stitcher.eval.join
 import dev.kikugie.stitcher.exception.ErrorHandler
 import dev.kikugie.stitcher.exception.StoringErrorHandler
 import dev.kikugie.stitcher.exception.join
@@ -50,10 +50,9 @@ internal class FileProcessor(private val params: ProcessParameters) {
             val handler = StoringErrorHandler()
             params.statistics.processed++
 
+            val replacements = params.parameters.replacements
             var result: CharSequence = text
-            val tokens = result.getReplacementTokens(params.recognizers)
-
-            result = params.parameters.replacements.replace(result, Replacement.Phase.FIRST, tokens)
+            result = result.replaceWithScannedTokens(replacements, ReplacementPhase.FIRST, params.recognizers)
             val parser = FileParser.create(result, handler, params.recognizers, params.parameters)
             val ast = parser.parse().also {
                 if (params.debug) writeDebugAst(it)
@@ -65,7 +64,7 @@ internal class FileProcessor(private val params: ProcessParameters) {
             collector.push("Transformed AST, ${handler.errors.size} errors")
             handler.throwIfHasErrors()
 
-            result = params.parameters.replacements.replace(result, Replacement.Phase.LAST, tokens)
+            result = result.replaceWithScannedTokens(replacements, ReplacementPhase.FIRST, params.recognizers)
             return if (result == text) null logging "Skipping, matches input"
             else result logging "Successfully processed"
         }

@@ -4,7 +4,8 @@ package dev.kikugie.stonecutter.data.parameters
 
 import dev.kikugie.semver.Version
 import dev.kikugie.semver.VersionParser
-import dev.kikugie.stitcher.data.Replacement
+import dev.kikugie.stitcher.data.replacement.Replacement
+import dev.kikugie.stitcher.data.replacement.ReplacementList
 import dev.kikugie.stitcher.transformer.TransformParameters
 import dev.kikugie.stitcher.util.RegexSerializer
 import dev.kikugie.stonecutter.AnyVersion
@@ -31,7 +32,7 @@ public data class BuildParameters(
     val constants: MutableMap<Identifier, Boolean> = mutableMapOf(),
     val swaps: MutableMap<Identifier, String> = mutableMapOf(),
     val dependencies: MutableMap<Identifier, Version> = mutableMapOf(),
-    val replacements: MutableList<Replacement> = mutableListOf(),
+    val replacements: ReplacementList = ReplacementList(),
     val extensions: MutableSet<String> = mutableSetOf("java", "kt", "kts", "groovy", "gradle", "scala", "sc", "json5", "hjson"),
     val exclusions: MutableSet<String> = mutableSetOf()
 ) {

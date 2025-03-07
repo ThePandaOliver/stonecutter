@@ -217,8 +217,8 @@ private object excludeFiles {
 }
 
 private object replacements {
-    fun basic_correct() {
-        /* Multiple replacements without ambiguity
+    fun string_basic() {
+        /* Creates multiple replacements without ambiguity
            1.21: ['A', 'B'] -> 'C'
            1.20: ['A', 'C'] -> 'B'
            1.19: ['B', 'C'] -> 'A'
@@ -229,8 +229,8 @@ private object replacements {
         }
     }
 
-    fun basic_ambiguous() {
-        /* Multiple replacements with an ambiguous target
+    fun string_ambiguous() {
+        /* Created replacements create two possible outcomes when switching to 1.20, and an exception is thrown
            1.21: ['A', 'B'] -> 'C'
            1.20: ['B'] -> 'A' and ['B'] -> 'C' !!!
            1.19: ['B', 'C'] -> 'A'
@@ -241,8 +241,8 @@ private object replacements {
         }
     }
 
-    fun basic_circular() {
-        /* Multiple replacements causing circular reference
+    fun string_circular() {
+        /* Created replacements create circular references when switching to 1.21 or 1.20, and an exception is thrown.
            1.21: ['B'] -> 'A' and ['A'] -> 'B' !!!
            1.20: ['A'] -> 'B'
            1.19: ['A'] -> 'B' and ['B'] -> 'A' !!!
@@ -250,6 +250,91 @@ private object replacements {
         stonecutter {
             replacement(eval(current.version, "<1.21"), "A", "B")
             replacement(eval(current.version, "<1.20"), "B", "A")
+        }
+    }
+
+    fun string_phased() {
+        /* Replacements are created in different phases, which defaults to "LAST".
+           With an example file `/*$ my_swap*/ A`:
+           1.20:
+           - Replace A -> B
+           - Swap with C
+           - Replace C -> D
+           1.21:
+           - Replace B -> A (nothing happens)
+           - Swap with A
+           - Replace D -> C (nothing happens)
+           Phases can be used to affect other comments, but at a risk of non-reversible transformations.
+         */
+        stonecutter {
+            replacement(eval(current.version, "<1.21"), "A", "B", "FIRST")
+            replacement(eval(current.version, "<1.21"), "C", "D")
+
+            swap("my_swap") {
+                if (eval(current.version, "<1.21")) "C"
+                else "A"
+            }
+        }
+    }
+
+    fun string_identified() {
+        /* Replacements can be given identifiers, which allows them to be enabled for specific files.
+           The replacement tokens must be at the top of the file. For example:
+           ```
+           //~ repl_token
+           A
+           /*~ repl_token_#2*/ // this token comes after content and will not be included
+           ```
+           With token:
+           1.20: ['A', 'B'] -> 'C'
+           1.21: ['B', 'C'] -> 'A'
+           Without token:
+           1.20: ['A'] -> 'B'
+           1.21: ['B'] -> 'A'
+         */
+        stonecutter {
+            replacement(eval(current.version, "<1.21"), "A", "B")
+            replacement(eval(current.version, "<1.21"), "B", "C", identifier = "repl_token")
+            replacement(eval(current.version, "<1.21"), "C", "D", identifier = "repl_token_#2")
+        }
+    }
+
+    fun string_configuration() {
+        stonecutter {
+            stringReplacement {
+                direction = eval(current.version, "<1.21")
+                source = "A"
+                target = "B"
+                // optional
+                phase = "FIRST"
+                identifier = "repl_token"
+            }
+        }
+    }
+
+    fun dynamic_map() {
+        stonecutter {
+            // Adds a string replacement
+            replacements += mapOf(
+                "direction" to eval(current.version, "<1.21"),
+                "source" to "A",
+                "target" to "B",
+                // optional
+                "phase" to "FIRST",
+                "identifier" to "repl_token",
+            )
+
+            // Adds a regex replacement
+            replacements += mapOf(
+                "direction" to eval(current.version, "<1.21"),
+                "sourcePattern" to "A",
+                "targetValue" to "B",
+                "targetPattern" to "B",
+                "sourceValue" to "A",
+                // optional
+                "phase" to "FIRST",
+                "identifier" to "repl_token",
+            )
         }
     }
 }

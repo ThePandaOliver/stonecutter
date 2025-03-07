@@ -6,7 +6,6 @@ import dev.kikugie.stonecutter.build.BuildAbstraction
 import dev.kikugie.stonecutter.data.StonecutterProject
 import dev.kikugie.stonecutter.data.tree.ProjectBranch
 import dev.kikugie.stonecutter.data.tree.ProjectNode
-import org.gradle.api.model.ObjectFactory
 
 // link: wiki-controller-params
 /**
@@ -20,9 +19,8 @@ import org.gradle.api.model.ObjectFactory
  */
 public class ParameterHolder(
     @StonecutterAPI public val branch: ProjectBranch,
-    @StonecutterAPI public val metadata: StonecutterProject,
-    objects: ObjectFactory
-) : BuildAbstraction(branch.hierarchy + metadata.project, objects), StonecutterUtility {
+    @StonecutterAPI public val metadata: StonecutterProject
+) : BuildAbstraction(branch.hierarchy + metadata.project), StonecutterUtility {
     /**
      * Project node matching [metadata] on [branch].
      * May be `null` when branches have different sets of versions.

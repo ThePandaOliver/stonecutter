@@ -1,13 +1,15 @@
 package dev.kikugie.stonecutter.build
 
 import dev.kikugie.semver.Version
-import dev.kikugie.stitcher.data.Replacement
+import dev.kikugie.stitcher.data.replacement.Replacement
 import dev.kikugie.semver.SemanticVersion as SemanticVersionImpl
 import dev.kikugie.stonecutter.*
 import dev.kikugie.stonecutter.data.parameters.BuildParameters
 import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.provider.Property
+import org.intellij.lang.annotations.Language
+import kotlin.properties.Delegates
 
 private inline fun <reified T> Map<String, Any>.getAs(key: String): T = requireAs<T>(this[key]) {
     if (it == null) "Missing property '$key'"
@@ -251,6 +253,14 @@ public interface DependencyVariants {
 public interface ReplacementVariants {
     public val replacements: Collection<Replacement>
 
+    /**
+     *
+     * @sample stonecutter_samples.replacements.string_basic
+     * @sample stonecutter_samples.replacements.string_ambiguous
+     * @sample stonecutter_samples.replacements.string_circular
+     * @sample stonecutter_samples.replacements.string_phased
+     * @sample stonecutter_samples.replacements.string_identified
+     */
     @StonecutterAPI public fun replacement(
         direction: Boolean,
         source: String,
@@ -283,7 +293,10 @@ public interface ReplacementVariants {
         sourceValue: String
     ): Unit = replacement(direction, sourcePattern, targetValue, targetPattern, sourceValue, "LAST", null)
 
-    @StonecutterAPI public infix fun replacement(properties: Map<String, Any>) {
+    /**
+     * @sample stonecutter_samples.replacements.dynamic_map
+     */
+    @StonecutterAPI public fun replacement(properties: Map<String, Any>) {
         val direction: Boolean = properties.getAs("direction")
         val phase: String = properties.takeIf { "phase" in it }?.getAs("phase") ?: "LAST"
         val identifier: Identifier? = properties.takeIf { "identifier" in it }?.getAs("identifier")
@@ -298,48 +311,48 @@ public interface ReplacementVariants {
         }
     }
 
-    @StonecutterAPI public fun stringReplacement(action: Action<StringReplacementBuilder>)
+    /**
+     * @sample stonecutter_samples.replacements.string_configuration
+     */
+    @StonecutterAPI public fun stringReplacement(action: Action<StringReplacementBuilder>): Unit =
+        StringReplacementBuilder().also(action::execute).build(this)
     @StonecutterAPI public fun stringReplacement(action: Closure<StringReplacementBuilder>): Unit =
         stringReplacement(action::call)
 
-    @StonecutterAPI public fun regexReplacement(action: Action<RegexReplacementBuilder>)
+    @StonecutterAPI public fun regexReplacement(action: Action<RegexReplacementBuilder>): Unit =
+        RegexReplacementBuilder().also(action::execute).build(this)
     @StonecutterAPI public fun regexReplacement(action: Closure<RegexReplacementBuilder>): Unit =
         regexReplacement(action::call)
 
-    public abstract class StringReplacementBuilder {
-        public abstract val direction: Property<Boolean>
-        public abstract val source: Property<String>
-        public abstract val target: Property<String>
-        public abstract val phase: Property<String>
-        public abstract val identifier: Property<Identifier>
+    /**
+     *
+     * @sample stonecutter_samples.replacements.dynamic_map
+     */
+    @StonecutterAPI public operator fun Collection<Replacement>.plusAssign(properties: Map<String, Any>): Unit
+            = replacement(properties)
 
-        internal fun build(instance: ReplacementVariants) = instance.replacement(
-            direction.get(),
-            source.get(),
-            target.get(),
-            phase.getOrElse("LAST"),
-            identifier.orNull,
-        )
+    public class StringReplacementBuilder {
+        public var direction: Boolean by Delegates.notNull<Boolean>()
+        public lateinit var source: String
+        public lateinit var target: String
+        public lateinit var phase: String
+        public lateinit var identifier: Identifier
+
+        internal fun build(instance: ReplacementVariants) = instance
+            .replacement(direction, source, target, phase, identifier)
     }
 
-    public abstract class RegexReplacementBuilder {
-        public abstract val direction: Property<Boolean>
-        public abstract val sourcePattern: Property<String>
-        public abstract val targetValue: Property<String>
-        public abstract val targetPattern: Property<String>
-        public abstract val sourceValue: Property<String>
-        public abstract val phase: Property<String>
-        public abstract val identifier: Property<Identifier>
+    public class RegexReplacementBuilder {
+        public var direction: Boolean by Delegates.notNull<Boolean>()
+        public lateinit var sourcePattern: String
+        public lateinit var targetValue: String
+        public lateinit var targetPattern: String
+        public lateinit var sourceValue: String
+        public var phase: String = "LAST"
+        public var identifier: Identifier? = null
 
-        internal fun build(instance: ReplacementVariants) = instance.replacement(
-            direction.get(),
-            sourcePattern.get(),
-            targetValue.get(),
-            targetPattern.get(),
-            sourceValue.get(),
-            phase.getOrElse("LAST"),
-            identifier.orNull,
-        )
+        internal fun build(instance: ReplacementVariants) = instance
+            .replacement(direction, sourcePattern, targetValue, targetPattern, sourceValue, phase, identifier)
     }
 }
 

@@ -1,5 +1,7 @@
-import dev.kikugie.stitcher.data.Replacement
-import dev.kikugie.stitcher.data.Replacement.Companion.string
+import dev.kikugie.stitcher.data.replacement.Replacement
+import dev.kikugie.stitcher.data.replacement.ReplacementList
+import dev.kikugie.stitcher.data.replacement.ReplacementPhase
+import dev.kikugie.stitcher.data.replacement.StringReplacement
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
@@ -45,8 +47,8 @@ object ReplacementTest {
     }
 
     fun check(sample: ResolutionSample) {
-        val list = mutableListOf<Replacement>()
-        fun run() = sample.entries.forEach { list.string(it.from, it.to, it.phase, it.identifier) }.also {
+        val list = ReplacementList()
+        fun run() = sample.entries.forEach { list.addString(it.from, it.to, it.phase, it.identifier) }.also {
             val str = buildString {
                 appendLine("Parsed replacements for '${sample.name}':")
                 list.forEach { appendLine("  $it") }
@@ -71,16 +73,16 @@ object ReplacementTest {
     class ResolutionSample(val name: String) {
         var exception: KClass<out Throwable>? = null
         val entries = mutableListOf<Entry>()
-        val expected = mutableListOf<Replacement.StringReplacement>()
+        val expected = mutableListOf<StringReplacement>()
 
         inline fun <reified T : Throwable> exception() { exception = T::class }
 
-        fun expect(sources: Set<String>, target: String, phase: Replacement.Phase = Replacement.Phase.FIRST, identifier: String? = null) =
-            expected.add(Replacement.StringReplacement(sources.toMutableSet(), target, phase, identifier))
+        fun expect(sources: Set<String>, target: String, phase: ReplacementPhase = ReplacementPhase.LAST, identifier: String? = null) =
+            expected.add(StringReplacement(sources.toMutableSet(), target, phase, identifier))
 
-        fun entry(from: String, to: String, phase: Replacement.Phase = Replacement.Phase.FIRST, identifier: String? = null) =
+        fun entry(from: String, to: String, phase: ReplacementPhase = ReplacementPhase.LAST, identifier: String? = null) =
             entries.add(Entry(from, to, phase, identifier))
 
-        class Entry(val from: String, val to: String, val phase: Replacement.Phase, val identifier: String? = null)
+        class Entry(val from: String, val to: String, val phase: ReplacementPhase, val identifier: String? = null)
     }
 }
