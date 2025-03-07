@@ -7,8 +7,6 @@ import dev.kikugie.stonecutter.data.ProjectHierarchy
 import dev.kikugie.stonecutter.data.container.ConfigurationService.Companion.of
 import dev.kikugie.stonecutter.data.parameters.BuildParameters
 import dev.kikugie.stonecutter.controller.ControllerAbstraction
-import org.gradle.api.Action
-import org.gradle.kotlin.dsl.newInstance
 import kotlin.io.path.Path
 import kotlin.io.path.invariantSeparatorsPathString
 

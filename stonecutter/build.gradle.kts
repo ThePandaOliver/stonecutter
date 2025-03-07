@@ -5,11 +5,10 @@ import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import java.nio.file.Path
+import org.gradle.jvm.tasks.Jar
+import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.readLines
-import kotlin.io.path.walk
-import kotlin.io.path.writeText
 
 plugins {
     idea
@@ -63,7 +62,6 @@ tasks.compileKotlin {
         apiVersion = KotlinVersion.KOTLIN_2_0
         jvmTarget.set(JvmTarget.JVM_16)
     }
-    dependsOn(rootProject.tasks.named("updateVersion"))
 }
 java {
     withSourcesJar()
@@ -80,56 +78,15 @@ tasks.named<Jar>("javadocJar") {
     from(tasks.named("dokkaJavadoc"))
 }
 
+tasks.all {
+    if (this is Jar || this is DokkaTask || this is KotlinCompile)
+        dependsOn(rootProject.tasks.findByName("updateVersion"))
+}
+
 tasks.withType<AbstractDokkaLeafTask> {
     moduleName = "Stonecutter Gradle"
     dokkaSourceSets.configureEach {
         samples.from("src/samples/kotlin")
-    }
-}
-
-tasks.register("addWikiLinks") {
-    val properties: MutableMap<String, String> = mutableMapOf()
-    fun wiki(id: String, page: String, title: String = "Wiki page") {
-        properties["wiki-$id"] = "<a href=\"https://stonecutter.kikugie.dev/stonecutter/$page\">$title</a>"
-    }
-
-    fun Path.transform(): String? {
-        var modified = false
-        val lines = readLines()
-        val new = buildList {
-            var marker: String? = null
-
-            for (it in lines) {
-                var line: String = it
-                when {
-                    it.trimStart().startsWith("//") && "link:" in it -> marker =
-                        it.substringAfter("link:").trim().takeIf { it in properties }
-                    "*/" in it -> marker = null
-                    marker != null && "@see" in it && "stonecutter" in it -> line =
-                        it.replaceAfter("@see ", properties[marker]!!).also { modified = true }
-                }
-                add(line)
-            }
-        }
-        return new.takeIf { modified }?.joinToString("\n")
-    }
-
-    wiki("eval", "guide/setup#checking-versions")
-    wiki("chisel", "guide/setup#chiseled-tasks")
-    wiki("settings", "guide/setup#settings-settings-gradle-kts")
-    wiki("controller", "guide/setup#controller-stonecutter-gradle-kts")
-    wiki("controller-params", "guide/setup#global-parameters")
-    wiki("controller-active", "guide/setup#active-version")
-    wiki("build", "guide/setup#versioning-build-gradle-kts")
-    wiki("build-swaps", "guide/comments#value-swaps")
-    wiki("build-consts", "guide/comments#condition-constants")
-    wiki("build-deps", "guide/comments#condition-dependencies")
-
-    doLast {
-        project.file("src/main/kotlin/dev/kikugie/stonecutter").toPath().walk().forEach {
-            val transformed = it.transform()
-            if (transformed != null) it.writeText(transformed)
-        }
     }
 }
 

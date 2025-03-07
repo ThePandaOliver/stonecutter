@@ -290,32 +290,6 @@ public interface ReplacementVariants {
     )
 
     /**
-     * Registers a string replacement, merging it with existing entries if possible.
-     * @see dev.kikugie.stitcher.data.replacement.ReplacementList.addString
-     * @sample stonecutter_samples.replacements.string_basic
-     * @sample stonecutter_samples.replacements.string_ambiguous
-     * @sample stonecutter_samples.replacements.string_circular
-     */
-    @StonecutterAPI public fun replacement(
-        direction: Boolean,
-        source: String,
-        target: String,
-    ): Unit = replacement(direction, source, target, "LAST", null)
-
-    /**
-     * Registers a regex replacement, which is executed after string replacements.
-     * @see dev.kikugie.stitcher.data.replacement.ReplacementList.addRegex
-     * @sample stonecutter_samples.replacements.regex_basic
-     */
-    @StonecutterAPI public fun replacement(
-        direction: Boolean,
-        @Language("RegExp") sourcePattern: String,
-        targetValue: String,
-        @Language("RegExp") targetPattern: String,
-        sourceValue: String
-    ): Unit = replacement(direction, sourcePattern, targetValue, targetPattern, sourceValue, "LAST", null)
-
-    /**
      * Determines the replacement type from the given map parameters and registers it.
      * Key names and value types **must** match the ones from base methods, no value coercion is performed.
      * @sample stonecutter_samples.replacements.dynamic_assign
