@@ -312,7 +312,26 @@ private object replacements {
         }
     }
 
-    fun dynamic_map() {
+    fun regex_basic() {
+        stonecutter {
+            replacement(eval(current.version, "<1.21"), "[AB]", "C", "[BC]", "A")
+        }
+    }
+
+    fun regex_configuration() {
+        stonecutter {
+            regexReplacement {
+                direction = eval(current.version, "<1.21")
+                sourcePattern = "[AB]"
+                targetValue = "C"
+                targetPattern = "[BC]"
+                sourceValue = "A"
+            }
+        }
+    }
+
+    fun dynamic_assign() {
+        // To be used with Kotlin DSL
         stonecutter {
             // Adds a string replacement
             replacements += mapOf(
@@ -335,6 +354,33 @@ private object replacements {
                 "phase" to "FIRST",
                 "identifier" to "repl_token",
             )
+        }
+    }
+
+    fun dynamic_map() {
+        // To be used with Groovy DSL
+        stonecutter {
+            // Adds a string replacement
+            replacement(mapOf(
+                "direction" to eval(current.version, "<1.21"),
+                "source" to "A",
+                "target" to "B",
+                // optional
+                "phase" to "FIRST",
+                "identifier" to "repl_token",
+            ))
+
+            // Adds a regex replacement
+            replacement(mapOf(
+                "direction" to eval(current.version, "<1.21"),
+                "sourcePattern" to "A",
+                "targetValue" to "B",
+                "targetPattern" to "B",
+                "sourceValue" to "A",
+                // optional
+                "phase" to "FIRST",
+                "identifier" to "repl_token",
+            ))
         }
     }
 }

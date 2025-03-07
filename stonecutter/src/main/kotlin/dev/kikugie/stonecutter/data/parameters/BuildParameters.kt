@@ -4,7 +4,6 @@ package dev.kikugie.stonecutter.data.parameters
 
 import dev.kikugie.semver.Version
 import dev.kikugie.semver.VersionParser
-import dev.kikugie.stitcher.data.replacement.Replacement
 import dev.kikugie.stitcher.data.replacement.ReplacementList
 import dev.kikugie.stitcher.transformer.TransformParameters
 import dev.kikugie.stitcher.util.RegexSerializer

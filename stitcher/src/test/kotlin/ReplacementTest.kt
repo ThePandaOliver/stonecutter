@@ -1,4 +1,3 @@
-import dev.kikugie.stitcher.data.replacement.Replacement
 import dev.kikugie.stitcher.data.replacement.ReplacementList
 import dev.kikugie.stitcher.data.replacement.ReplacementPhase
 import dev.kikugie.stitcher.data.replacement.StringReplacement

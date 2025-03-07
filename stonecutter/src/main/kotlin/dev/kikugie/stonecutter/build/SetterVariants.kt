@@ -7,7 +7,6 @@ import dev.kikugie.stonecutter.*
 import dev.kikugie.stonecutter.data.parameters.BuildParameters
 import groovy.lang.Closure
 import org.gradle.api.Action
-import org.gradle.api.provider.Property
 import org.intellij.lang.annotations.Language
 import kotlin.properties.Delegates
 
@@ -251,10 +250,16 @@ public interface DependencyVariants {
 }
 
 public interface ReplacementVariants {
+    /**
+     * Accessor for the registered replacement data.
+     * In Kotlin new entries can be added with the [plusAssign] operator.
+     * @sample stonecutter_samples.replacements.dynamic_assign
+     */
     public val replacements: Collection<Replacement>
 
     /**
-     *
+     * Registers a string replacement, merging it with existing entries if possible.
+     * @see dev.kikugie.stitcher.data.replacement.ReplacementList.addString
      * @sample stonecutter_samples.replacements.string_basic
      * @sample stonecutter_samples.replacements.string_ambiguous
      * @sample stonecutter_samples.replacements.string_circular
@@ -269,31 +274,51 @@ public interface ReplacementVariants {
         identifier: Identifier? = null
     )
 
+    /**
+     * Registers a regex replacement
+     * @see dev.kikugie.stitcher.data.replacement.ReplacementList.addRegex
+     * @sample stonecutter_samples.replacements.regex_basic
+     */
     @StonecutterAPI public fun replacement(
         direction: Boolean,
-        sourcePattern: String,
+        @Language("RegExp") sourcePattern: String,
         targetValue: String,
-        targetPattern: String,
+        @Language("RegExp") targetPattern: String,
         sourceValue: String,
         phase: String = "LAST",
         identifier: Identifier? = null
     )
 
+    /**
+     * Registers a string replacement, merging it with existing entries if possible.
+     * @see dev.kikugie.stitcher.data.replacement.ReplacementList.addString
+     * @sample stonecutter_samples.replacements.string_basic
+     * @sample stonecutter_samples.replacements.string_ambiguous
+     * @sample stonecutter_samples.replacements.string_circular
+     */
     @StonecutterAPI public fun replacement(
         direction: Boolean,
         source: String,
         target: String,
     ): Unit = replacement(direction, source, target, "LAST", null)
 
+    /**
+     * Registers a regex replacement, which is executed after string replacements.
+     * @see dev.kikugie.stitcher.data.replacement.ReplacementList.addRegex
+     * @sample stonecutter_samples.replacements.regex_basic
+     */
     @StonecutterAPI public fun replacement(
         direction: Boolean,
-        sourcePattern: String,
+        @Language("RegExp") sourcePattern: String,
         targetValue: String,
-        targetPattern: String,
+        @Language("RegExp") targetPattern: String,
         sourceValue: String
     ): Unit = replacement(direction, sourcePattern, targetValue, targetPattern, sourceValue, "LAST", null)
 
     /**
+     * Determines the replacement type from the given map parameters and registers it.
+     * Key names and value types **must** match the ones from base methods, no value coercion is performed.
+     * @sample stonecutter_samples.replacements.dynamic_assign
      * @sample stonecutter_samples.replacements.dynamic_map
      */
     @StonecutterAPI public fun replacement(properties: Map<String, Any>) {
@@ -312,25 +337,44 @@ public interface ReplacementVariants {
     }
 
     /**
+     * Registers a string replacement by configuring a [StringReplacementBuilder].
+     * Can be used as a type-safe version of the map-based function.
      * @sample stonecutter_samples.replacements.string_configuration
      */
     @StonecutterAPI public fun stringReplacement(action: Action<StringReplacementBuilder>): Unit =
         StringReplacementBuilder().also(action::execute).build(this)
+    /**
+     * Registers a string replacement by configuring a [StringReplacementBuilder].
+     * Can be used as a type-safe version of the map-based function.
+     * @sample stonecutter_samples.replacements.string_configuration
+     */
     @StonecutterAPI public fun stringReplacement(action: Closure<StringReplacementBuilder>): Unit =
         stringReplacement(action::call)
 
+    /**
+     * Registers a regex replacement by configuring a [RegexReplacementBuilder].
+     * Can be used as a type-safe version of the map-based function.
+     * @sample stonecutter_samples.replacements.regex_configuration
+     */
     @StonecutterAPI public fun regexReplacement(action: Action<RegexReplacementBuilder>): Unit =
         RegexReplacementBuilder().also(action::execute).build(this)
+
+    /**
+     * Registers a regex replacement by configuring a [RegexReplacementBuilder].
+     * Can be used as a type-safe version of the map-based function.
+     * @sample stonecutter_samples.replacements.regex_configuration
+     */
     @StonecutterAPI public fun regexReplacement(action: Closure<RegexReplacementBuilder>): Unit =
         regexReplacement(action::call)
 
     /**
-     *
-     * @sample stonecutter_samples.replacements.dynamic_map
+     * Used with the [replacements] to add map-based replacements.
+     * @sample stonecutter_samples.replacements.dynamic_assign
      */
     @StonecutterAPI public operator fun Collection<Replacement>.plusAssign(properties: Map<String, Any>): Unit
             = replacement(properties)
 
+    /**@see ReplacementVariants.stringReplacement*/
     public class StringReplacementBuilder {
         public var direction: Boolean by Delegates.notNull<Boolean>()
         public lateinit var source: String
@@ -342,11 +386,12 @@ public interface ReplacementVariants {
             .replacement(direction, source, target, phase, identifier)
     }
 
+    /**@see ReplacementVariants.regexReplacement*/
     public class RegexReplacementBuilder {
         public var direction: Boolean by Delegates.notNull<Boolean>()
-        public lateinit var sourcePattern: String
+        @Language("RegExp") public lateinit var sourcePattern: String
         public lateinit var targetValue: String
-        public lateinit var targetPattern: String
+        @Language("RegExp") public lateinit var targetPattern: String
         public lateinit var sourceValue: String
         public var phase: String = "LAST"
         public var identifier: Identifier? = null

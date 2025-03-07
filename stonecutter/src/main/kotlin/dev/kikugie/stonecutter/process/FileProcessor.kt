@@ -3,8 +3,6 @@ package dev.kikugie.stonecutter.process
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlConfiguration
 import com.charleskorn.kaml.encodeToStream
-import dev.kikugie.stitcher.data.replacement.Replacement
-import dev.kikugie.stitcher.data.replacement.ReplacementExecutor.Companion.getReplacementTokens
 import dev.kikugie.stitcher.data.replacement.ReplacementExecutor.Companion.replaceWithScannedTokens
 import dev.kikugie.stitcher.data.replacement.ReplacementPhase
 import dev.kikugie.stitcher.data.scope.Scope
