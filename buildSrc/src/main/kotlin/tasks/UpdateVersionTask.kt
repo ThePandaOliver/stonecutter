@@ -21,9 +21,9 @@ abstract class UpdateVersionTask : DefaultTask() {
     @get:Input
     abstract val replacements: MapProperty<File, MutableList<Pair<String, String>>>
 
-    @get:OutputFiles
+    @Suppress("unused")
     val output: ConfigurableFileCollection
-        get() = files
+        @OutputFiles get() = files
 
     fun replacements(configuration: Builder.() -> Unit) {
         val map: Replacements = mutableMapOf()
