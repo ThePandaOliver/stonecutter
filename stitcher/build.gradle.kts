@@ -31,6 +31,9 @@ tasks.withType<AbstractDokkaLeafTask> {
 }
 
 java {
+    withSourcesJar()
+    withJavadocJar()
+
     sourceCompatibility = JavaVersion.VERSION_16
     targetCompatibility = JavaVersion.VERSION_16
 }

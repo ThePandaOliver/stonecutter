@@ -62,7 +62,7 @@ internal class FileProcessor(private val params: ProcessParameters) {
             collector.push("Transformed AST, ${handler.errors.size} errors")
             handler.throwIfHasErrors()
 
-            result = result.replaceWithScannedTokens(replacements, ReplacementPhase.FIRST, params.recognizers)
+            result = result.replaceWithScannedTokens(replacements, ReplacementPhase.LAST, params.recognizers)
             return if (result == text) null logging "Skipping, matches input"
             else result logging "Successfully processed"
         }
