@@ -56,7 +56,7 @@ internal abstract class IdeaSetupTask : DefaultTask() {
     }
 
     private fun MutableList<String>.writeConfiguration(project: ProjectHierarchy, name: String, task: String = name) {
-        val filename = "Stonecutter${project.toString().replace(':', '_')}_${name.replace(' ', '_')}.xml"
+        val filename = "Stonecutter${project.toString().replace(':', '_')}_${name.replace(' ', '_').replace(':', '_')}.xml"
         val file = folder.resolve(filename)
         if (file.exists()) {
             logger.debug("Configuration file $filename already exists")
@@ -67,7 +67,7 @@ internal abstract class IdeaSetupTask : DefaultTask() {
         val xml = TEMPLATE.getOrThrow()
             .replaceChecked("%FOLDER_NAME%", "Stonecutter${project.orBlank()}")
             .replaceChecked("%ENTRY_NAME%", name)
-            .replaceChecked("%TASK_NAME%", "${project.orBlank()}_$task")
+            .replaceChecked("%TASK_NAME%", "${project.orBlank()}:$task")
         kotlin.runCatching {
             file.writeText(xml, Charsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
         }.onSuccess {
