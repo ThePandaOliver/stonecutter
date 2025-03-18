@@ -1,6 +1,6 @@
 [versions]
 # Plugins
-kotlin = "2.1.0"
+kotlin = "2.1.10"
 gradlepub = "1.2.1"
 shadow = "9.0.0-beta4"
 dokka = "1.9.20"
@@ -17,7 +17,6 @@ zip4j = "2.11.5"
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-kotlin-assignment = { id = "org.jetbrains.kotlin.plugin.assignment", version.ref = "kotlin"}
 kotlin-dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 gradle-publishing = { id = "com.gradle.plugin-publish", version.ref = "gradlepub" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

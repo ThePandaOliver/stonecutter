@@ -88,7 +88,7 @@ internal abstract class StonecutterTask : DefaultTask() {
                 input = branch.location.resolve(input()),
                 output = branch.location.resolve(output()),
                 debug = getCacheDirectory(branch, fromVersion()).resolve("debug"),
-                temp = getCacheDirectory(branch, fromVersion()).resolve("temp")
+                temp = getCacheDirectory(branch, toVersion()).resolve("temp")
             ),
             filter = { buildParameters.checkFile(root.relativize(it)) },
             parameters = buildParameters.toTransformParameters(toVersion().version, globalParameters.receiver),

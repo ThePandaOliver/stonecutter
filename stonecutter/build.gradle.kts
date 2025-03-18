@@ -58,8 +58,8 @@ java {
 tasks.compileKotlin {
     explicitApiMode = ExplicitApiMode.Strict
     compilerOptions {
-        languageVersion = KotlinVersion.KOTLIN_2_0
-        apiVersion = KotlinVersion.KOTLIN_2_0
+        languageVersion = KotlinVersion.KOTLIN_2_1
+        apiVersion = KotlinVersion.KOTLIN_2_1
         jvmTarget.set(JvmTarget.JVM_16)
     }
 }
