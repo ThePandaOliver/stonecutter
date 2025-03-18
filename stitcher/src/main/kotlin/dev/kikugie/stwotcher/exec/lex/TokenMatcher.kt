@@ -39,7 +39,7 @@ sealed interface TokenMatcher {
         @Deprecated("Not a part of the public API")
         override fun matchInvalid(offset: Int, state: LexerState): LexerSlice = EMPTY_SLICE
     }
-    fun match(offset: Int, state: LexerState): LexerSlice {
+    fun match(offset: Int = 0, state: LexerState = UNDEFINED): LexerSlice {
         require(offset >= 0) { "Offset must be non-negative" }
         require(offset < source.length) { "Offset $offset must be less than source length (${source.length})" }
         return matchImpl(offset, state, source[offset])

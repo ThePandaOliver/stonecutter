@@ -22,7 +22,7 @@ class CommentParser(
     }
 
     val index = currentOrNull?.range?.first ?: source.range.last
-    val current: SourcedToken get() = checkNotNull(iterator.peek(), ::STREAM_END)
+    val current: SourcedToken get() = checkNotNull(iterator.peek()) { STREAM_END }
     val currentOrNull: SourcedToken? get() = iterator.peek()
 
     fun parse(): DefinitionToken? {

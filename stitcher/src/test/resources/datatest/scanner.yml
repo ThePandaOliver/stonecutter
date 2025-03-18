@@ -1,0 +1,87 @@
+hash comment:
+  input: "# comment"
+  tokens:
+    - "#; COMMENT_START"
+    - " comment; COMMENT_BODY"
+slash comment:
+  input: "// comment"
+  tokens:
+    - "//; COMMENT_START"
+    - " comment; COMMENT_BODY"
+slash-star comment:
+  input: "/* comment */"
+  tokens:
+    - "/*; COMMENT_START"
+    - " comment ; COMMENT_BODY"
+    - "*/; COMMENT_END"
+
+open comment:
+  input: "/* comment"
+  tokens:
+    - "/*; COMMENT_START"
+    - " comment; COMMENT_BODY"
+nested slash-slash comment:
+  input: "// comment // comment"
+  tokens:
+    - "//; COMMENT_START"
+    - " comment // comment; COMMENT_BODY"
+nested slash-hash comment:
+  input: "// comment # comment"
+  tokens:
+    - "//; COMMENT_START"
+    - " comment # comment; COMMENT_BODY"
+nested multi-multi comment:
+  input: "/* comm /* comment */ ent */"
+  tokens:
+    - "/*; COMMENT_START"
+    - " comm /* comment ; COMMENT_BODY"
+    - "*/; COMMENT_END"
+    - " ent */; CONTENT"
+nested slash-multi comment:
+  input: "// comm /* comment */ ent"
+  tokens:
+    - "//; COMMENT_START"
+    - " comm /* comment */ ent; COMMENT_BODY"
+nested multi-slash comment:
+  input: "/* comm // ent */"
+  tokens:
+    - "/*; COMMENT_START"
+    - " comm // ent ; COMMENT_BODY"
+    - "*/; COMMENT_END"
+
+quote in comment:
+  input: "// \"cool\" comment"
+  tokens:
+    - "//; COMMENT_START"
+    - " \"cool\" comment; COMMENT_BODY"
+comment in quote:
+  input: "\"nice // quote\""
+  tokens:
+    - "\"nice // quote\"; CONTENT"
+invalid comment quote:
+  input: "/* comm \"ent */ wtf\""
+  tokens:
+    - "/*; COMMENT_START"
+    - " comm \"ent ; COMMENT_BODY"
+    - "*/; COMMENT_END"
+    - " wtf\"; CONTENT"
+invalid quote comment:
+  input: "\"quote /* comm\" ent*/"
+  tokens:
+    - "\"quote /* comm\" ent*/; CONTENT"
+single quote in doubles:
+  input: "\" quote '\""
+  tokens:
+    - "\" quote '\"; CONTENT"
+double quote in singles:
+  input: "' quote \"'"
+  tokens:
+    - "' quote \"'; CONTENT"
+double quote in doc:
+  input: "\"\"\" still \"quote\" \"\"\""
+  tokens:
+    - "\"\"\" still \"quote\" \"\"\"; CONTENT"
+escaped quote:
+  input: "\" quote \\\" \""
+  tokens:
+    - "\" quote \\\" \"; CONTENT"

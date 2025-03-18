@@ -48,7 +48,9 @@ data class SourcedToken(
     override val source: CharSequence,
     override val range: IntRange,
     override val type: TokenType,
-) : StitcherToken
+) : StitcherToken {
+    fun asLiteral() = LiteralToken(value, type)
+}
 
 @Serializable
 data class LiteralToken(

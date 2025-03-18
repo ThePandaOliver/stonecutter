@@ -13,11 +13,11 @@ lz4 = "1.8.0"
 junit = "5.9.2"
 mordant = "2.7.2"
 zip4j = "2.11.5"
+kotest = "5.7.2"
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-kotlin-assignment = { id = "org.jetbrains.kotlin.plugin.assignment", version.ref = "kotlin"}
 kotlin-dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 gradle-publishing = { id = "com.gradle.plugin-publish", version.ref = "gradlepub" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
@@ -35,10 +35,16 @@ junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", ver
 lz4 = { group = "org.lz4", name = "lz4-java", version.ref = "lz4" }
 mordant = { group = "com.github.ajalt.mordant", name = "mordant", version.ref = "mordant" }
 zip4j = { group = "net.lingala.zip4j", name = "zip4j", version.ref = "zip4j" }
+kotest-runner = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest" }
+kotest-assertions = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotest" }
+kotest-datatest = { group = "io.kotest", name = "kotest-framework-datatest", version.ref = "kotest" }
 
 [bundles]
 test = [
     "junit-api",
     "junit-engine",
+    "kotest-runner",
+    "kotest-assertions",
+    "kotest-datatest",
     "mordant"
 ]

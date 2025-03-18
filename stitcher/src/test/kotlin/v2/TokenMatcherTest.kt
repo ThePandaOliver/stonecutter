@@ -4,6 +4,7 @@ import com.github.ajalt.mordant.rendering.TextColors
 import dev.kikugie.stwotcher.data.type.MarkerType
 import dev.kikugie.stwotcher.data.type.OperatorType
 import dev.kikugie.stwotcher.data.type.ReferenceType
+import dev.kikugie.stwotcher.data.type.SugarType
 import dev.kikugie.stwotcher.exec.lex.LexerState
 import dev.kikugie.stwotcher.exec.lex.TokenMatcher
 import dev.kikugie.stwotcher.exec.lex.LexerSlice
@@ -38,7 +39,7 @@ class TokenMatcherTest {
         "sugar in condition" {
             input = template
             initial = LexerState.CONDITION
-            expected = LexerSlice(template rangeOf "if", OperatorType.IF, LexerState.CONDITION)
+            expected = LexerSlice(template rangeOf "if", SugarType.IF, LexerState.CONDITION)
         }
 
         "sugar as identifier" {
