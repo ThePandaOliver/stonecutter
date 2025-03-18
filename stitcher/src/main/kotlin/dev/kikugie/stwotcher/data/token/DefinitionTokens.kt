@@ -4,11 +4,29 @@ import dev.kikugie.stwotcher.data.type.DefinitionType
 import dev.kikugie.stwotcher.data.type.TokenType
 import kotlinx.serialization.Serializable
 
+fun interface DefinitionBody {
+    fun build(marker: StitcherToken, extension: StitcherToken?, closer: StitcherToken?): DefinitionToken
+    
+    companion object {
+        fun swap(identifier: StitcherToken?) = DefinitionBody { m, e, c ->
+            DefinitionToken.Swap(m, e, identifier, c)
+        }
+        
+        fun replacement(identifier: StitcherToken) = DefinitionBody { m, e, c ->
+            DefinitionToken.Replacement(m, identifier)
+        }
+        
+        fun condition(sugar: List<StitcherToken>, expression: ComponentToken?) = DefinitionBody { m, e, c ->
+            DefinitionToken.Condition(m, e, sugar, expression, c)
+        }
+    }
+}
+
 @Serializable
 sealed interface DefinitionToken : StitcherToken {
-    val marker: SourcedToken
-    val extension: SourcedToken?
-    val closer: SourcedToken?
+    val marker: StitcherToken
+    val extension: StitcherToken?
+    val closer: StitcherToken?
 
     fun <T> accept(visitor: Visitor<T>): T
 
@@ -20,10 +38,10 @@ sealed interface DefinitionToken : StitcherToken {
 
     @Serializable
     data class Swap(
-        override val marker: SourcedToken,
-        override val extension: SourcedToken? = null,
-        val identifier: SourcedToken? = null,
-        override val closer: SourcedToken? = null
+        override val marker: StitcherToken,
+        override val extension: StitcherToken? = null,
+        val identifier: StitcherToken? = null,
+        override val closer: StitcherToken? = null
     ): DefinitionToken {
         override val source: CharSequence get() = marker.source
         override val range: IntRange by lazy(::determineRange)
@@ -45,11 +63,11 @@ sealed interface DefinitionToken : StitcherToken {
 
     @Serializable
     data class Replacement(
-        override val marker: SourcedToken,
-        val identifier: SourcedToken,
+        override val marker: StitcherToken,
+        val identifier: StitcherToken,
     ): DefinitionToken {
-        override val extension: SourcedToken? get() = null
-        override val closer: SourcedToken? get() = null
+        override val extension: StitcherToken? get() = null
+        override val closer: StitcherToken? get() = null
 
         override val source: CharSequence get() = marker.source
         override val range: IntRange get() = marker.range.first..identifier.range.last
@@ -63,11 +81,11 @@ sealed interface DefinitionToken : StitcherToken {
 
     @Serializable
     data class Condition(
-        override val marker: SourcedToken,
-        override val extension: SourcedToken? = null,
-        val sugar: List<SourcedToken> = emptyList(),
+        override val marker: StitcherToken,
+        override val extension: StitcherToken? = null,
+        val sugar: List<StitcherToken> = emptyList(),
         val expression: ComponentToken? = null,
-        override val closer: SourcedToken? = null
+        override val closer: StitcherToken? = null
     ): DefinitionToken {
         override val source: CharSequence get() = marker.source
         override val range: IntRange by lazy(::determineRange)
