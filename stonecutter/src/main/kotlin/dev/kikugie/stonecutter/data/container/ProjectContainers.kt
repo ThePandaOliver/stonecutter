@@ -1,6 +1,7 @@
 package dev.kikugie.stonecutter.data.container
 
-import dev.kikugie.stonecutter.ProjectPath
+import dev.kikugie.stonecutter.data.ProjectHierarchy
+import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
 import dev.kikugie.stonecutter.data.tree.TreeBuilder
 import org.gradle.kotlin.dsl.create
 import org.gradle.api.Project
@@ -13,10 +14,10 @@ internal inline fun <reified T : ProjectContainerExtension<out Any>> Gradle.getC
     extensions.getByType<T>()
 
 internal abstract class ProjectContainerExtension<T> {
-    private val projects: MutableMap<ProjectPath, T> = mutableMapOf()
-    operator fun get(path: ProjectPath): T? = projects[path]
-    operator fun get(project: Project): T? = projects[project.path]
-    fun register(path: ProjectPath, value: T): Boolean =
+    val projects: MutableMap<ProjectHierarchy, T> = mutableMapOf()
+    operator fun get(path: ProjectHierarchy): T? = projects[path]
+    operator fun get(project: Project): T? = projects[project.hierarchy]
+    fun register(path: ProjectHierarchy, value: T): Boolean =
         projects.putIfAbsent(path, value) == null
 }
 

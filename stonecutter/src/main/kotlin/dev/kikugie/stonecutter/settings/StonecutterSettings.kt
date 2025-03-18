@@ -1,13 +1,20 @@
 package dev.kikugie.stonecutter.settings
 
 import dev.kikugie.stonecutter.*
-import dev.kikugie.stonecutter.controller.manager.*
+import dev.kikugie.stonecutter.data.ProjectHierarchy
+import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
 import dev.kikugie.stonecutter.data.StonecutterProject
 import dev.kikugie.stonecutter.data.tree.TreeBuilder
 import dev.kikugie.stonecutter.data.container.TreeBuilderContainer
 import dev.kikugie.stonecutter.data.container.createContainer
+import dev.kikugie.stonecutter.ide.IdeaSetupTask
+import org.gradle.api.Project
 import org.gradle.api.initialization.ProjectDescriptor
 import org.gradle.api.initialization.Settings
+import org.gradle.api.invocation.Gradle
+import org.gradle.internal.DefaultTaskExecutionRequest
+import org.gradle.kotlin.dsl.mapProperty
+import org.gradle.kotlin.dsl.register
 import java.io.File
 import kotlin.io.path.createDirectories
 import kotlin.io.path.notExists
@@ -44,10 +51,13 @@ public open class StonecutterSettings(settings: Settings) : SettingsAbstraction(
         settings.gradle.settingsEvaluated {
             if (groovy) println(GROOVY_COMPLAINT_DOT_TXT)
         }
+        settings.gradle.projectsLoaded {
+            createIdeaConfigurations(this, rootProject)
+        }
     }
 
     override fun create(project: ProjectDescriptor, setup: TreeBuilder) {
-        require(container.register(project.path, setup)) { "Project ${project.path} is already registered" }
+        require(container.register(project.hierarchy, setup)) { "Project ${project.path} is already registered" }
         if (!groovy && setup.isGroovyUsed()) groovy = true
 
         project.buildFileName = setup.controller.filename
@@ -80,5 +90,15 @@ public open class StonecutterSettings(settings: Settings) : SettingsAbstraction(
         project.projectDir = versionDir
         project.name = version.project
         project.buildFileName = "../../$buildscript"
+    }
+
+    private fun createIdeaConfigurations(gradle: Gradle, root: Project) {
+        root.tasks.register<IdeaSetupTask>("stonecutterIdea") {
+            group = "ide"
+        }
+        if (System.getProperty("idea.sync.active", "false").toBoolean()) gradle.startParameter.run {
+            if (taskRequests.none { "stonecutterIdea" in it.args })
+                setTaskRequests(taskRequests + DefaultTaskExecutionRequest(listOf("stonecutterIdea")))
+        }
     }
 }

@@ -18,15 +18,17 @@ internal abstract class IdeaSetupTask : DefaultTask() {
     }
 
     @get:Input
-    abstract val types: ListProperty<RunConfigType>
-
-    @get:Input
-    abstract val trees: ListProperty<TreePrototype<*>>
+    abstract val versions: MapProperty<ProjectHierarchy, Iterable<String>>
 
     @get:Input
     abstract val tasks: MapProperty<ProjectHierarchy, Iterable<String>>
 
     private val folder = project.rootDir.absoluteFile.resolve(".idea/runConfigurations").toPath()
+
+    init {
+        versions.convention(mutableMapOf())
+        tasks.convention(mutableMapOf())
+    }
 
     @TaskAction
     fun run() {
@@ -35,11 +37,8 @@ internal abstract class IdeaSetupTask : DefaultTask() {
         kotlin.runCatching { folder.createDirectories() }.onFailure { return logger.error("Failed to create run configurations folder", it) }
 
         val files = mutableSetOf<String>()
-        if (RunConfigType.SWITCH in types()) for (tree in trees())
-            files.addAll(configureTree(tree))
-
-        if (RunConfigType.CHISEL in types()) for ((project, tasks) in tasks())
-            files.addAll(configureChiseled(project, tasks))
+        for ((project, versions) in versions()) files.addAll(configureTree(project, versions))
+        for ((project, tasks) in tasks()) files.addAll(configureChiseled(project, tasks))
 
         for (file in folder.listDirectoryEntries()) if (file.fileName.toString().let { it.startsWith("Stonecutter") && it !in files })
             kotlin.runCatching { file.deleteExisting() }.onFailure { logger.error("Failed to delete configuration file $file", it) }
@@ -49,11 +48,11 @@ internal abstract class IdeaSetupTask : DefaultTask() {
         for (it in tasks) writeConfiguration(project, "Task: $it", it)
     }
 
-    private fun configureTree(tree: TreePrototype<*>) = buildList {
-        writeConfiguration(tree.hierarchy, "Reset active", "\"Reset active project\"")
-        writeConfiguration(tree.hierarchy, "Refresh active", "\"Refresh active project\"")
-        for ((name, _) in tree.versions)
-            writeConfiguration(tree.hierarchy, "Switch to $name", "\"Set active project to $name\"")
+    private fun configureTree(project: ProjectHierarchy, versions: Iterable<String>) = buildList {
+        writeConfiguration(project, "Reset active", "\"Reset active project\"")
+        writeConfiguration(project, "Refresh active", "\"Refresh active project\"")
+        for (name in versions)
+            writeConfiguration(project, "Switch to $name", "\"Set active project to $name\"")
     }
 
     private fun MutableList<String>.writeConfiguration(project: ProjectHierarchy, name: String, task: String = name) {
@@ -68,7 +67,7 @@ internal abstract class IdeaSetupTask : DefaultTask() {
         val xml = TEMPLATE.getOrThrow()
             .replaceChecked("%FOLDER_NAME%", "Stonecutter${project.orBlank()}")
             .replaceChecked("%ENTRY_NAME%", name)
-            .replaceChecked("%TASK_NAME%", "${project.orBlank()}:$task")
+            .replaceChecked("%TASK_NAME%", "${project.orBlank()}_$task")
         kotlin.runCatching {
             file.writeText(xml, Charsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
         }.onSuccess {

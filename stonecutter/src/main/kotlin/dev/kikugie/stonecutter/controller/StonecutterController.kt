@@ -10,8 +10,8 @@ import dev.kikugie.stonecutter.data.tree.*
 import dev.kikugie.stonecutter.ide.IdeaSetupTask
 import dev.kikugie.stonecutter.process.StonecutterTask
 import org.gradle.api.Project
-import org.gradle.internal.DefaultTaskExecutionRequest
 import org.gradle.kotlin.dsl.register
+import org.gradle.kotlin.dsl.named
 import kotlin.io.path.deleteIfExists
 
 /**
@@ -80,29 +80,16 @@ public open class StonecutterController(root: Project) :
 
         serializeTree()
         serializeBranches()
-        setupConfigurationTasks()
+        configureIdeaTask()
     }
 
-    private fun setupConfigurationTasks() = with(root.rootProject) {
-        if ("stonecutterIdea" !in tasks.names) {
-            val parameters = StonecutterPlugin.SERVICE().parameters
-            val uniqueTrees = parameters.projectTrees()
-                .values.distinctBy { it.hierarchy }
-            val rootProjects = uniqueTrees
-                .map { it.hierarchy }.toSet()
-            val chiseledTasks = parameters.globalParameters()
-                .filter { (key, _) -> key in rootProjects }
-                .mapValues { (_, value) -> value.chiseled }
-            tasks.register<IdeaSetupTask>("stonecutterIdea") {
-                group = "ide"
-                types.set(generateRunConfigs)
-                trees.set(uniqueTrees)
-                tasks.set(chiseledTasks)
-            }
-            if (System.getProperty("idea.sync.active", "false").toBoolean()) gradle.startParameter.let { st ->
-                if (st.taskRequests.none { "stonecutterIdea" in it.args })
-                    st.setTaskRequests(st.taskRequests + DefaultTaskExecutionRequest(listOf("stonecutterIdea")))
-            }
+    private fun configureIdeaTask() {
+        root.rootProject.tasks.named<IdeaSetupTask>("stonecutterIdea") {
+            if (RunConfigType.SWITCH in generateRunConfigs)
+                versions.put(tree.hierarchy, tree.versions.map(StonecutterProject::project))
+
+            if (RunConfigType.CHISEL in generateRunConfigs)
+                tasks.put(tree.hierarchy, parameters.chiseled)
         }
     }
 

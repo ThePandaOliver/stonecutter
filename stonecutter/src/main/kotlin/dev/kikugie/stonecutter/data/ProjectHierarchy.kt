@@ -4,6 +4,7 @@ import dev.kikugie.stonecutter.then
 import kotlinx.serialization.Serializable
 import org.gradle.api.Project
 import org.gradle.api.UnknownProjectException
+import org.gradle.api.initialization.ProjectDescriptor
 
 /**
  * Represents a Gradle project path in colon-separated notation.
@@ -59,6 +60,8 @@ public value class ProjectHierarchy(private val path: String) {
         public val ROOT: ProjectHierarchy = ProjectHierarchy(":")
         /**Converts [Project.getPath] to [ProjectHierarchy].*/
         public val Project.hierarchy: ProjectHierarchy get() = ProjectHierarchy(path)
+
+        public val ProjectDescriptor.hierarchy: ProjectHierarchy get() = ProjectHierarchy(path)
 
         /**
          * Gets the Gradle project for the given [hierarchy].
