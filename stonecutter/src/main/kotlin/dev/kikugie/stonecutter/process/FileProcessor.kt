@@ -6,6 +6,7 @@ import com.charleskorn.kaml.encodeToStream
 import dev.kikugie.stitcher.data.replacement.ReplacementExecutor.Companion.replaceWithScannedTokens
 import dev.kikugie.stitcher.data.replacement.ReplacementPhase
 import dev.kikugie.stitcher.data.scope.Scope
+import dev.kikugie.stitcher.eval.join
 import dev.kikugie.stitcher.exception.ErrorHandler
 import dev.kikugie.stitcher.exception.StoringErrorHandler
 import dev.kikugie.stitcher.exception.join
@@ -62,7 +63,7 @@ internal class FileProcessor(private val params: ProcessParameters) {
             collector.push("Transformed AST, ${handler.errors.size} errors")
             handler.throwIfHasErrors()
 
-            result = result.replaceWithScannedTokens(replacements, ReplacementPhase.LAST, params.recognizers)
+            result = ast.join().replaceWithScannedTokens(replacements, ReplacementPhase.LAST, params.recognizers)
             return if (result == text) null logging "Skipping, matches input"
             else result logging "Successfully processed"
         }

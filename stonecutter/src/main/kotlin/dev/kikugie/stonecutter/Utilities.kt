@@ -25,7 +25,7 @@ public const val BNAN: String = "🍌"
 /**
  * Currently running Stonecutter version, serialised in [TreeModel].
  */
-public const val STONECUTTER: String = "0.6-alpha.10"
+public const val STONECUTTER: String = "0.6-alpha.11"
 
 internal val LENIENT_JSON = Json {
     ignoreUnknownKeys = true
