@@ -5,29 +5,39 @@ import dev.kikugie.stwotcher.data.type.*
 import dev.kikugie.stwotcher.exec.issue.FileProblemsBuilder
 import dev.kikugie.stwotcher.exec.issue.ProblemEntry
 import dev.kikugie.stwotcher.exec.issue.ProblemID
+import dev.kikugie.stwotcher.exec.parse.LookaheadParser.Companion.advancing
+import dev.kikugie.stwotcher.exec.parse.LookaheadParser.Companion.consumeWhile
+import dev.kikugie.stwotcher.exec.parse.LookaheadParser.Companion.placeholder
 import dev.kikugie.stwotcher.util.LookaheadIterator
+import dev.kikugie.stwotcher.util.isOf
 import dev.kikugie.stwotcher.util.merge
+import dev.kikugie.stwotcher.util.remap
+import dev.kikugie.stwotcher.util.takeAs
+import kotlin.io.path.Path
 
 private fun StitcherToken?.isCloser() = this == null || isOf(ScopeType.SCOPE_OPEN, ScopeType.EXPECT_WORD)
+private fun StitcherToken?.isExpressionPart() =
+    this != null && isOf(OperatorType.NEGATE, OperatorType.GROUP_OPEN, OperatorType.ASSIGN, ReferenceType.UNRESOLVED, ReferenceType.PREDICATE)
+
 private fun List<StitcherToken>.range() = first().range.first..last().range.last
 private inline fun <T> List<T>.ifNotEmpty(action: (List<T>) -> Unit) = if (isNotEmpty()) action(this) else Unit
 
 class CommentParser(
-    val source: SourcedToken,
-    val iterator: LookaheadIterator<SourcedToken>,
-    val problems: FileProblemsBuilder
-) {
+    override val source: StitcherToken,
+    override val iterator: LookaheadIterator<out StitcherToken>,
+) : LookaheadParser {
     companion object {
         const val STREAM_END = "Reached end of the token stream"
     }
 
-    val index = currentOrNull?.range?.first ?: source.range.last
-    val current: SourcedToken get() = checkNotNull(iterator.peek()) { STREAM_END }
-    val currentOrNull: SourcedToken? get() = iterator.peek()
+    data class Result(val definition: DefinitionToken?, val problems: List<ProblemEntry>)
 
-    fun parse(): DefinitionToken? {
-        val marker: SourcedToken = if (currentOrNull.isOf<MarkerType>()) consume() else return null
-        val extension: SourcedToken? = if (currentOrNull.isOf(ScopeType.SCOPE_CLOSE)) consume() else null
+    override val problems: FileProblemsBuilder = FileProblemsBuilder(Path(""), source.source)
+
+    fun parse(): Result {
+        val marker: StitcherToken = if (currentOrNull.isOf<MarkerType>()) consume() else
+            return Result(null, problems.storage)
+        val extension: StitcherToken? = if (currentOrNull.isOf(ScopeType.SCOPE_CLOSE)) consume() else null
 
         val body = when (marker.type as MarkerType) {
             MarkerType.CONDITION -> parseCondition(extension)
@@ -38,27 +48,34 @@ class CommentParser(
         fun reportRemaining() = consumeWhile { true }.ifNotEmpty {
             problems.report(ProblemID.UNEXPECTED_EXPRESSION, it.range())
         }
+
         val closer = when {
             currentOrNull == null -> null
             current.isCloser() -> advancing { reportRemaining(); it }
             else -> placeholder(index).also { reportRemaining() }
         }
 
-        return body.build(marker, extension, closer)
+        return Result(body.build(marker, extension, closer), problems.storage)
     }
 
-    private fun parseSwap(extension: StitcherToken?): DefinitionBody {
-        if (extension != null && hasNext()) consumeWhile { true }.ifNotEmpty {
-            problems.report(ProblemID.UNEXPECTED_EXPRESSION, extension.range merge it.range())
+    private fun parseSwap(extension: StitcherToken?): DefinitionBody = when (extension) {
+        null -> parseSingleIdentifier(ReferenceType.SWAP, StitcherToken?::isCloser).let(DefinitionBody::swap)
+        else -> {
+            if (hasNext()) consumeWhile { true }.ifNotEmpty {
+                problems.report(ProblemID.UNEXPECTED_EXPRESSION, extension.range merge it.range())
+            }
+            DefinitionBody.swap(null)
         }
-        return parseSingleIdentifier(ReferenceType.SWAP, StitcherToken?::isCloser).let(DefinitionBody::swap)
     }
 
-    private fun parseReplacement(extension: StitcherToken?): DefinitionBody {
-        if (extension != null) consumeWhile { true }.ifNotEmpty {
-            problems.report(ProblemID.UNEXPECTED_EXPRESSION, extension.range merge it.range())
+    private fun parseReplacement(extension: StitcherToken?): DefinitionBody = when (extension) {
+        null -> parseSingleIdentifier(ReferenceType.REPLACEMENT) { true }.let(DefinitionBody::replacement)
+        else -> {
+            consumeWhile { true }.ifNotEmpty {
+                problems.report(ProblemID.UNEXPECTED_EXPRESSION, extension.range merge it.range())
+            }
+            DefinitionBody.replacement(placeholder())
         }
-        return parseSingleIdentifier(ReferenceType.REPLACEMENT) { true }.let(DefinitionBody::replacement)
     }
 
     private fun parseSingleIdentifier(type: TokenType, condition: (StitcherToken) -> Boolean): StitcherToken {
@@ -75,13 +92,13 @@ class CommentParser(
     }
 
     private fun parseCondition(extension: StitcherToken?): DefinitionBody {
-//        val sugar = if (currentOrNull?.type is SugarType) parseSugar(isExtension) else emptyList()
-//        val needsExpressions = sugar.lastOrNull()?.type.let { it == SugarType.IF || it == SugarType.ELIF }
-//        val expression = if (currentOrNull != null && !currentOrNull.isCloser()) parseExpression() else EmptySourcedToken(source)
-//        if (needsExpressions && expression is EmptySourcedToken) TODO("Report missing expression")
-//        TODO("Report remaining stuff until the closer") //TODO: Also this cast won't succeed
-//        return Component.Condition(sugar, expression as Component)
-        TODO()
+        val sugar = if (currentOrNull.isOf<SugarType>()) parseSugar(extension) else emptyList()
+        val cond = sugar.lastOrNull().isOf(SugarType.IF, SugarType.ELIF)
+        val expr = if (currentOrNull.isExpressionPart()) parseExpression()
+        else if (cond) placeholder(ProblemID.MISSING_PARAMETER)
+        else placeholder()
+
+        return DefinitionBody.condition(sugar, expr.takeAs())
     }
 
     private fun parseSugar(extension: StitcherToken?): List<StitcherToken> = when (current.type as SugarType) {
@@ -89,10 +106,12 @@ class CommentParser(
             if (extension != null) problems.report(ProblemID.UNEXPECTED_EXPRESSION, current.range)
             advancing(::listOf)
         }
+
         SugarType.ELIF -> {
             if (extension == null) problems.report(ProblemID.UNEXPECTED_EXPRESSION, current.range)
             advancing(::listOf)
         }
+
         SugarType.ELSE -> {
             if (extension == null) problems.report(ProblemID.UNEXPECTED_EXPRESSION, current.range)
             advancing { els -> if (currentOrNull?.type == SugarType.IF) advancing { listOf(els, it) } else listOf(els) }
@@ -102,62 +121,54 @@ class CommentParser(
             problems.report(ProblemID.UNEXPECTED_EXPRESSION, it.range())
         }
     }
-//
-//    private fun parseExpression(): Component = when (current.type) {
-//        OperatorType.NEGATE -> advancing { Component.Unary(it, parseExpression()) }
-//            .let(::tryMatchBoolean)
-//
-//        OperatorType.GROUP_OPEN -> advancing { opener ->
-//            val body = parseExpression()
-//            val closer = if (currentOrNull?.type == OperatorType.GROUP_CLOSE) iterator.next()
-//            else TODO("Report unclosed parenthesis")
-//            Component.Group(opener, body, closer)
-//        }.let(::tryMatchBoolean)
-//
-//        ReferenceType.UNRESOLVED -> advancing {id ->
-//            if (currentOrNull.isCloser()) Component.UnresolvedAssignment(id)
-//            else if (current.type == OperatorType.ASSIGN) advancing {
-//                val predicates = parsePredicates()
-//                TODO("Report if empty predicates")
-//                Component.FullAssignment(id, it, predicates).let(::tryMatchBoolean)
-//            }else {
-//                TODO("This doesn't mean it is a constant")
-//                Component.Literal(id).let(::tryMatchBoolean)
-//            }
-//        }
-//
-//        ReferenceType.PREDICATE -> Component.DefaultedAssignment(parsePredicates())
-//            .let(::tryMatchBoolean)
-//        else -> TODO("Report invalid token")
-//    }
-//
-//    private fun parsePredicates(): List<SliceToken> = buildList {
-//        while (currentOrNull != null) when (current.type) {
-//            ReferenceType.UNRESOLVED, ReferenceType.PREDICATE -> consuming(::add)
-//            else -> break
-//        }
-//    }
-//
-//    private fun tryMatchBoolean(left: Component) = if (currentOrNull?.type !is OperatorType) left else when (current.type) {
-//        OperatorType.AND, OperatorType.OR -> advancing { operator ->
-//            if (currentOrNull.isCloser()) TODO("Report missing operand")
-//            Component.Binary(left, operator, parseExpression())
-//        }
-//        else -> left
-//    }
 
-    private fun consume() = iterator.next()
-    private fun hasNext() = iterator.hasNext()
+    // TODO: Remap and verify tokens
+    private fun parseExpression(): ComponentToken = when (current.type) {
+        OperatorType.NEGATE -> advanceMatchingBoolean {
+            ComponentToken.Unary(it, parseNextExpression())
+        }
 
-    private fun placeholder(index: Int) = PlaceholderToken(source.source, index)
+        OperatorType.GROUP_OPEN -> advanceMatchingBoolean {
+            ComponentToken.Group(it, parseNextExpression(), parseNextToken(OperatorType.GROUP_CLOSE))
+        }
 
-    private inline fun consumeWhile(condition: (StitcherToken) -> Boolean): List<StitcherToken> = buildList {
-        while (hasNext() && condition(current)) consuming(::add)
+        OperatorType.ASSIGN -> advanceMatchingBoolean {
+            ComponentToken.Assignment(operator = it, predicates = collectPredicates(ReferenceType.UNRESOLVED, ReferenceType.PREDICATE))
+        }
+
+        ReferenceType.PREDICATE -> ComponentToken.Assignment(predicates = collectPredicates(ReferenceType.PREDICATE))
+            .let(::tryMatchBoolean)
+
+        ReferenceType.UNRESOLVED -> advanceMatchingBoolean { id ->
+            if (!currentOrNull.isOf(OperatorType.ASSIGN))
+                ComponentToken.Constant(id.remap(ReferenceType.CONSTANT))
+            else advancing {
+                val predicates = collectPredicates(ReferenceType.UNRESOLVED, ReferenceType.PREDICATE)
+                if (predicates.isEmpty()) problems.report(ProblemID.MISSING_PARAMETER, it)
+                ComponentToken.Assignment(id.remap(ReferenceType.DEPENDENCY), it, predicates)
+            }
+        }
+
+        else -> error("CommentParser has encountered a malformed token $current")
     }
 
-    private inline fun <T> consuming(action: (StitcherToken) -> T): T =
-        action(current).also { iterator.next() }
+    private fun collectPredicates(vararg allowed: TokenType): List<StitcherToken> = buildList {
+        while (current.isOf(*allowed)) this += consume().remap(ReferenceType.PREDICATE)
+    }
 
-    private inline fun <T> advancing(action: (StitcherToken) -> T): T =
-        current.let { iterator.next(); action(it) }
+    private fun tryMatchBoolean(left: ComponentToken): ComponentToken =
+        if (!currentOrNull.isOf(OperatorType.AND, OperatorType.OR)) left
+        else advancing { operator ->
+            ComponentToken.Binary(left, operator, parseNextExpression())
+        }
+
+    private fun advanceMatchingBoolean(action: (StitcherToken) -> ComponentToken): ComponentToken =
+        advancing { action(it) }.let(::tryMatchBoolean)
+
+    private fun parseNextExpression() = parseNextParameter(StitcherToken?::isExpressionPart)
+    private fun parseNextToken(vararg allowed: TokenType) = parseNextParameter { it.isOf(*allowed) }
+
+    private inline fun parseNextParameter(condition: (StitcherToken?) -> Boolean) =
+        if (condition(currentOrNull)) parseExpression()
+        else placeholder(ProblemID.MISSING_PARAMETER)
 }

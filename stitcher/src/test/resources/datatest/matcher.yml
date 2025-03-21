@@ -1,0 +1,127 @@
+enter condition:
+  input: "? marker"
+  type: CONDITION
+enter swap:
+  input: "$ marker"
+  type: SWAP
+enter replacement:
+  input: "~ marker"
+  type: REPLACEMENT
+spaces are bad:
+  input: " ? hey"
+  type: CONTENT
+
+condition scope open:
+  input: "{"
+  type: SCOPE_OPEN
+  state: CONDITION
+condition scope close:
+  input: "}"
+  type: SCOPE_CLOSE
+  state: CONDITION
+condition scope word:
+  input: ">>"
+  type: EXPECT_WORD
+  state: CONDITION
+condition group open:
+  input: "("
+  type: GROUP_OPEN
+  state: CONDITION
+condition group close:
+  input: ")"
+  type: GROUP_CLOSE
+  state: CONDITION
+condition negate:
+  input: "!"
+  type: NEGATE
+  state: CONDITION
+condition assign:
+  input: ":"
+  type: ASSIGN
+  state: CONDITION
+condition or:
+  input: "||"
+  type: OR
+  state: CONDITION
+condition and:
+  input: "&&"
+  type: AND
+  state: CONDITION
+condition if:
+  input: "if"
+  type: IF
+  state: CONDITION
+condition elif:
+  input: "elif"
+  type: ELIF
+  state: CONDITION
+condition else:
+  input: "else"
+  type: ELSE
+  state: CONDITION
+
+condition not or:
+  input: "|"
+  type: InvalidType
+  state: CONDITION
+condition not and:
+  input: "&"
+  type: InvalidType
+  state: CONDITION
+condition not if:
+  input: "i f"
+  type: UNRESOLVED
+  state: CONDITION
+condition not elif:
+  input: "elf"
+  type: UNRESOLVED
+  state: CONDITION
+  
+swap scope open:
+  input: "{"
+  type: SCOPE_OPEN
+  state: SWAP
+swap scope close:
+  input: "}"
+  type: SCOPE_CLOSE
+  state: SWAP
+swap scope word:
+  input: ">>"
+  type: EXPECT_WORD
+  state: SWAP
+swap group open:
+  input: "("
+  type: InvalidType
+  state: SWAP
+swap group close:
+  input: ")"
+  type: InvalidType
+  state: SWAP
+swap negate:
+  input: "!"
+  type: InvalidType
+  state: SWAP
+swap assign:
+  input: ":"
+  type: InvalidType
+  state: SWAP
+swap or:
+  input: "||"
+  type: InvalidType
+  state: SWAP
+swap and:
+  input: "&&"
+  type: InvalidType
+  state: SWAP
+swap if:
+  input: "if"
+  type: SWAP
+  state: SWAP
+swap elif:
+  input: "elif"
+  type: SWAP
+  state: SWAP
+swap else:
+  input: "else"
+  type: SWAP
+  state: SWAP

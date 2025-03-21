@@ -80,8 +80,8 @@ class FileParser(
             if (def.type == active.type) scopes.pop()
             else handler.accept(lexer.get(1)!!, "${def.type} closes unmatched scope of ${active.type}")
 
-        val scope = if (def.isEmpty() && def.extension && def.enclosure == ScopeType.LINE) null
-        else Scope(def.type, def.enclosure)
+        val scope = if (!def.isEmpty() || !def.extension || def.enclosure != ScopeType.LINE) Scope(def.type, def.enclosure)
+        else null
         active.blocks.add(CodeBlock(commentStart, def, commentEnd, scope))
         if (scope != null) scopes.push(scope)
     }

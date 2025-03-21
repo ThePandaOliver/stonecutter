@@ -13,8 +13,8 @@ class FileProblemsBuilder(val file: Path, val source: CharSequence) {
     inline fun report(id: ProblemID, range: IntRange, action: ProblemEntry.() -> Unit = {}) =
         report(ProblemEntry(id, range).apply(action))
 
-    fun report(entry: ProblemEntry) {
-        storage += entry
+    fun report(entry: ProblemEntry): ProblemEntry {
+        storage += entry; return entry
     }
 }
 

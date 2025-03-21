@@ -12,16 +12,10 @@ class CommentScanner (
     val recognizers: Iterable<CommentRecognizer>
 ) : LookaheadIterator<SourcedToken> {
     companion object {
-        fun factory(recognizers: Iterable<CommentRecognizer>) = Factory(recognizers)
-        fun create(source: CharSequence, recognizers: Iterable<CommentRecognizer>) = Supplier(source, recognizers)
-    }
-
-    class Factory(val recognizers: Iterable<CommentRecognizer>) {
-        fun create(source: CharSequence): LookaheadIterable<SourcedToken> = Supplier(source, recognizers)
-    }
-
-    class Supplier(val source: CharSequence, val recognizers: Iterable<CommentRecognizer>) : LookaheadIterable<SourcedToken> {
-        override fun iterator(): LookaheadIterator<SourcedToken> = CommentScanner(source, recognizers)
+        fun create(source: CharSequence, recognizers: Iterable<CommentRecognizer>) = CommentScanner(source, recognizers)
+        fun iterable(source: CharSequence, recognizers: Iterable<CommentRecognizer>) : LookaheadIterable<SourcedToken> = object : LookaheadIterable<SourcedToken> {
+            override fun iterator(): LookaheadIterator<SourcedToken> = CommentScanner(source, recognizers)
+        }
     }
 
     /**
@@ -87,14 +81,18 @@ class CommentScanner (
 
     private fun wrapRemaining(): Boolean {
         if (cursor > checkpoint)
-            token(checkpoint, length, if (comment != null) ScannedType.COMMENT_BODY else ScannedType.CONTENT)
+            if (comment != null) addPlaceholders()
+            else token(checkpoint, length, ScannedType.CONTENT)
         return true
     }
 
+    private fun addPlaceholders() {
+        token(checkpoint, length, ScannedType.COMMENT_BODY)
+        token(length, length, ScannedType.COMMENT_END)
+    }
+
     private fun advanceQuote(): Boolean { // True when can process further
-        while (quoteStatus()) if (++cursor >= length) {
-            return false
-        }
+        while (quoteStatus()) if (++cursor >= length) return false
         return true
     }
 
@@ -109,6 +107,8 @@ class CommentScanner (
             comment = rec
             cursor += match
             checkpoint = cursor
+            if (checkpoint >= length)
+                addPlaceholders()
             return true
         } else {
             val match = comment!!.end(source, cursor)

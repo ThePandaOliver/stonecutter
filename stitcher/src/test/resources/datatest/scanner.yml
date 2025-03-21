@@ -3,11 +3,13 @@ hash comment:
   tokens:
     - "#; COMMENT_START"
     - " comment; COMMENT_BODY"
+    - "; COMMENT_END"
 slash comment:
   input: "// comment"
   tokens:
     - "//; COMMENT_START"
     - " comment; COMMENT_BODY"
+    - "; COMMENT_END"
 slash-star comment:
   input: "/* comment */"
   tokens:
@@ -20,16 +22,19 @@ open comment:
   tokens:
     - "/*; COMMENT_START"
     - " comment; COMMENT_BODY"
+    - "; COMMENT_END"
 nested slash-slash comment:
   input: "// comment // comment"
   tokens:
     - "//; COMMENT_START"
     - " comment // comment; COMMENT_BODY"
+    - "; COMMENT_END"
 nested slash-hash comment:
   input: "// comment # comment"
   tokens:
     - "//; COMMENT_START"
     - " comment # comment; COMMENT_BODY"
+    - "; COMMENT_END"
 nested multi-multi comment:
   input: "/* comm /* comment */ ent */"
   tokens:
@@ -42,6 +47,7 @@ nested slash-multi comment:
   tokens:
     - "//; COMMENT_START"
     - " comm /* comment */ ent; COMMENT_BODY"
+    - "; COMMENT_END"
 nested multi-slash comment:
   input: "/* comm // ent */"
   tokens:
@@ -54,6 +60,7 @@ quote in comment:
   tokens:
     - "//; COMMENT_START"
     - " \"cool\" comment; COMMENT_BODY"
+    - "; COMMENT_END"
 comment in quote:
   input: "\"nice // quote\""
   tokens:

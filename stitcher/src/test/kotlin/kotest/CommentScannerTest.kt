@@ -9,13 +9,17 @@ import dev.kikugie.stwotcher.exec.scan.DoubleSlashCommentRecognizer
 import dev.kikugie.stwotcher.exec.scan.HashCommentRecognizer
 import dev.kikugie.stwotcher.exec.scan.SlashStarCommentRecognizer
 import io.kotest.assertions.withClue
+import io.kotest.core.annotation.Description
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.core.test.TestScope
+import io.kotest.datatest.withData
 import io.kotest.matchers.collections.shouldBeOneOf
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -26,7 +30,7 @@ private class ScannerTestSpec(val input: String, val tokens: List<String>, val r
     }
 
     override fun execute(scope: TestScope) {
-        val scanned = CommentScanner.create(input, recognizers.map { it.parseAsRecognizer() })
+        val scanned = CommentScanner.iterable(input, recognizers.map { it.parseAsRecognizer() })
             .map(SourcedToken::asLiteral)
         val expected = tokens.map { it.parseAsToken() }
         scanned shouldContainExactly expected
@@ -56,7 +60,29 @@ private class ScannerTestSpec(val input: String, val tokens: List<String>, val r
     }
 }
 
+private inline fun <T> Iterable<T>.peekEach(block: (T, T?) -> Unit) = with(toList()) {
+    for (i in indices) block(get(i), getOrNull(i + 1))
+}
+
 @Tags("Stitcher", "Scanner")
 class CommentScannerTest : StringSpec({
     withData<ScannerTestSpec>("scanner.yml")
+
+    withData(mapOf(
+        "retain empty body" to "/**/",
+        "insert comment end" to "// body",
+        "insert both parts" to "hey /*"
+    )) {
+        CommentScanner.iterable(it, listOf(SlashStarCommentRecognizer)).peekEach { token, next ->
+            when (token.type as ScannedType) {
+                ScannedType.COMMENT_START -> next shouldNotBeNull {
+                    type shouldBe ScannedType.COMMENT_BODY
+                }
+                ScannedType.COMMENT_BODY -> next shouldNotBeNull {
+                    type shouldBe ScannedType.COMMENT_END
+                }
+                else -> { /* ok */ }
+            }
+        }
+    }
 })

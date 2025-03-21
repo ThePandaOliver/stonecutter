@@ -1,19 +1,15 @@
 package dev.kikugie.stwotcher.util
 
-inline fun <T> LookaheadIterator<T>.filter(crossinline selector: (T) -> Boolean): LookaheadIterator<T> where T : Any =
-    object : FilteringLookaheadIterator<T>(this) {
-        override fun accept(element: T): Boolean = selector(element)
-    }
+fun <T> LookaheadIterator<T>.filter(selector: (T) -> Boolean): LookaheadIterator<T> where T : Any =
+    FilteringLookaheadIterator<T>(this, selector)
 
 /**Iterator that allows seeing the next element without advancing it.*/
 interface LookaheadIterator<T> : Iterator<T> where T : Any {
     fun peek(): T?
 }
 
-abstract class FilteringLookaheadIterator<T>(private val delegate: LookaheadIterator<T>) : LookaheadIterator<T> where T : Any {
-    private var next: T? = findNext()
-
-    abstract fun accept(element: T): Boolean
+class FilteringLookaheadIterator<T>(private val delegate: LookaheadIterator<T>, private val filter: (T) -> Boolean) : LookaheadIterator<T> where T : Any {
+    private var next: T? by mutableLazy(::findNext)
 
     override fun hasNext(): Boolean = next != null
     override fun peek(): T? = next
@@ -21,10 +17,11 @@ abstract class FilteringLookaheadIterator<T>(private val delegate: LookaheadIter
         ?: throw NoSuchElementException()
 
     private fun findNext(): T? {
-        var next: T?
-        do next = delegate.peek()
-        while (next != null && !accept(next))
-        return next
+        while (delegate.hasNext()) {
+            val next = delegate.next()
+            if (filter(next)) return next
+        }
+        return null
     }
 }
 

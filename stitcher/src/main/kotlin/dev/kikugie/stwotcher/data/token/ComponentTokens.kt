@@ -2,6 +2,7 @@ package dev.kikugie.stwotcher.data.token
 
 import dev.kikugie.stwotcher.data.type.ComponentType
 import dev.kikugie.stwotcher.data.type.TokenType
+import dev.kikugie.stwotcher.util.requireSameSource
 import kotlinx.serialization.Serializable
 
 @Serializable

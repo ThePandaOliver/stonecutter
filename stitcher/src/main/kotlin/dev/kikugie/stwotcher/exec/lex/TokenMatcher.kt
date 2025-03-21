@@ -1,7 +1,5 @@
 package dev.kikugie.stwotcher.exec.lex
 
-import dev.kikugie.semver.VersionParser
-import dev.kikugie.semver.VersionParsingException
 import dev.kikugie.stitcher.util.StringUtil.countStart
 import dev.kikugie.stwotcher.data.type.InvalidType
 import dev.kikugie.stwotcher.data.type.OperatorType.*
@@ -14,6 +12,7 @@ import dev.kikugie.stwotcher.data.type.TokenType
 import dev.kikugie.stwotcher.data.type.WhitespaceType
 import dev.kikugie.stwotcher.exec.lex.LexerState.*
 import dev.kikugie.stwotcher.util.extend
+import dev.kikugie.stwotcher.util.getOrDefault
 import dev.kikugie.stwotcher.util.isIdentifierPart
 import dev.kikugie.stwotcher.util.isIdentifierStart
 import dev.kikugie.stwotcher.data.type.MarkerType.CONDITION as CONDITION_MARKER
@@ -46,24 +45,23 @@ sealed interface TokenMatcher {
     }
 
     private fun matchImpl(offset: Int, state: LexerState, char: Char): LexerSlice = when (state) {
-        PLAIN, DONE -> matchPlain(offset, state)
         UNDEFINED -> matchState(offset, char)
         CONDITION -> matchCondition(offset, char)
         SWAP -> matchSwap(offset, char)
         REPLACEMENT -> matchReplacement(offset, char)
+        DONE -> error("DONE state expects no more characters")
     }
-
-    private fun matchPlain(offset: Int, state: LexerState) = LexerSlice(offset until source.length, ScannedType.CONTENT, state)
 
     private fun matchState(offset: Int, char: Char): LexerSlice = when (char) {
         '?' -> LexerSlice(offset extend 1, CONDITION_MARKER, CONDITION)
         '$' -> LexerSlice(offset extend 1, SWAP_MARKER, SWAP)
         '~' -> LexerSlice(offset extend 1, REPLACEMENT_MARKER, REPLACEMENT)
-        else -> matchPlain(offset, PLAIN)
+        else -> LexerSlice(offset until source.length, ScannedType.CONTENT, DONE)
     }
 
     private fun matchSwap(offset: Int, char: Char): LexerSlice = when (char) {
         '{' -> LexerSlice(offset extend 1, SCOPE_OPEN, DONE)
+        '}' -> LexerSlice(offset extend 1, SCOPE_CLOSE, SWAP)
         '>' -> matchString(offset, ">>", EXPECT_WORD, DONE)
             ?: matchInvalid(offset, SWAP)
         else -> when {
@@ -80,7 +78,7 @@ sealed interface TokenMatcher {
     }
 
     private fun matchCondition(offset: Int, char: Char): LexerSlice = when (char) {
-        '<', '=', '~', '^' -> matchPredicate(offset, PREDICATE)
+        '<', '=', '~', '^' -> matchPredicate(offset, char, PREDICATE)
         '{' -> LexerSlice(offset extend 1, SCOPE_OPEN, DONE)
         '}' -> LexerSlice(offset extend 1, SCOPE_CLOSE, CONDITION)
         '(' -> LexerSlice(offset extend 1, GROUP_OPEN, CONDITION)
@@ -101,7 +99,7 @@ sealed interface TokenMatcher {
             ?: matchIdentifier(offset, UNRESOLVED, CONDITION)
 
         '>' -> matchString(offset, ">>", EXPECT_WORD, DONE)
-            ?: matchPredicate(offset, PREDICATE)
+            ?: matchPredicate(offset, char, PREDICATE)
 
         else -> when {
             char.isWhitespace() -> matchWhitespace(offset, CONDITION)
@@ -117,18 +115,32 @@ sealed interface TokenMatcher {
     }
 
     private fun matchIdentifier(offset: Int, type: TokenType, state: LexerState): LexerSlice = source
-        .countStart(offset) { it.isIdentifierPart() }
+        .countStart(offset, Char::isIdentifierPart)
         .let { LexerSlice(offset extend it, type, state) }
 
     private fun matchWhitespace(offset: Int, state: LexerState): LexerSlice = source
-        .countStart(offset) { it.isWhitespace() }
+        .countStart(offset, Char::isWhitespace)
         .let { LexerSlice(offset extend it, WhitespaceType, state) }
 
-    private fun matchPredicate(offset: Int, type: TokenType) = try {
-        val result = VersionParser.parsePredicateLenient(source, offset)
-        LexerSlice(offset until result.end, type, CONDITION)
-    } catch (_: VersionParsingException) {
-        matchInvalid(offset, CONDITION)
+    private fun matchPredicate(offset: Int, char: Char, type: TokenType): LexerSlice {
+        var cursor = offset
+        cursor += matchPredicateOperator(cursor, char)
+        cursor += source.countStart(offset, Char::isWhitespace)
+
+        val next = source.getOrDefault(cursor)
+        return when {
+            next == ' ' -> LexerSlice(offset until cursor, InvalidType, DONE)
+            next.isDigit() || next.isIdentifierStart() && cursor != offset -> source
+                .countStart(++cursor, Char::isIdentifierPart)
+                .let { LexerSlice(offset until cursor + it, type, CONDITION) }
+            else -> matchInvalid(offset, CONDITION)
+        }
+    }
+
+    private fun matchPredicateOperator(offset: Int, char: Char): Int = when (char) {
+        '=', '~', '^' -> 1
+        '<', '>' -> if (source.getOrDefault(offset + 1) == '=') 2 else 1
+        else -> 0
     }
 
     @Deprecated("Not a part of the public API")
@@ -144,7 +156,7 @@ sealed interface TokenMatcher {
 
     /**Quick check before [InvalidMatcher] pass, since it's very inefficient.*/
     private fun Char.isDefinitelyInvalid() = when(this) {
-        ',', '\'', '"', '*', '\\', '/', '=', ';', '#', '@' -> true
+        ',', '\'', '"', '*', '\\', '/', '=', ';', '#', '@', '[', ']', '%' -> true
         else -> false
     }
 }

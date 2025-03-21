@@ -3,8 +3,9 @@ package dev.kikugie.stwotcher.exec.lex
 import dev.kikugie.stwotcher.data.token.SourcedToken
 import dev.kikugie.stwotcher.data.token.StitcherToken
 import dev.kikugie.stwotcher.data.type.InvalidType
-import dev.kikugie.stwotcher.data.token.slice
+import dev.kikugie.stwotcher.util.LookaheadIterable
 import dev.kikugie.stwotcher.util.LookaheadIterator
+import dev.kikugie.stwotcher.util.slice
 
 /**
  * Separates a given [source] token into a stream of stitcher code tokens.
@@ -14,6 +15,14 @@ import dev.kikugie.stwotcher.util.LookaheadIterator
  */
 class CommentLexer(val source: StitcherToken, start: Int = 0, state: LexerState = LexerState.UNDEFINED, limit: Int = Int.MAX_VALUE) :
     LookaheadIterator<SourcedToken> {
+
+    companion object {
+        fun create(source: StitcherToken, start: Int = 0, state: LexerState = LexerState.UNDEFINED, limit: Int = Int.MAX_VALUE): LookaheadIterator<SourcedToken> =
+            CommentLexer(source, start, state, limit)
+        fun iterable(source: StitcherToken, start: Int = 0, state: LexerState = LexerState.UNDEFINED, limit: Int = Int.MAX_VALUE): LookaheadIterable<SourcedToken> = object : LookaheadIterable<SourcedToken> {
+            override fun iterator(): LookaheadIterator<SourcedToken> = CommentLexer(source, start, state, limit)
+        }
+    }
 
     private val matcher: TokenMatcher
     private val strIndex: Int

@@ -9,31 +9,6 @@ import dev.kikugie.stwotcher.util.shiftBy
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 
-const val SAME_SOURCE_ERR = "Components must have the same source"
-
-inline fun <reified T : TokenType> StitcherToken?.isOf() = this != null && this.type is T
-fun StitcherToken?.isOf(type: TokenType) = this != null && this.type == type
-fun StitcherToken?.isOf(vararg types: TokenType) = this != null && types.any(::isOf)
-
-fun StitcherToken.slice(range: IntRange, type: TokenType)
-    = SourcedToken(source, range shiftBy this.range.first, type)
-
-inline fun requireSameSource(vararg tokens: StitcherToken, message: () -> String = ::SAME_SOURCE_ERR) =
-    requireSameSource(tokens.toList(), message)
-
-inline fun requireSameSource(tokens: Iterable<StitcherToken>, message: () -> String = ::SAME_SOURCE_ERR) =
-    require(tokens.isSameSource(), message)
-
-fun Iterable<StitcherToken>.isSameSource(): Boolean {
-    var current: StitcherToken? = null
-    for (token in this) {
-        if (current != null && current.source != token.source)
-            return false
-        current = token
-    }
-    return true
-}
-
 @Serializable
 sealed interface StitcherToken {
     val type: TokenType
@@ -70,4 +45,6 @@ data class PlaceholderToken(
         get() = index..<index
     override val type: TokenType
         get() = InvalidType
+    override val value: String
+        get() = ""
 }

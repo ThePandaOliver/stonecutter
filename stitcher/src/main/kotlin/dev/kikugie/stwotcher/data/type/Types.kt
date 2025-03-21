@@ -43,7 +43,7 @@ enum class SugarType : TokenType {
 
 @Serializable
 enum class BlockType : TokenType {
-    CONTENT, COMMENT, CODE,
+    CONTENT, COMMENT, CODE, ROOT,
 }
 
 @Serializable
