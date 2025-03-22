@@ -25,7 +25,6 @@ class CommentLexerTest : StringSpec({
         mapped shouldNotContain WhitespaceType
     }
 
-
     "regular replacement" {
         val tokens = createLexer("~ identifier").toList()
         val mapped = tokens.map(StitcherToken::type)

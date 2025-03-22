@@ -1,15 +1,9 @@
 package kotest
 
 import dev.kikugie.stwotcher.data.token.LiteralToken
-import dev.kikugie.stwotcher.data.token.SourcedToken
 import dev.kikugie.stwotcher.data.type.ScannedType
-import dev.kikugie.stwotcher.exec.scan.CommentRecognizer
-import dev.kikugie.stwotcher.exec.scan.CommentScanner
-import dev.kikugie.stwotcher.exec.scan.DoubleSlashCommentRecognizer
-import dev.kikugie.stwotcher.exec.scan.HashCommentRecognizer
-import dev.kikugie.stwotcher.exec.scan.SlashStarCommentRecognizer
+import dev.kikugie.stwotcher.exec.scan.*
 import io.kotest.assertions.withClue
-import io.kotest.core.annotation.Description
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.core.test.TestScope
@@ -18,7 +12,6 @@ import io.kotest.matchers.collections.shouldBeOneOf
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.nulls.shouldNotBeNull
-import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.Serializable
 
@@ -31,7 +24,7 @@ private class ScannerTestSpec(val input: String, val tokens: List<String>, val r
 
     override fun execute(scope: TestScope) {
         val scanned = CommentScanner.iterable(input, recognizers.map { it.parseAsRecognizer() })
-            .map(SourcedToken::asLiteral)
+            .map { LiteralToken(it.value, it.type) }
         val expected = tokens.map { it.parseAsToken() }
         scanned shouldContainExactly expected
     }

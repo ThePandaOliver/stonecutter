@@ -13,5 +13,6 @@ data class ProblemID(val id: String, val display: String) {
         val UNEXPECTED_EXPRESSION = ProblemID("unexpected-expression", "Unexpected expression")
         val MISSING_PARAMETER = ProblemID("missing-parameter", "Missing parameter")
         val INVALID_CLOSER = ProblemID("invalid-closer", "Invalid closer")
+        val INVALID_REFERENCE = ProblemID("invalid-reference", "Invalid reference")
     }
 }

@@ -12,7 +12,7 @@ class CommentScanner (
     val recognizers: Iterable<CommentRecognizer>
 ) : LookaheadIterator<SourcedToken> {
     companion object {
-        fun create(source: CharSequence, recognizers: Iterable<CommentRecognizer>) = CommentScanner(source, recognizers)
+        fun create(source: CharSequence, recognizers: Iterable<CommentRecognizer>): LookaheadIterator<SourcedToken> = CommentScanner(source, recognizers)
         fun iterable(source: CharSequence, recognizers: Iterable<CommentRecognizer>) : LookaheadIterable<SourcedToken> = object : LookaheadIterable<SourcedToken> {
             override fun iterator(): LookaheadIterator<SourcedToken> = CommentScanner(source, recognizers)
         }

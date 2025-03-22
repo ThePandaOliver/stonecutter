@@ -1,6 +1,6 @@
 package dev.kikugie.stwotcher.data.token
 
-import dev.kikugie.stwotcher.data.ScopeEnclosure
+import dev.kikugie.stwotcher.data.type.ScopeEnclosure
 import dev.kikugie.stwotcher.data.type.BlockType
 import dev.kikugie.stwotcher.data.type.MarkerType
 import dev.kikugie.stwotcher.data.type.ScopeType

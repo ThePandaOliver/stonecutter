@@ -10,11 +10,18 @@ sealed interface ComponentToken : StitcherToken {
     fun <T> accept(visitor: Visitor<T>): T
 
     interface Visitor<T> {
+        fun visitPlaceholder(it: Placeholder): Nothing
         fun visitConstant(it: Constant): T
         fun visitUnary(it: Unary): T
         fun visitBinary(it: Binary): T
         fun visitGroup(it: Group): T
         fun visitAssignment(it: Assignment): T
+    }
+
+    @Serializable @JvmInline
+    value class Placeholder(val token: StitcherToken) : ComponentToken, StitcherToken by token {
+        override fun <T> accept(visitor: Visitor<T>): T =
+            visitor.visitPlaceholder(this)
     }
 
     @Serializable @JvmInline
@@ -28,7 +35,7 @@ sealed interface ComponentToken : StitcherToken {
     @Serializable
     data class Group(
         val opener: StitcherToken,
-        val body: StitcherToken,
+        val body: ComponentToken,
         val closer: StitcherToken,
     ) : ComponentToken {
         override val source: CharSequence get() = body.source
@@ -44,7 +51,7 @@ sealed interface ComponentToken : StitcherToken {
     @Serializable
     data class Unary(
         val operator: StitcherToken,
-        val right: StitcherToken
+        val right: ComponentToken
     ) : ComponentToken {
         override val source: CharSequence get() = right.source
         override val range: IntRange get() = operator.range.first..right.range.last
@@ -58,9 +65,9 @@ sealed interface ComponentToken : StitcherToken {
     
     @Serializable
     data class Binary(
-        val left: StitcherToken,
+        val left: ComponentToken,
         val operator: StitcherToken,
-        val right: StitcherToken
+        val right: ComponentToken
     ) : ComponentToken {
         override val source: CharSequence get() = left.source
         override val range: IntRange get() = left.range.first..right.range.last

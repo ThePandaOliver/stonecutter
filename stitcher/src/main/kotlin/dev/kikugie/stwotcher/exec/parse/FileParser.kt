@@ -1,6 +1,6 @@
 package dev.kikugie.stwotcher.exec.parse
 
-import dev.kikugie.stwotcher.data.ScopeEnclosure
+import dev.kikugie.stwotcher.data.type.ScopeEnclosure
 import dev.kikugie.stwotcher.data.token.BlockToken
 import dev.kikugie.stwotcher.data.token.DefinitionToken
 import dev.kikugie.stwotcher.data.token.StitcherToken
@@ -21,7 +21,7 @@ import kotlin.io.path.Path
 
 class FileParser(
     override val source: StitcherToken,
-    override val iterator: LookaheadIterator<StitcherToken>,
+    override val iterator: LookaheadIterator<out StitcherToken>,
 ) : LookaheadParser {
     val top: BlockToken.Container get() = scopes.peekLast()
     val root: BlockToken.Root = BlockToken.Root()

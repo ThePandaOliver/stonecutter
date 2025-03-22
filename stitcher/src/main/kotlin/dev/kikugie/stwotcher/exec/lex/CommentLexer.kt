@@ -5,46 +5,48 @@ import dev.kikugie.stwotcher.data.token.StitcherToken
 import dev.kikugie.stwotcher.data.type.InvalidType
 import dev.kikugie.stwotcher.util.LookaheadIterable
 import dev.kikugie.stwotcher.util.LookaheadIterator
+import dev.kikugie.stwotcher.util.mutableLazy
 import dev.kikugie.stwotcher.util.slice
 
 /**
  * Separates a given [source] token into a stream of stitcher code tokens.
- * Parameters [start] and [state] can be used to restore a serialized lexer to the given position.
- * Parameter [limit] is used to limit the processed string. This is used to detect unclosed comments,
- * which can be slow to lex due to the inefficiency of [TokenMatcher.matchInvalid].
+ * This lexers state can be retrieved with [CommentLexer.position] and restored with [CommentLexer.restore].
+ * Restoring state on a lexer with different [host] and [limit] parameters has undefined behaviour.
+ *
+ * **Notes**:
+ * - The token stream includes whitespace tokens, which usually need to be filtered with
+ *   ```kotlin
+ *      val token: StitcherToken = "? if my_constant {".toToken(ScannedType.CONTENT)
+ *      val lexer: LookaheadIterator<StitcherToken> = CommentLexer.create(token)
+ *      val filtered: LookaheadIterator<StitcherToken> = lexer.filter {
+ *          !it.isOf<WhitespaceType>()
+ *      }
+ *   ```
+ *   The whitespaces are preserved for reusability, such as for the IntelliJ plugin,
+ *   which requires whitespace tokens to be retained.
  */
-class CommentLexer(val source: StitcherToken, start: Int = 0, state: LexerState = LexerState.UNDEFINED, limit: Int = Int.MAX_VALUE) :
-    LookaheadIterator<SourcedToken> {
-
+class CommentLexer(val host: StitcherToken, limit: Int = Int.MAX_VALUE) :
+    LookaheadIterator<StitcherToken> {
     companion object {
-        fun create(source: StitcherToken, start: Int = 0, state: LexerState = LexerState.UNDEFINED, limit: Int = Int.MAX_VALUE): LookaheadIterator<SourcedToken> =
-            CommentLexer(source, start, state, limit)
-        fun iterable(source: StitcherToken, start: Int = 0, state: LexerState = LexerState.UNDEFINED, limit: Int = Int.MAX_VALUE): LookaheadIterable<SourcedToken> = object : LookaheadIterable<SourcedToken> {
-            override fun iterator(): LookaheadIterator<SourcedToken> = CommentLexer(source, start, state, limit)
+        fun create(source: StitcherToken, limit: Int = Int.MAX_VALUE): LookaheadIterator<out StitcherToken> =
+            CommentLexer(source, limit)
+        fun iterable(source: StitcherToken, limit: Int = Int.MAX_VALUE): LookaheadIterable<out StitcherToken> = object : LookaheadIterable<StitcherToken> {
+            override fun iterator(): LookaheadIterator<StitcherToken> = CommentLexer(source, limit)
         }
     }
 
-    private val matcher: TokenMatcher
-    private val strIndex: Int
-    private val lexIndex: Int
-    private var slice: LexerSlice? = null
-    private val token: SourcedToken
-        get() = slice?.token()
-            ?: throw NoSuchElementException("Reached the end of the token stream")
-
-    /**Current [start] and [state] parameters of the lexer, or `null` if it has reached the end of the [source].*/
+    /**The current lexer position and state, or `null` if it has reached the end of the sequence.*/
     val position: Pair<Int, LexerState>?
         get() = slice?.let { it.range.last + 1 to it.state }
 
+    private var slice: LexerSlice? by mutableLazy { createSlice(0, LexerState.UNDEFINED) }
+    private val limit = limit.coerceAtMost(host.range.last - host.range.first + 1)
+    private val source: CharSequence get() = host.source
+    private val token: SourcedToken
+        get() = slice?.token() ?: throw NoSuchElementException("Reached the end of the token stream")
+
     init {
         require(limit > 0) { "Limit must be positive" }
-        val full = source.value
-        val lex = if (full.length > limit) full.take(limit) else full
-
-        matcher = TokenMatcher.create(lex)
-        strIndex = full.lastIndex
-        lexIndex = lex.lastIndex
-        restore(start, state)
     }
 
     override fun hasNext(): Boolean = slice != null
@@ -53,21 +55,22 @@ class CommentLexer(val source: StitcherToken, start: Int = 0, state: LexerState 
 
     /**Restores the lexer position to the given [start] and [state].*/
     fun restore(start: Int, state: LexerState) {
+        slice = createSlice(start, state)
+    }
+
+    private fun LexerSlice.token(): SourcedToken = host.slice(range, type)
+
+    private fun LexerSlice.next() = createSlice(range.last + 1, state)
+
+    private fun toInfinityAndBeyond(start: Int) = LexerSlice(start..<source.length, InvalidType, LexerState.DONE)
+
+    private fun createSlice(start: Int, state: LexerState): LexerSlice? {
         require(start >= 0) { "Start index must be non-negative" }
-        slice = when {
-            start <= lexIndex -> matcher.match(start, state)
-            start <= strIndex -> toInfinityAndBeyond(start)
+        return when {
+            state == LexerState.DONE -> null
+            start < limit -> TokenMatcher.create(source).match(host.range.first + start, host.range.first + limit, state)
+            start < source.length -> toInfinityAndBeyond(host.range.first + start)
             else -> null
         }
     }
-
-    private fun LexerSlice.token(): SourcedToken = source.slice(range, type)
-
-    private fun LexerSlice.next(): LexerSlice? = when {
-        range.last < lexIndex -> matcher.match(range.last + 1, state)
-        range.last < strIndex -> toInfinityAndBeyond(range.last + 1)
-        else -> null
-    }
-
-    private fun toInfinityAndBeyond(start: Int) = LexerSlice(start..strIndex, InvalidType, LexerState.DONE)
 }

@@ -5,7 +5,6 @@ package dev.kikugie.stwotcher.data.token
 import dev.kikugie.stwotcher.data.type.InvalidType
 import dev.kikugie.stwotcher.data.type.TokenType
 import dev.kikugie.stwotcher.util.IntRangeSerializer
-import dev.kikugie.stwotcher.util.shiftBy
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 
@@ -24,7 +23,7 @@ data class SourcedToken(
     override val range: IntRange,
     override val type: TokenType,
 ) : StitcherToken {
-    fun asLiteral() = LiteralToken(value, type)
+    override fun toString(): String = "SourcedToken($type, '$value')"
 }
 
 @Serializable
@@ -34,6 +33,7 @@ data class LiteralToken(
 ) : StitcherToken {
     override val range: IntRange get() = value.indices
     override val source: CharSequence get() = value
+    override fun toString(): String = "LiteralToken($type, '$value')"
 }
 
 @Serializable
@@ -47,4 +47,12 @@ data class PlaceholderToken(
         get() = InvalidType
     override val value: String
         get() = ""
+    override fun toString(): String = "PlaceholderToken($index)"
 }
+
+@Serializable
+data class InjectedToken(
+    val host: StitcherToken,
+    val token: StitcherToken,
+    val index: Int,
+) : StitcherToken by token

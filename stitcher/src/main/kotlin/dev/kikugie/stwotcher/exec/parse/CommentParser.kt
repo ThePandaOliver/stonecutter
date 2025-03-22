@@ -1,5 +1,7 @@
 package dev.kikugie.stwotcher.exec.parse
 
+import dev.kikugie.stitcher.data.replacement.ReplacementList
+import dev.kikugie.stwotcher.data.param.ProcessParameters
 import dev.kikugie.stwotcher.data.token.*
 import dev.kikugie.stwotcher.data.type.*
 import dev.kikugie.stwotcher.exec.issue.FileProblemsBuilder
@@ -22,9 +24,13 @@ private fun StitcherToken?.isExpressionPart() =
 private fun List<StitcherToken>.range() = first().range.first..last().range.last
 private inline fun <T> List<T>.ifNotEmpty(action: (List<T>) -> Unit) = if (isNotEmpty()) action(this) else Unit
 
+private fun Map<String, *>?.contains(key: String) = this == null || key in this
+private fun ReplacementList?.contains(key: String) = this == null || any { it.identifier == key }
+
 class CommentParser(
     override val source: StitcherToken,
     override val iterator: LookaheadIterator<out StitcherToken>,
+    val parameters: ProcessParameters? = null,
 ) : LookaheadParser {
     companion object {
         const val STREAM_END = "Reached end of the token stream"
@@ -59,7 +65,9 @@ class CommentParser(
     }
 
     private fun parseSwap(extension: StitcherToken?): DefinitionBody = when (extension) {
-        null -> parseSingleIdentifier(ReferenceType.SWAP, StitcherToken?::isCloser).let(DefinitionBody::swap)
+        null -> parseSingleIdentifier(ReferenceType.SWAP, StitcherToken?::isCloser)
+            .requireIn(parameters?.swaps::contains)
+            .let(DefinitionBody::swap)
         else -> {
             if (hasNext()) consumeWhile { true }.ifNotEmpty {
                 problems.report(ProblemID.UNEXPECTED_EXPRESSION, extension.range merge it.range())
@@ -69,7 +77,9 @@ class CommentParser(
     }
 
     private fun parseReplacement(extension: StitcherToken?): DefinitionBody = when (extension) {
-        null -> parseSingleIdentifier(ReferenceType.REPLACEMENT) { true }.let(DefinitionBody::replacement)
+        null -> parseSingleIdentifier(ReferenceType.REPLACEMENT) { true }
+            .requireIn(parameters?.replacements::contains)
+            .let(DefinitionBody::replacement)
         else -> {
             consumeWhile { true }.ifNotEmpty {
                 problems.report(ProblemID.UNEXPECTED_EXPRESSION, extension.range merge it.range())
@@ -122,14 +132,16 @@ class CommentParser(
         }
     }
 
-    // TODO: Remap and verify tokens
     private fun parseExpression(): ComponentToken = when (current.type) {
         OperatorType.NEGATE -> advanceMatchingBoolean {
             ComponentToken.Unary(it, parseNextExpression())
         }
 
         OperatorType.GROUP_OPEN -> advanceMatchingBoolean {
-            ComponentToken.Group(it, parseNextExpression(), parseNextToken(OperatorType.GROUP_CLOSE))
+            val expression = parseNextExpression()
+            val closer = if (currentOrNull.isOf(OperatorType.GROUP_CLOSE)) consume()
+            else placeholder(ProblemID.MISSING_PARAMETER)
+            ComponentToken.Group(it, expression, closer)
         }
 
         OperatorType.ASSIGN -> advanceMatchingBoolean {
@@ -140,12 +152,15 @@ class CommentParser(
             .let(::tryMatchBoolean)
 
         ReferenceType.UNRESOLVED -> advanceMatchingBoolean { id ->
-            if (!currentOrNull.isOf(OperatorType.ASSIGN))
-                ComponentToken.Constant(id.remap(ReferenceType.CONSTANT))
+            if (!currentOrNull.isOf(OperatorType.ASSIGN)) id.remap(ReferenceType.CONSTANT)
+                .requireIn(parameters?.constants::contains)
+                .let(ComponentToken::Constant)
             else advancing {
                 val predicates = collectPredicates(ReferenceType.UNRESOLVED, ReferenceType.PREDICATE)
                 if (predicates.isEmpty()) problems.report(ProblemID.MISSING_PARAMETER, it)
-                ComponentToken.Assignment(id.remap(ReferenceType.DEPENDENCY), it, predicates)
+                val target = id.remap(ReferenceType.DEPENDENCY)
+                    .requireIn(parameters?.dependencies::contains)
+                ComponentToken.Assignment(target, it, predicates)
             }
         }
 
@@ -153,7 +168,7 @@ class CommentParser(
     }
 
     private fun collectPredicates(vararg allowed: TokenType): List<StitcherToken> = buildList {
-        while (current.isOf(*allowed)) this += consume().remap(ReferenceType.PREDICATE)
+        while (currentOrNull.isOf(*allowed)) this += consume().remap(ReferenceType.PREDICATE)
     }
 
     private fun tryMatchBoolean(left: ComponentToken): ComponentToken =
@@ -165,10 +180,11 @@ class CommentParser(
     private fun advanceMatchingBoolean(action: (StitcherToken) -> ComponentToken): ComponentToken =
         advancing { action(it) }.let(::tryMatchBoolean)
 
-    private fun parseNextExpression() = parseNextParameter(StitcherToken?::isExpressionPart)
-    private fun parseNextToken(vararg allowed: TokenType) = parseNextParameter { it.isOf(*allowed) }
+    private fun parseNextExpression() =
+        if (currentOrNull.isExpressionPart()) parseExpression()
+        else ComponentToken.Placeholder(placeholder(ProblemID.MISSING_PARAMETER))
 
-    private inline fun parseNextParameter(condition: (StitcherToken?) -> Boolean) =
-        if (condition(currentOrNull)) parseExpression()
-        else placeholder(ProblemID.MISSING_PARAMETER)
+    private fun StitcherToken.requireIn(func: (String) -> Boolean): StitcherToken = apply {
+        if (!func(value)) problems.report(ProblemID.INVALID_REFERENCE, this)
+    }
 }

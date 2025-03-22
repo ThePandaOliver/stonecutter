@@ -12,10 +12,7 @@ class MutableLazyImpl<T>(init: () -> T) : ReadWriteProperty<Any?, T> {
 
     @Suppress("UNCHECKED_CAST")
     override fun getValue(thisRef: Any?, property: KProperty<*>): T {
-        if (value == UninitializedValue) {
-            value = initializer!!()
-            initializer = null
-        }
+        if (value === UninitializedValue) setValue(thisRef, property, initializer!!())
         return value as T
     }
 
