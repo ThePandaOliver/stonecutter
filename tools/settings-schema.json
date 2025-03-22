@@ -77,11 +77,28 @@
         {
           "type": "object",
           "properties": {
+            "node": {
+              "$ref": "#/definitions/project"
+            },
+            "buildscript": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "node"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "project": {
               "$ref": "#/definitions/identifier"
             },
             "version": {
               "$ref": "#/definitions/identifier"
+            },
+            "buildscript": {
+              "type": "string"
             }
           },
           "required": [
@@ -95,6 +112,9 @@
     "vcs": {
       "$ref": "#/definitions/identifier",
       "description": "Name of the project used as Version Control reset point."
+    },
+    "kotlin_buildscript": {
+      "type": "boolean"
     },
     "branches": {
       "type": "object",

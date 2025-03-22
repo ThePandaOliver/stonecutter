@@ -122,12 +122,12 @@ public abstract class ControllerAbstraction(protected val root: Project) {
             "Project ${root.path} is not registered. This might've been caused by removing a project while its active"
         }
         val mapping: Map<StonecutterProject, StonecutterProject> = builder.versions
-            .mapValues { (_, v) -> v.linked() }
-        val branches: Map<Identifier, LightBranch> = builder.nodes.mapValues { (id, versions) ->
+            .mapValues { (_, it) -> it.linked() }
+        val branches: Map<Identifier, LightBranch> = builder.branches.mapValues {(id, br) ->
             val project: Project = if (id.isEmpty()) root else root.project(id)
-            val nodes: Map<Identifier, LightNode> = versions.mapValues { (id, vers) ->
-                val identity = mapping.getChecked(vers) { "Unknown version '$vers' in ${keysToString()}"}
-                LightNode(project.project(id).projectPath, identity)
+            val nodes: Map<Identifier, LightNode> = br.nodes.mapValues { (_, n) ->
+                val identity = mapping.getChecked(n.metadata) { "Unknown version '$it' in ${keysToString()}"}
+                LightNode(project.project(n.metadata.project).projectPath, identity)
             }
             LightBranch(project.projectPath, id, nodes).also {
                 nodes.values.onEach { branch = it }

@@ -1,7 +1,6 @@
 package dev.kikugie.stonecutter.settings
 
 import dev.kikugie.stonecutter.*
-import dev.kikugie.stonecutter.data.tree.toTree
 import dev.kikugie.stonecutter.data.tree.TreeBuilder
 import dev.kikugie.stonecutter.data.tree.TreeSettings
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -9,25 +8,24 @@ import kotlinx.serialization.json.decodeFromStream
 import org.gradle.api.Action
 import org.gradle.api.initialization.ProjectDescriptor
 import org.gradle.api.initialization.Settings
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
+import org.gradle.kotlin.dsl.newInstance
 import java.io.File
 
 /**Method variations for [StonecutterSettings]*/
 @OptIn(ExperimentalSerializationApi::class)
-public abstract class SettingsAbstraction(private val settings: Settings) {
+public abstract class SettingsAbstraction(internal val settings: Settings, internal val objects: ObjectFactory) {
     private lateinit var shared: Action<TreeBuilder>
 
     /**
      * Enables Kotlin buildscripts for the controller.
      * - `stonecutter.gradle` -> `stonecutter.gradle.kts`
      */
-    @StonecutterAPI public var kotlinController: Boolean = false
+    @StonecutterAPI public abstract val kotlinController: Property<Boolean>
 
     /**Buildscript used by all subprojects. Defaults to `build.gradle`.*/
-    @StonecutterAPI public var centralScript: String = "build.gradle"
-        set(value) {
-            require(!value.startsWith("stonecutter.gradle")) { "Build script must not override the controller" }
-            field = value
-        }
+    @StonecutterAPI public abstract val centralScript: Property<String>
 
     /* Shared configuration */
     /**Stores the provided configuration to be used in [create] methods.*/
@@ -60,7 +58,7 @@ public abstract class SettingsAbstraction(private val settings: Settings) {
     @StonecutterAPI public fun create(projects: Iterable<ProjectDescriptor>, file: File) {
         require(file.extension.let { it == "json" || it == "json5" }) { "Version setup file must be in JSON or JSON5 format. See Stonecutter wiki for more information." }
         val data: TreeSettings = file.inputStream().use { LENIENT_JSON.decodeFromStream(it) }
-        create(projects, Action(data::toTree))
+        create(projects, Action { applyData(data) })
     }
 
     /* Action configuration */
@@ -86,7 +84,7 @@ public abstract class SettingsAbstraction(private val settings: Settings) {
 
     /**Configures the specified [projects] to be versioned with setup provided by [action] or [shared].*/
     @StonecutterAPI @JvmOverloads public fun create(projects: Iterable<ProjectDescriptor>, action: Action<TreeBuilder> = shared): Unit =
-        projects.forEach { create(it, TreeBuilder(this).also(action::execute)) }
+        projects.forEach { create(it, objects.newInstance<TreeBuilder>(this).also(action::execute)) }
 
     /* Base configuration */
     protected abstract fun create(project: ProjectDescriptor, setup: TreeBuilder)

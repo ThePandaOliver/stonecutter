@@ -4,14 +4,9 @@ import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.data.StonecutterProject
 import dev.kikugie.stonecutter.validateId
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
-
-internal fun TreeSettings.toTree(builder: TreeBuilder) = builder.apply {
-    for ((branch, projects) in entries)
-        for (it in projects) add(branch, it)
-    vcs?.let { vcsVersion = it }
-}
 
 /**
  * ## Intention
@@ -82,8 +77,10 @@ internal fun TreeSettings.toTree(builder: TreeBuilder) = builder.apply {
 public sealed interface TreeSettings {
     /**Version control point, matching [TreeBuilder.vcsVersion].*/
     public val vcs: Identifier?
+
+    public val kotlinController: Boolean?
     /**Collection of branches and assigned versions. Data verification is handled by the interface implementations.*/
-    public val entries: Map<Identifier, List<StonecutterProject>>
+    public val entries: Map<Identifier, List<ExpandedProject>>
 
     /**
      * Publicly available [TreeSettings] implementation that preserve the base data structure.
@@ -92,7 +89,9 @@ public sealed interface TreeSettings {
     @Serializable
     public data class Standard(
         override val vcs: Identifier? = null,
-        override val entries: Map<Identifier, List<StonecutterProject>>
+        @SerialName("kotlin_controller")
+        override val kotlinController: Boolean? = null,
+        override val entries: Map<Identifier, List<ExpandedProject>>
     ) : TreeSettings {
         init {
             entries.keys
@@ -104,6 +103,8 @@ public sealed interface TreeSettings {
     @Serializable
     private data class BranchMap(
         override val vcs: Identifier? = null,
+        @SerialName("kotlin_controller")
+        override val kotlinController: Boolean? = null,
         val branches: Map<Identifier, ProjectList>
     ) : TreeSettings {
         init {
@@ -112,14 +113,16 @@ public sealed interface TreeSettings {
                 .forEach(Identifier::validateId)
         }
 
-        override val entries: Map<Identifier, List<StonecutterProject>>
-            get() = branches.mapValues { (_, list) -> list.entries.map { it.entry} }
+        override val entries: Map<Identifier, List<ExpandedProject>>
+            get() = branches.mapValues { (_, list) -> list.entries }
     }
 
     @Serializable
     private data class VersionMap(
         override val vcs: Identifier? = null,
-        val versions: Map<ExpandedProject.StringProject, BranchList>
+        @SerialName("kotlin_controller")
+        override val kotlinController: Boolean? = null,
+        val versions: Map<ExpandedProject, BranchList>
     ) : TreeSettings {
         init {
             versions.entries.flatMap { it.value.entries }
@@ -127,10 +130,10 @@ public sealed interface TreeSettings {
                 .forEach(Identifier::validateId)
         }
 
-        override val entries: Map<Identifier, List<StonecutterProject>>
-            get() = buildMap<_, MutableList<StonecutterProject>> {
+        override val entries: Map<Identifier, List<ExpandedProject>>
+            get() = buildMap<_, MutableList<ExpandedProject>> {
                 for ((version, branches) in versions) branches.entries.forEach { branch ->
-                    getOrPut(branch) { mutableListOf() } += version.entry
+                    getOrPut(branch) { mutableListOf() } += version
                 }
             }
     }
@@ -138,10 +141,12 @@ public sealed interface TreeSettings {
     @Serializable
     private data class VersionList(
         override val vcs: Identifier? = null,
+        @SerialName("kotlin_controller")
+        override val kotlinController: Boolean? = null,
         val versions: List<ExpandedProject>
     ): TreeSettings {
-        override val entries: Map<Identifier, List<StonecutterProject>>
-            get() = mapOf("" to versions.map { it.entry })
+        override val entries: Map<Identifier, List<ExpandedProject>>
+            get() = mapOf("" to versions)
     }
 
     /**Implements polymorphic format described in [TreeSettings]' documentation.*/
@@ -161,15 +166,32 @@ public sealed interface TreeSettings {
 }
 
 @Serializable(with = ExpandedProject.JsonSerializer::class)
-internal sealed interface ExpandedProject {
-    val entry: StonecutterProject
+public sealed interface ExpandedProject {
+    public val entry: StonecutterProject
+    public val buildscript: String?
 
     @JvmInline @Serializable
-    value class StringProject(val string: String) : ExpandedProject {
+    private value class StringProject(val string: String) : ExpandedProject {
         override val entry: StonecutterProject
             get() = parseVersion(string.split(':', limit = 2))
+        override val buildscript: String?
+            get() = null
+    }
 
-        private fun parseVersion(it: List<String>) = when (it.size) {
+    @Serializable
+    private data class MixedProject(val node: String, override val buildscript: String? = null) : ExpandedProject {
+        override val entry: StonecutterProject
+            get() = parseVersion(node.split(':', limit = 2))
+    }
+
+    @Serializable
+    private data class CompositeProject(val project: String, val version: String = project, override val buildscript: String? = null) : ExpandedProject {
+        override val entry: StonecutterProject
+            get() = StonecutterProject.create(project, version)
+    }
+
+    private companion object {
+        fun parseVersion(it: List<String>) = when (it.size) {
             0 -> error("Empty strings are not allowed")
             1 -> StonecutterProject.create(it.first(), it.first())
             2 -> StonecutterProject.create(it.first(), it[1])
@@ -177,13 +199,7 @@ internal sealed interface ExpandedProject {
         }
     }
 
-    @Serializable
-    data class CompositeProject(val project: String, val version: String = project) : ExpandedProject {
-        override val entry: StonecutterProject
-            get() = StonecutterProject.create(project, version)
-    }
-
-    object JsonSerializer : JsonContentPolymorphicSerializer<ExpandedProject>(ExpandedProject::class) {
+    private object JsonSerializer : JsonContentPolymorphicSerializer<ExpandedProject>(ExpandedProject::class) {
         override fun selectDeserializer(element: JsonElement) = when(element) {
             is JsonObject -> CompositeProject.serializer()
             is JsonPrimitive -> StringProject.serializer()

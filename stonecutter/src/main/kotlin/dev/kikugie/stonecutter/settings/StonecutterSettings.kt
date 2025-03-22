@@ -1,21 +1,24 @@
 package dev.kikugie.stonecutter.settings
 
-import dev.kikugie.stonecutter.*
-import dev.kikugie.stonecutter.data.ProjectHierarchy
+import dev.kikugie.stonecutter.STONECUTTER
+import dev.kikugie.stonecutter.StonecutterUtility
+import dev.kikugie.stonecutter.controller.manager.GroovyController
 import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
-import dev.kikugie.stonecutter.data.StonecutterProject
-import dev.kikugie.stonecutter.data.tree.TreeBuilder
 import dev.kikugie.stonecutter.data.container.TreeBuilderContainer
 import dev.kikugie.stonecutter.data.container.createContainer
+import dev.kikugie.stonecutter.data.tree.BranchBuilder
+import dev.kikugie.stonecutter.data.tree.NodeBuilder
+import dev.kikugie.stonecutter.data.tree.TreeBuilder
 import dev.kikugie.stonecutter.ide.IdeaSetupTask
 import org.gradle.api.Project
 import org.gradle.api.initialization.ProjectDescriptor
 import org.gradle.api.initialization.Settings
 import org.gradle.api.invocation.Gradle
+import org.gradle.api.model.ObjectFactory
 import org.gradle.internal.DefaultTaskExecutionRequest
-import org.gradle.kotlin.dsl.mapProperty
 import org.gradle.kotlin.dsl.register
 import java.io.File
+import javax.inject.Inject
 import kotlin.io.path.createDirectories
 import kotlin.io.path.notExists
 
@@ -26,8 +29,14 @@ import kotlin.io.path.notExists
  * @see <a href="https://stonecutter.kikugie.dev/stonecutter/guide/setup#settings-settings-gradle-kts">Wiki page</a>
  */
 @Suppress("MemberVisibilityCanBePrivate")
-public open class StonecutterSettings(settings: Settings) : SettingsAbstraction(settings), StonecutterUtility {
-    private companion object {
+public abstract class StonecutterSettings @Inject constructor(settings: Settings, objects: ObjectFactory) :
+    SettingsAbstraction(settings, objects),
+    StonecutterUtility {
+    internal companion object {
+        const val DEFAULT_CONTROLLER_STATE = true
+        const val DEFAULT_BUILD_SCRIPT = "build.gradle.kts"
+        const val REQUIRED_CONTROLLER_SCRIPT = "controller.gradle.kts"
+
         val GROOVY_COMPLAINT_DOT_TXT = """
             NOTICE: Limited Groovy DSL support for Stonecutter
             --------------------------------------------------------------------------------------------------------
@@ -47,6 +56,9 @@ public open class StonecutterSettings(settings: Settings) : SettingsAbstraction(
     private val container: TreeBuilderContainer = settings.gradle.createContainer()
 
     init {
+        kotlinController.convention(DEFAULT_CONTROLLER_STATE)
+        centralScript.convention(DEFAULT_BUILD_SCRIPT)
+
         println("Running Stonecutter $STONECUTTER") // Printed to help identify issues
         settings.gradle.settingsEvaluated {
             if (groovy) println(GROOVY_COMPLAINT_DOT_TXT)
@@ -56,40 +68,41 @@ public open class StonecutterSettings(settings: Settings) : SettingsAbstraction(
         }
     }
 
-    override fun create(project: ProjectDescriptor, setup: TreeBuilder) {
-        require(container.register(project.hierarchy, setup)) { "Project ${project.path} is already registered" }
-        if (!groovy && setup.isGroovyUsed()) groovy = true
+    override fun create(project: ProjectDescriptor, setup: TreeBuilder): Unit = with(setup) {
+        require(container.register(project.hierarchy, this)) { "Project ${project.path} is already registered" }
 
-        project.buildFileName = setup.controller.filename
-        with(project.projectDir.resolve(setup.controller.filename).toPath()) {
-            if (notExists()) setup.controller.createHeader(this, setup.vcsProject.project)
+        val controller = controller.also {
+            if (it == GroovyController) groovy = true
+        }
+        project.buildFileName = controller.filename
+        with(project.projectDir.resolve(controller.filename).toPath()) {
+            if (notExists()) controller.createHeader(this, vcsProject.project)
         }
 
-        for ((name, branch) in setup.nodes) createBranch(name, project, setup, branch.values)
+        for (branch in branches.values) createBranch(project, branch)
     }
 
-    private fun TreeBuilder.isGroovyUsed() = !kotlinController
-            || centralScript.endsWith(".gradle")
-            || branches.values.any { it.buildscript.endsWith(".gradle") }
+    private fun String.isGroovy() = endsWith(".gradle")
 
-    private fun createBranch(name: Identifier, root: ProjectDescriptor, setup: TreeBuilder, branch: Collection<StonecutterProject>) {
-        require(branch.isNotEmpty()) { "Registered branch $name has no nodes" }
-        val project = if (name.isEmpty()) root else "${root.path}:$name".project()
+    private fun createBranch(root: ProjectDescriptor, branch: BranchBuilder) = with(branch) {
+        require(nodes.isNotEmpty()) { "Registered branch '$id' has no nodes" }
+        val project = if (id.isEmpty()) root else "${root.path}:$id".project()
         project.projectDir.toPath().createDirectories()
-        project.buildFileName = setup.controller.filename
+        project.buildFileName = tree.controller.filename
+            .also { if (it.isGroovy()) groovy = true }
 
-        val buildscript = checkNotNull(setup.branches[name]?.buildscript) { "Branch '$name' was not registered correctly" }
-        for (it in branch) createProject(project, it, buildscript)
+        for (node in nodes.values) createProject(project, node)
     }
 
-    private fun createProject(root: ProjectDescriptor, version: StonecutterProject, buildscript: String) {
-        val project = "${root.path}:${version.project}".project()
-        val versionDir = File("${root.projectDir}/versions/${version.project}")
+    private fun createProject(root: ProjectDescriptor, node: NodeBuilder) = with(node) {
+        val project = "${root.path}:${metadata.project}".project()
+        val versionDir = File("${root.projectDir}/versions/${metadata.project}")
         versionDir.mkdirs()
 
+        val script = buildscript.also { if (it.isGroovy()) groovy = true }
         project.projectDir = versionDir
-        project.name = version.project
-        project.buildFileName = "../../$buildscript"
+        project.name = metadata.project
+        project.buildFileName = "../../$script"
     }
 
     private fun createIdeaConfigurations(gradle: Gradle, root: Project) {
