@@ -24,10 +24,19 @@ public abstract class TreeBuilder @Inject constructor(
         centralScript.convention(settings.centralScript)
     }
 
+    /**Configures the Version Control Reset project, which is used by the `Reset active project` task.*/
     @StonecutterAPI
     public abstract val vcsVersion: Property<Identifier>
+    /**
+     * Configures, which format branch controllers uses. Default is `stonecutter.gradle.kts`.
+     * Setting it to `false` enables `stonecutter.gradle` with Groovy DSL.
+     */
     @StonecutterAPI
     public abstract val kotlinController: Property<Boolean>
+    /**
+     * Configures the default name for the versioned buildscript.
+     * Can be overridden by [TreeBuilder.mapBuilds] or [BranchBuilder.mapBuilds].
+     */
     @StonecutterAPI
     public abstract val centralScript: Property<String>
 
@@ -88,17 +97,15 @@ public abstract class TreeBuilder @Inject constructor(
     internal fun applyData(settings: TreeSettings) {
         settings.vcs?.let(vcsVersion::set)
         settings.kotlinController?.let(kotlinController::set)
-        settings.entries.forEach { (name, projects) ->
-            branch(name) {
-                for (it in projects) {
-                    vers(it.entry.project, it.entry.version)
-                    it.buildscript?.let { b -> nodes[it.entry.project]!!.localScript.set(b) }
-                }
+        for ((name, projects) in settings.entries) branch(name) {
+            for (it in projects) {
+                vers(it.entry.project, it.entry.version)
+                it.buildscript?.let { b -> nodes[it.entry.project]!!.localScript.set(b) }
             }
         }
     }
 
-    public fun getOrCreateBranch(name: Identifier): BranchBuilder =
+    private fun getOrCreateBranch(name: Identifier): BranchBuilder =
         branches.getOrPut(name) { objects.newInstance(name, this) }
 
     private fun findVcsProject() = versions.values.find { it.project == vcsVersion() }
