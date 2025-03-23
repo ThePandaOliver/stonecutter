@@ -19,3 +19,14 @@ public annotation class StonecutterAPI
 @Retention(AnnotationRetention.BINARY)
 @MustBeDocumented
 public annotation class StonecutterDelicate
+
+/**
+ * Used for inserting external wiki links into KDoc comments at build time.
+ * See `stonecutter/build.gradle.kts` for link definitions.
+ * @see <a href="https://github.com/stonecutter-versioning/kdoclink">KSP plugin page</a>
+ */
+@Repeatable
+@MustBeDocumented
+@Retention(AnnotationRetention.SOURCE)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.TYPEALIAS)
+internal annotation class SCDocumentation(val id: String)

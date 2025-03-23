@@ -12,13 +12,10 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.tasks.Input
 import org.jetbrains.annotations.ApiStatus
 
-// link: wiki-chisel
 /**
  * Wrapper task Stonecutter uses to configure the delegate provided by [ofTask] to run on all [nodes].
- *
- * @see <a href="https://stonecutter.kikugie.dev/stonecutter/guide/setup#chiseled-tasks">Wiki page</a>
  */
-@Suppress("LeakingThis", "unused")
+@SCDocumentation("controller.chisel")
 public abstract class ChiseledTask : DefaultTask() {
     @Transient
     private val tree = StonecutterPlugin.SERVICE.of(project.hierarchy).tree

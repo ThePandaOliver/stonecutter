@@ -6,7 +6,6 @@ import org.jetbrains.dokka.gradle.AbstractDokkaParentTask
 import org.jetbrains.dokka.versioning.VersioningConfiguration
 import org.jetbrains.dokka.versioning.VersioningPlugin
 import tasks.HallOfFameTask
-import tasks.InsertWikiLinkTask
 import tasks.UpdateVersionTask
 import java.net.URI
 
@@ -54,26 +53,6 @@ tasks.register("extractOldDocs") {
             it.unzip(unzipTarget.resolve(it.nameWithoutExtension))
         }
     }
-}
-
-tasks.register<InsertWikiLinkTask>("updateWikiLinks") {
-    fun wiki(id: String, page: String, title: String = "Wiki page") =
-        link("wiki-$id", "https://stonecutter.kikugie.dev/stonecutter/$page", title)
-    group = "documentation"
-
-    domain = "stonecutter.kikugie.dev"
-    files.from(file("stonecutter/src/main/kotlin/dev/kikugie/stonecutter/build/SetterVariants.kt"))
-
-    wiki("eval", "guide/setup#checking-versions")
-    wiki("chisel", "guide/setup#chiseled-tasks")
-    wiki("settings", "guide/setup#settings-settings-gradle-kts")
-    wiki("controller", "guide/setup#controller-stonecutter-gradle-kts")
-    wiki("controller-params", "guide/setup#global-parameters")
-    wiki("controller-active", "guide/setup#active-version")
-    wiki("build", "guide/setup#versioning-build-gradle-kts")
-    wiki("build-swaps", "guide/comments#value-swaps")
-    wiki("build-consts", "guide/comments#condition-constants")
-    wiki("build-deps", "guide/comments#condition-dependencies")
 }
 
 tasks.register<UpdateVersionTask>("updateVersion") {

@@ -19,6 +19,8 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.dokka)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlin.ksp)
+    alias(libs.plugins.kdoclink)
 }
 
 idea {
@@ -30,6 +32,7 @@ idea {
 
 repositories {
     mavenCentral()
+    maven("https://maven.kikugie.dev/releases")
 }
 
 dependencies {
@@ -40,6 +43,16 @@ dependencies {
     implementation(libs.kaml)
 
     testImplementation(libs.bundles.test)
+}
+
+kdoclink {
+    fun wiki(page: String) = "https://stonecutter.kikugie.dev/stonecutter/$page"
+
+    annotation = "dev.kikugie.stonecutter.SCDocumentation"
+    this["utility"] = wiki("guide/setup#checking-versions")
+    this["settings"] = wiki("guide/setup#settings-settings-gradle-kts")
+    this["controller"] = wiki("guide/setup#controller-stonecutter-gradle-kts")
+    this["controller.chisel"] = wiki("guide/setup#chiseled-tasks")
 }
 
 tasks.withType<Test>().configureEach {

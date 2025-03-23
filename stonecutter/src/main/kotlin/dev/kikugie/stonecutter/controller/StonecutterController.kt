@@ -16,10 +16,8 @@ import kotlin.io.path.deleteIfExists
 
 /**
  * Stonecutter plugin applied to `stonecutter.gradle[.kts]`.
- *
- * @see <a href="https://stonecutter.kikugie.dev/stonecutter/guide/setup#controller-stonecutter-gradle-kts">Wiki page</a>
  */
-@Suppress("MemberVisibilityCanBePrivate")
+@SCDocumentation("controller")
 public open class StonecutterController(root: Project) :
     ControllerAbstraction(root),
     StonecutterUtility,

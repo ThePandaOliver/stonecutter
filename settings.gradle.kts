@@ -2,6 +2,7 @@ pluginManagement {
     repositories {
         mavenCentral()
         gradlePluginPortal()
+        maven("https://maven.kikugie.dev/releases")
     }
 }
 
@@ -11,4 +12,3 @@ plugins {
 
 rootProject.name = "Stonecutter"
 include("stonecutter", "stitcher")
-//includeBuild("testmod")

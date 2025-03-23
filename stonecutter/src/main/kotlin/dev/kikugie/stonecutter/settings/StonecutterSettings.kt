@@ -1,5 +1,6 @@
 package dev.kikugie.stonecutter.settings
 
+import dev.kikugie.stonecutter.SCDocumentation
 import dev.kikugie.stonecutter.STONECUTTER
 import dev.kikugie.stonecutter.StonecutterUtility
 import dev.kikugie.stonecutter.controller.manager.GroovyController
@@ -24,13 +25,10 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.notExists
 
-// link: wiki-settings
 /**
  * Configures versions used by Stonecutter and creates the corresponding Gradle projects.
- *
- * @see <a href="https://stonecutter.kikugie.dev/stonecutter/guide/setup#settings-settings-gradle-kts">Wiki page</a>
  */
-@Suppress("MemberVisibilityCanBePrivate")
+@SCDocumentation("settings")
 public abstract class StonecutterSettings @Inject constructor(settings: Settings, objects: ObjectFactory) :
     SettingsAbstraction(settings, objects),
     StonecutterUtility {

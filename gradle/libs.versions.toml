@@ -4,6 +4,8 @@ kotlin = "2.1.10"
 gradlepub = "1.2.1"
 shadow = "9.0.0-beta4"
 dokka = "1.9.20"
+ksp = "2.1.10-1.0.31"
+link = "0.1.0"
 # Dependencies
 serialization = "1.7.3"
 coroutines = "1.9.0"
@@ -18,8 +20,10 @@ zip4j = "2.11.5"
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlin-dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp"}
 gradle-publishing = { id = "com.gradle.plugin-publish", version.ref = "gradlepub" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+kdoclink = { id = "dev.kikugie.kdoclink", version.ref = "link" }
 
 [libraries]
 kotlin-serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core-jvm", version.ref = "serialization" }
