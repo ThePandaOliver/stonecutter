@@ -18,8 +18,10 @@ import org.gradle.api.model.ObjectFactory
 import org.gradle.internal.DefaultTaskExecutionRequest
 import org.gradle.kotlin.dsl.register
 import java.io.File
+import java.nio.file.Path
 import javax.inject.Inject
 import kotlin.io.path.createDirectories
+import kotlin.io.path.exists
 import kotlin.io.path.notExists
 
 // link: wiki-settings
@@ -35,7 +37,6 @@ public abstract class StonecutterSettings @Inject constructor(settings: Settings
     internal companion object {
         const val DEFAULT_CONTROLLER_STATE = true
         const val DEFAULT_BUILD_SCRIPT = "build.gradle.kts"
-        const val REQUIRED_CONTROLLER_SCRIPT = "controller.gradle.kts"
 
         val GROOVY_COMPLAINT_DOT_TXT = """
             NOTICE: Limited Groovy DSL support for Stonecutter
@@ -56,8 +57,10 @@ public abstract class StonecutterSettings @Inject constructor(settings: Settings
     private val container: TreeBuilderContainer = settings.gradle.createContainer()
 
     init {
-        kotlinController.convention(DEFAULT_CONTROLLER_STATE)
-        centralScript.convention(DEFAULT_BUILD_SCRIPT)
+        val factory = settings.providers
+        val path = settings.rootDir.toPath()
+        kotlinController.convention(factory.provider { getExistingBuildscript(path, "stonecutter").endsWith("kts") })
+        centralScript.convention(factory.provider { getExistingBuildscript(path, "build")})
 
         println("Running Stonecutter $STONECUTTER") // Printed to help identify issues
         settings.gradle.settingsEvaluated {
@@ -80,6 +83,12 @@ public abstract class StonecutterSettings @Inject constructor(settings: Settings
         }
 
         for (branch in branches.values) createBranch(project, branch)
+    }
+
+    private fun getExistingBuildscript(dir: Path, type: String): String = when {
+        dir.resolve("$type.gradle.kts").exists() -> "$type.gradle.kts"
+        dir.resolve("$type.gradle").exists() -> "$type.gradle"
+        else -> "$type.gradle.kts"
     }
 
     private fun String.isGroovy() = endsWith(".gradle")

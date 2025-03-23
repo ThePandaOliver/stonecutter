@@ -151,10 +151,6 @@ public abstract class NodeBuilder @Inject constructor(
     internal val metadata: StonecutterProject,
     internal val branch: BranchBuilder,
 ) {
-    init {
-        localScript.convention(branch.tree.centralScript)
-    }
-
     @StonecutterAPI
     public abstract val localScript: Property<String>
 
@@ -164,7 +160,7 @@ public abstract class NodeBuilder @Inject constructor(
     }
 
     private fun localScript(): String = localScript
-        .takeIf { it.isPresent }?.get()
+        .takeIf { it.isPresent }?.invoke()
         ?: branch.localBuildscriptProvider?.invoke(metadata)
-        ?: localScript.get()
+        ?: branch.tree.centralScript()
 }
