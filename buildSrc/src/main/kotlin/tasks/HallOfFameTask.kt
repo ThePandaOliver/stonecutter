@@ -23,12 +23,14 @@ import kotlin.io.path.writeText
 
 abstract class HallOfFameTask : DefaultTask() {
     private companion object {
-        val YAML = Yaml(configuration = YamlConfiguration(
-            polymorphismStyle = PolymorphismStyle.None,
-            singleLineStringStyle = SingleLineStringStyle.Plain,
-            ambiguousQuoteStyle = AmbiguousQuoteStyle.SingleQuoted,
-            encodeDefaults = false
-        ))
+        val YAML = Yaml(
+            configuration = YamlConfiguration(
+                polymorphismStyle = PolymorphismStyle.None,
+                singleLineStringStyle = SingleLineStringStyle.Plain,
+                ambiguousQuoteStyle = AmbiguousQuoteStyle.SingleQuoted,
+                encodeDefaults = false
+            )
+        )
 
         fun <T> RegularFileProperty.readYaml(serializer: DeserializationStrategy<T>): T =
             get().asFile.inputStream().use { YAML.decodeFromStream(serializer, it) }
@@ -65,11 +67,11 @@ abstract class HallOfFameTask : DefaultTask() {
 
         val (entries, projects) = runBlocking { Collector.get(token, config, cache) }
         entries.forEach { it.internal.keys.retainAll(listOf("curseforge_id")) }
-        cacheFile.writeYaml(ListSerializer(SearchEntry.serializer()), entries.sortedBy { it.id })
+        cacheFile.writeYaml(ListSerializer(SearchEntry.serializer()), entries.sortedBy { it.id.lowercase() })
 
         val template = templateFile.get().asFile.readText()
         val js = projects.values
-            .sortedByDescending { it.updated }
+            .sortedByDescending { it.downloads }
             .joinToString(",\n") { it.toJS() }
             .let { template.replaceFirst("'%PLACEHOLDER%'", it) }
         outputFiles.get().files.forEach { it.writeText(js) }
