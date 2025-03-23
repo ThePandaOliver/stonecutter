@@ -20,5 +20,5 @@ dependencies {
     implementation("com.charleskorn.kaml:kaml:0.60.0")
     implementation("com.github.ajalt.mordant:mordant:2.7.2")
     implementation("net.lingala.zip4j:zip4j:2.11.5")
-    implementation("dev.kikugie:hall-of-fame:1.0-SNAPSHOT")
+    implementation("dev.kikugie:hall-of-fame:1.0.0")
 }

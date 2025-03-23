@@ -6,6 +6,10 @@ repositories:
     - template
     - example
 entries:
+  - id: 0mods/ECR
+    valid: false
+  - id: MisterCheezeCake/SkyblockTweaks
+    modrinth: https://modrinth.com/mod/sbt
   - id: IMB11/SkinShufflePlugin
     valid: false
   - id: kikugie/multilib

@@ -65,7 +65,7 @@ abstract class HallOfFameTask : DefaultTask() {
 
         val (entries, projects) = runBlocking { Collector.get(token, config, cache) }
         entries.forEach { it.internal.keys.retainAll(listOf("curseforge_id")) }
-        cacheFile.writeYaml(ListSerializer(SearchEntry.serializer()), entries.toList())
+        cacheFile.writeYaml(ListSerializer(SearchEntry.serializer()), entries.sortedBy { it.id })
 
         val template = templateFile.get().asFile.readText()
         val js = projects.values
