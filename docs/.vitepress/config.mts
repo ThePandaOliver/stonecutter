@@ -1,16 +1,12 @@
-import {PageData, TransformPageContext} from 'vitepress';
+import {PageData, TransformPageContext, defineConfig} from 'vitepress';
 import {tabsMarkdownPlugin} from 'vitepress-plugin-tabs'
-import defineVersionedConfig from "vitepress-versioning-plugin";
-import {applySEO, removeVersionedItems} from './seo';
+import {applySEO} from './seo';
 
 // https://vitepress.dev/reference/site-config
-export default defineVersionedConfig({
+export default defineConfig({
   lang: 'en-US',
   title: 'Stonecutter',
   description: 'Modern Gradle plugin for multi-version management',
-  versioning: {
-    latestVersion: '0.6-beta.1',
-  },
   cleanUrls: true,
   appearance: 'dark',
 
@@ -26,48 +22,51 @@ export default defineVersionedConfig({
 
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
+    logo: "/assets/logo.webp",
+
     nav: [
       {text: 'Home', link: '/'},
-      {text: 'Stonecutter Wiki', link: '/stonecutter/introduction'},
-      {text: 'Stonecutter KDoc', link: '/dokka/', target: '_self'},
+      {text: 'Wiki', link: '/wiki'},
+      {text: 'KDoc', link: '/dokka', target: '_self'},
     ],
+
     outline: {
       level: "deep"
     },
-    logo: "/assets/logo.webp",
+
     search: {
       provider: 'local'
     },
 
-    sidebar: {
-      '/': [
-        {
-          text: 'Stonecutter',
-          items: [
-            {text: 'Introduction', link: '/stonecutter/introduction'},
-            {text: 'Frequently asked questions', link: '/stonecutter/faq'},
-            {
-              text: 'Setup', items: [
-                {text: 'Setting up Stonecutter', link: '/stonecutter/guide/setup'},
-                {text: 'Stonecutter comments', link: '/stonecutter/guide/comments'},
-              ]
-            },
-            {
-              text: 'Details', items: [
-                {text: 'Configuring Stonecutter', link: 'stonecutter/details/configuration'},
-                {text: 'Project trees', link: 'stonecutter/details/trees'},
-                {text: 'Project model', link: 'stonecutter/details/model'},
-              ]
-            },
-            {text: 'Tips and tricks', link: '/stonecutter/tips'},
-          ]
-        }
-      ]
-    },
+    sidebar: [
+      {
+        text: "Frequent questions", link: "/wiki/faq"
+      },
+      {
+        text: "Getting started",
+        link: "/wiki/start",
+        items: [
+          {text: "Project settings", link: "/wiki/start/settings"},
+          {text: "Project controller", link: "/wiki/start/controller"},
+          {text: "Mod setup", link: "/wiki/start/build"},
+          {text: "Versioning code", link: "/wiki/start/comments"},
+        ]
+      },
+      {
+        text: "Additional config",
+        items: [
+          {text: "Processor parameters"},
+          {text: "Data-driven projects", link: "/wiki/config/projects"},
+          {text: "Project branches"},
+        ]
+      }
+    ],
+
     socialLinks: [
       {icon: 'github', link: 'https://github.com/stonecutter-versioning/stonecutter'},
       {icon: 'discord', link: 'https://discord.gg/TBgNUCfryS'},
     ],
+
     footer: {
       message: 'Released under the <a href="https://github.com/stonecutter-versioning/stonecutter/blob/0.5/LICENSE">LGPL-3.0 License</a> by KikuGie (git.kikugie@protonmail.com she/her)'
     }
@@ -82,4 +81,4 @@ export default defineVersionedConfig({
       md.use(tabsMarkdownPlugin)
     }
   }
-}, __dirname)
+})

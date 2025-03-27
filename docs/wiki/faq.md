@@ -1,35 +1,32 @@
-# FAQ
+# Frequently asked questions
 ## Does it support Groovy/Kotlin buildscripts?
 > Using Kotlin DSL is recommended for Stonecutter projects.
-Kotlin buildscripts have better IDE integration with method completion and documentation.
+> Kotlin buildscripts have better IDE integration with method completion and documentation.
 >
-> Groovy DSL is supported, but may be more confusing to work with.
+> Groovy DSL is still supported, but may be more confusing to work with.
 
 ## What languages does Stonecutter work with?
 > Primarily Java and Kotlin, but in general any file format with `//` and `/* */` comment blocks.
-Comment syntax is the same for any used language.
+> Comment syntax is the same for any used language.
 
 ## Can I use it for projects other than Fabric mods?
 > Yes! Stonecutter doesn't depend on the platform you use,
-so it works for Forge, Neoforge, Paper and even non-modding projects.
+so it works for Forge, NeoForge, Paper, and even non-modding projects.
 >
 > Examples are given for a Fabric mod to provide some real examples,
-but if you're using a different platform, apply the described changes to your needs.
+> but if you're using a different platform, apply the described steps to your needs.
 
 ## Can I bundle all built versions into one mod?
 > In theory, yes, in practice - don't.
 >
 > This is highly discouraged because it increases the filesize of the mod by `n` times the versions you have,
-which is a big redundancy with no benefit.  
+> which is a big redundancy with no benefit.  
 > Minecraft content websites like Modrinth and Curseforge select the correct build of the mod for the Minecraft
-version you need, and you can use Gradle scripts or GitHub actions to automatically publish all builds.  
-The bundle implementation is highly dependent on the platform you use and the functionality of your mod,
-so if you're dedicated to doing it - you're on your own adventure.
+> version you need, and you can use Gradle scripts or GitHub actions to automatically publish all builds.  
+> The bundle implementation is highly dependent on the platform you use and the functionality of your mod, so 
+> if you're dedicated to doing it - you're on your own adventure.
 
-## I ran `build`, but got an error, what's wrong?
-> Most likely you didn't use a chiseled build. Refer to the [setup guide](./guide/setup#developing-your-mod).
-
-## How is it better than Preprocessor?
+## How is it different to the Preprocessor?
 > There are quite a lot of improvements. Some key points are:
 > - Optimization: Stonecutter provides faster version switching and building.
 > - No remapping: Stonecutter doesn't remap your code when switching versions, avoiding issues Preprocessor has with it.
@@ -58,12 +55,7 @@ so if you're dedicated to doing it - you're on your own adventure.
 > - No versioned file overrides. There are techniques to have versioned resource files, such as access wideners.  
     > *(Such files are confusing to people unfamiliar with the codebase, so there are no plans to implement them, unless a good solution is found)*
 
-## Why do some Stonecutter functions return 🍌? How did this question make it into the FAQ?! Literally no one asked!
-> Types `Iterable<A>` and `Iterable<B>` are seen as different by the compiler,
-> but have the same signature of `Iterable` on the JVM.
-> When such a conflict occurs, the solution is to either name the method differently or change the signature.
-> Making the return type a `String` achieves the latter, which fixes the issue.
-
 ## Contact
 If you have questions, contact me on [Discord](https://discord.gg/TBgNUCfryS)
 or email me at `git.kikugie@protonmail.com` (KikuGie she/her)
+
