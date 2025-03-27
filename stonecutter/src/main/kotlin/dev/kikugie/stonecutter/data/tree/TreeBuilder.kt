@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 public abstract class TreeBuilder @Inject constructor(
     private val settings: StonecutterSettings,
-) : ProjectProvider {
+) : ProjectProvider() {
     init {
         vcsVersion.convention(providers.provider {
             checkNotNull(versions.keys.firstOrNull()?.project) { "No versions registered" }
@@ -87,9 +87,8 @@ public abstract class TreeBuilder @Inject constructor(
         localBuildscriptProvider = action
     }
 
-    override fun vers(name: Identifier, version: AnyVersion) {
-        getOrCreateBranch("").vers(name, version)
-    }
+    override fun versions(versions: Iterable<StonecutterProject>): NodeProvider =
+        getOrCreateBranch("").versions(versions)
 
     internal fun identity(vers: StonecutterProject): StonecutterProject =
         versions.getOrPut(vers) { vers }
@@ -114,7 +113,7 @@ public abstract class TreeBuilder @Inject constructor(
 public abstract class BranchBuilder @Inject constructor(
     internal val id: Identifier,
     internal val tree: TreeBuilder,
-) : ProjectProvider {
+) : ProjectProvider() {
     internal val nodes: MutableMap<Identifier, NodeBuilder> = mutableMapOf()
     internal var localBuildscriptProvider: ((StonecutterProject) -> String)? = null
         get() = field ?: tree.localBuildscriptProvider?.run { { invoke(id, it) } }
@@ -138,13 +137,10 @@ public abstract class BranchBuilder @Inject constructor(
         localBuildscriptProvider = action
     }
 
-    override fun vers(name: Identifier, version: AnyVersion) {
-        require(name.isNotBlank() && name.isValid()) { "Invalid project identifier: '$name' in branch '$id'" }
-        require(name !in nodes) { "Duplicate project identifier: '$name' in branch '$id'" }
-
-        val identity = tree.identity(StonecutterProject.create(name, version))
-        nodes[name] = objects.newInstance(identity, this)
-    }
+    override fun versions(versions: Iterable<StonecutterProject>): NodeProvider = versions.map {
+        require(it.project !in nodes) { "Duplicate project identifier: '${it.project}' in branch '$id'" }
+        objects.newInstance<NodeBuilder>(tree.identity(it), this).apply { nodes[it.project] = this }
+    }.let(::NodeProvider)
 }
 
 public abstract class NodeBuilder @Inject constructor(
@@ -163,4 +159,10 @@ public abstract class NodeBuilder @Inject constructor(
         .takeIf { it.isPresent }?.invoke()
         ?: branch.localBuildscriptProvider?.invoke(metadata)
         ?: branch.tree.centralScript()
+}
+
+public class NodeProvider(private val builders: Iterable<NodeBuilder>) {
+    public var buildscript: String
+        @Deprecated("Write-only property", level = DeprecationLevel.HIDDEN) get() = error("")
+        @JvmName("buildscript") set(value) = builders.forEach { it.localScript.set(value) }
 }
