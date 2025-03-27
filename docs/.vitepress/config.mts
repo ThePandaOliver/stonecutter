@@ -1,18 +1,18 @@
-import {PageData, TransformPageContext, defineConfig} from 'vitepress';
-import {tabsMarkdownPlugin} from 'vitepress-plugin-tabs'
-import {applySEO} from './seo';
+import {PageData, TransformPageContext, defineConfig} from "vitepress";
+import {tabsMarkdownPlugin} from "vitepress-plugin-tabs"
+import {applySEO} from "./seo";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  lang: 'en-US',
-  title: 'Stonecutter',
-  description: 'Modern Gradle plugin for multi-version management',
+  lang: "en-US",
+  title: "Stonecutter",
+  description: "Modern Gradle plugin for multi-version management",
   cleanUrls: true,
-  appearance: 'dark',
+  appearance: "dark",
 
   head: [[
-    'link',
-    {rel: 'icon', sizes: '32x32', href: '/assets/logo.webp'},
+    "link",
+    {rel: "icon", sizes: "32x32", href: "/assets/logo.webp"},
   ]],
 
   // @ts-ignore
@@ -22,12 +22,12 @@ export default defineConfig({
 
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
-    logo: "/assets/logo.webp",
+    logo: "/assets/stonecutter.svg",
 
     nav: [
-      {text: 'Home', link: '/'},
-      {text: 'Wiki', link: '/wiki'},
-      {text: 'KDoc', link: '/dokka', target: '_self'},
+      {text: "Home", link: "/"},
+      {text: "Wiki", link: "/wiki"},
+      {text: "KDoc", link: "/dokka", target: "_self"},
     ],
 
     outline: {
@@ -35,7 +35,7 @@ export default defineConfig({
     },
 
     search: {
-      provider: 'local'
+      provider: "local"
     },
 
     sidebar: [
@@ -63,12 +63,12 @@ export default defineConfig({
     ],
 
     socialLinks: [
-      {icon: 'github', link: 'https://github.com/stonecutter-versioning/stonecutter'},
-      {icon: 'discord', link: 'https://discord.gg/TBgNUCfryS'},
+      {icon: "github", link: "https://github.com/stonecutter-versioning/stonecutter"},
+      {icon: "discord", link: "https://discord.gg/TBgNUCfryS"},
     ],
 
     footer: {
-      message: 'Released under the <a href="https://github.com/stonecutter-versioning/stonecutter/blob/0.5/LICENSE">LGPL-3.0 License</a> by KikuGie (git.kikugie@protonmail.com she/her)'
+      message: "Released under the <a href=\"https://github.com/stonecutter-versioning/stonecutter/blob/0.5/LICENSE\">LGPL-3.0 License</a> by KikuGie (git.kikugie@protonmail.com she/her)"
     }
   },
   sitemap: {
