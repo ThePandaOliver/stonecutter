@@ -42,7 +42,7 @@ stonecutter {
 == build.gradle
 > [!IMPORTANT]
 > Stonecutter support and documentation for Groovy buildscripts are limited.
-> See the [FAQ page](../faq#TODO) for more information.
+> See the [FAQ page](/wiki/faq#groovy-support) for more information.
 ```groovy
 stonecutter {
     def is21 = eval(current.version, ">=1.21")
@@ -83,7 +83,7 @@ stonecutter {
 == build.gradle
 > [!IMPORTANT]
 > Stonecutter support and documentation for Groovy buildscripts are limited.
-> See the [FAQ page](../faq#TODO) for more information.
+> See the [FAQ page](/wiki/faq#groovy-support) for more information.
 ```groovy
 stonecutter {
     def current = "option #2"
@@ -136,7 +136,7 @@ stonecutter {
 == build.gradle
 > [!IMPORTANT]
 > Stonecutter support and documentation for Groovy buildscripts are limited.
-> See the [FAQ page](../faq#TODO) for more information.
+> See the [FAQ page](/wiki/faq#groovy-support) for more information.
 ```groovy
 stonecutter {
     dependency("mod_menu", project.mod_menu_version.toString())
@@ -221,7 +221,7 @@ stonecutter {
 == build.gradle
 > [!IMPORTANT]
 > Stonecutter support and documentation for Groovy buildscripts are limited.
-> See the [FAQ page](../faq#TODO) for more information.
+> See the [FAQ page](/wiki/faq#groovy-support) for more information.
 ```groovy
 stonecutter {
     swap(
@@ -311,7 +311,7 @@ stonecutter parameters {
 == stonecutter.gradle
 > [!IMPORTANT]
 > Stonecutter support and documentation for Groovy buildscripts are limited.
-> See the [FAQ page](../faq#TODO) for more information.
+> See the [FAQ page](/wiki/faq#groovy-support) for more information.
 ```groovy
 stonecutter.parameters {
     const("is_active", metadata.isActive)

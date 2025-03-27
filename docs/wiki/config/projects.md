@@ -74,7 +74,7 @@ stonecutter {
 == settings.gradle
 > [!IMPORTANT]
 > Stonecutter support and documentation for Groovy buildscripts is limited.
-> See the [FAQ page](../faq#TODO) for more information.
+> See the [FAQ page](/wiki/faq#groovy-support) for more information.
 
 ```groovy {2}
 stonecutter {
@@ -99,7 +99,7 @@ stonecutter active file("active_version.txt")
 == stonecutter.gradle
 > [!IMPORTANT]
 > Stonecutter support and documentation for Groovy buildscripts are limited.
-> See the [FAQ page](../faq#TODO) for more information.
+> See the [FAQ page](/wiki/faq#groovy-support) for more information.
 ```groovy {5}
 plugins {
     id "dev.kikugie.stonecutter"

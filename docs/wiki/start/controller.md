@@ -44,7 +44,7 @@ stonecutter registerChiseled tasks.register("chiseledBuild", stonecutter.chisele
 == stonecutter.gradle
 > [!IMPORTANT]
 > Stonecutter support and documentation for Groovy buildscripts are limited.
-> See the [FAQ page](../faq#TODO) for more information.
+> See the [FAQ page](/wiki/faq#groovy-support) for more information.
 ```groovy
 plugins {
     id "dev.kikugie.stonecutter"
@@ -84,7 +84,7 @@ stonecutter registerChiseled tasks.register("chiseledBuild", stonecutter.chisele
 == stonecutter.gradle
 > [!IMPORTANT]
 > Stonecutter support and documentation for Groovy buildscripts are limited.
-> See the [FAQ page](../faq#TODO) for more information.
+> See the [FAQ page](/wiki/faq#groovy-support) for more information.
 ```groovy {5}
 plugins {
     id "dev.kikugie.stonecutter"
@@ -127,7 +127,7 @@ stonecutter registerChiseled tasks.register("chiseledBuild", stonecutter.chisele
 == stonecutter.gradle
 > [!IMPORTANT]
 > Stonecutter support and documentation for Groovy buildscripts are limited.
-> See the [FAQ page](../faq#TODO) for more information.
+> See the [FAQ page](/wiki/faq#groovy-support) for more information.
 ```groovy {7-10}
 plugins {
     id "dev.kikugie.stonecutter"
@@ -175,7 +175,7 @@ stonecutter registerChiseled tasks.register("chiseledBuildAndCollect", stonecutt
 == (stonecutter/build).gradle
 > [!IMPORTANT]
 > Stonecutter support and documentation for Groovy buildscripts are limited.
-> See the [FAQ page](../faq#TODO) for more information.
+> See the [FAQ page](/wiki/faq#groovy-support) for more information.
 
 `build.gradle`:
 ```groovy
@@ -226,7 +226,7 @@ stonecutter registerChiseled tasks.register("chiseledPublish", stonecutter.chise
 == (stonecutter/build).gradle
 > [!IMPORTANT]
 > Stonecutter support and documentation for Groovy buildscripts are limited.
-> See the [FAQ page](../faq#TODO) for more information.
+> See the [FAQ page](/wiki/faq#groovy-support) for more information.
 `build.gradle`:
 ```groovy
 publishMods {
@@ -269,7 +269,7 @@ for (meta in stonecutter.versions) {
 == stonecutter.gradle
 > [!IMPORTANT]
 > Stonecutter support and documentation for Groovy buildscripts are limited.
-> See the [FAQ page](../faq#TODO) for more information.
+> See the [FAQ page](/wiki/faq#groovy-support) for more information.
 ```groovy
 // TODO: To be added... eventually
 ```

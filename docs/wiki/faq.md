@@ -1,22 +1,29 @@
 # Frequently asked questions
-## Does it support Groovy/Kotlin buildscripts?
-> Using Kotlin DSL is recommended for Stonecutter projects.
-> Kotlin buildscripts have better IDE integration with method completion and documentation.
->
-> Groovy DSL is still supported, but may be more confusing to work with.
+## Does it support Groovy/Kotlin buildscripts? {#groovy-support}
+> Using Kotlin DSL is recommended for Stonecutter projects,
+> as its buildscripts have better IDE integration with method completion and documentation.
+> 
+> You can read more about Kotlin support in Gradle and migration to it here:
+> - https://blog.gradle.org/kotlin-dsl-is-now-the-default-for-new-gradle-builds
+> - https://docs.gradle.org/current/userguide/migrating_from_groovy_to_kotlin_dsl.html
+> - https://kotlinlang.org/docs/gradle-configure-project.html#apply-the-plugin (also for general language reference)
 
-## What languages does Stonecutter work with?
+> [!IMPORTANT]
+> **You don't need to write your mod in Kotlin or bundle its libraries when using
+> a Kotlin DSL buildscript. Same as you don't need to bundle Groovy into your mod.**
+
+## What languages does Stonecutter work with? {#supported-languages}
 > Primarily Java and Kotlin, but in general any file format with `//` and `/* */` comment blocks.
 > Comment syntax is the same for any used language.
 
-## Can I use it for projects other than Fabric mods?
+## Can I use it for projects other than Fabric mods? {#supported-mod-loaders}
 > Yes! Stonecutter doesn't depend on the platform you use,
 so it works for Forge, NeoForge, Paper, and even non-modding projects.
 >
 > Examples are given for a Fabric mod to provide some real examples,
 > but if you're using a different platform, apply the described steps to your needs.
 
-## Can I bundle all built versions into one mod?
+## Can I bundle all built versions into one mod? {#mod-bundling}
 > In theory, yes, in practice - don't.
 >
 > This is highly discouraged because it increases the filesize of the mod by `n` times the versions you have,
@@ -26,7 +33,7 @@ so it works for Forge, NeoForge, Paper, and even non-modding projects.
 > The bundle implementation is highly dependent on the platform you use and the functionality of your mod, so 
 > if you're dedicated to doing it - you're on your own adventure.
 
-## How is it different to the Preprocessor?
+## How is it different to the Preprocessor? {#preprocessor-comparison}
 > There are quite a lot of improvements. Some key points are:
 > - Optimization: Stonecutter provides faster version switching and building.
 > - No remapping: Stonecutter doesn't remap your code when switching versions, avoiding issues Preprocessor has with it.
@@ -54,8 +61,3 @@ so it works for Forge, NeoForge, Paper, and even non-modding projects.
     > *(Won't be implemented for the same reasons as above)*
 > - No versioned file overrides. There are techniques to have versioned resource files, such as access wideners.  
     > *(Such files are confusing to people unfamiliar with the codebase, so there are no plans to implement them, unless a good solution is found)*
-
-## Contact
-If you have questions, contact me on [Discord](https://discord.gg/TBgNUCfryS)
-or email me at `git.kikugie@protonmail.com` (KikuGie she/her)
-

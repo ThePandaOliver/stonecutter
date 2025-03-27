@@ -79,7 +79,7 @@ loom {
 == build.gradle
 > [!IMPORTANT]
 > Stonecutter support and documentation for Groovy buildscripts are limited.
-> See the [FAQ page](../faq#TODO) for more information.
+> See the [FAQ page](/wiki/faq#groovy-support) for more information.
 ```groovy
 plugins {
     id "fabric-loom" version "1.10-SNAPSHOT"
@@ -130,7 +130,7 @@ java {
 == build.gradle
 > [!IMPORTANT]
 > Stonecutter support and documentation for Groovy buildscripts are limited.
-> See the [FAQ page](../faq#TODO) for more information.
+> See the [FAQ page](/wiki/faq#groovy-support) for more information.
 ```groovy
 java {
     withSourcesJar()

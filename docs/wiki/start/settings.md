@@ -27,7 +27,7 @@ stonecutter {
 == settings.gradle
 > [!IMPORTANT]
 > Stonecutter support and documentation for Groovy buildscripts are limited.
-> See the [FAQ page](../faq#TODO) for more information.
+> See the [FAQ page](/wiki/faq#groovy-support) for more information.
 ```groovy
 pluginManagement {
     repositories {
@@ -70,7 +70,7 @@ stonecutter {
 == settings.gradle
 > [!IMPORTANT]
 > Stonecutter support and documentation for Groovy buildscripts are limited.
-> See the [FAQ page](../faq#TODO) for more information.
+> See the [FAQ page](/wiki/faq#groovy-support) for more information.
 ```groovy {2-7}
 stonecutter {
     kotlinController = false // [!code ++:6]
@@ -108,7 +108,7 @@ stonecutter {
 == settings.gradle
 > [!IMPORTANT]
 > Stonecutter support and documentation for Groovy buildscripts are limited.
-> See the [FAQ page](../faq#TODO) for more information.
+> See the [FAQ page](/wiki/faq#groovy-support) for more information.
 ```groovy
 stonecutter {
     kotlinController = false
