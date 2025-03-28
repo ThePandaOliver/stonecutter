@@ -62,8 +62,8 @@ tasks.register<UpdateVersionTask>("updateVersion") {
     version = ver
     replacements {
         file("stonecutter/src/main/kotlin/dev/kikugie/stonecutter/Utilities.kt") replace "val STONECUTTER: String = .+\"" with "val STONECUTTER: String = \"$ver\""
-        file("docs/.vitepress/config.mts") replace "latestVersion: '.+'" with "latestVersion: '$ver'"
-        file("docs/stonecutter/guide/setup.md") replace listOf(
+        file("docs/.vitepress/config.mts") replace "latestVersion: \".+\"" with "latestVersion: \"$ver\""
+        file("docs/wiki/start/settings.md") replace listOf(
             "stonecutter\"\\ version \".+\"" to "stonecutter\" version \"$ver\"",
             "stonecutter\"\\) version \".+\"" to "stonecutter\") version \"$ver\""
         )
