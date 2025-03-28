@@ -55,7 +55,7 @@ export default defineConfig({
       {
         text: "Additional config",
         items: [
-          {text: "Processor parameters", link: "/wiki/config/parameters"},
+          {text: "Stonecutter config", link: "/wiki/config/params"},
           {text: "Data-driven projects", link: "/wiki/config/projects"},
           {text: "Project branches"},
         ]

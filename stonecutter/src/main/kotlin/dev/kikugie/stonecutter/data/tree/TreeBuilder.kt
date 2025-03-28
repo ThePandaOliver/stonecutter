@@ -13,6 +13,7 @@ import org.gradle.api.provider.ProviderFactory
 import org.gradle.kotlin.dsl.newInstance
 import javax.inject.Inject
 
+@SCDocumentation("settings.create")
 public abstract class TreeBuilder @Inject constructor(
     private val settings: StonecutterSettings,
 ) : ProjectProvider() {
@@ -25,18 +26,23 @@ public abstract class TreeBuilder @Inject constructor(
     }
 
     /**Configures the Version Control Reset project, which is used by the `Reset active project` task.*/
+    @SCDocumentation("settings.vcs")
     @StonecutterAPI
     public abstract val vcsVersion: Property<Identifier>
+
     /**
      * Configures, which format branch controllers uses. Default is `stonecutter.gradle.kts`.
      * Setting it to `false` enables `stonecutter.gradle` with Groovy DSL.
      */
+    @SCDocumentation("settings.create")
     @StonecutterAPI
     public abstract val kotlinController: Property<Boolean>
+
     /**
      * Configures the default name for the versioned buildscript.
      * Can be overridden by [TreeBuilder.mapBuilds] or [BranchBuilder.mapBuilds].
      */
+    @SCDocumentation("settings.create")
     @StonecutterAPI
     public abstract val centralScript: Property<String>
 
@@ -150,10 +156,11 @@ public abstract class NodeBuilder @Inject constructor(
     @StonecutterAPI
     public abstract val localScript: Property<String>
 
-    internal val buildscript: String get() = localScript().apply {
-        check(isNotBlank()) { "Buildscript must not be blank" }
-        check("stonecutter.gradle" !in this) { "Buildscript must not override the controller" }
-    }
+    internal val buildscript: String
+        get() = localScript().apply {
+            check(isNotBlank()) { "Buildscript must not be blank" }
+            check("stonecutter.gradle" !in this) { "Buildscript must not override the controller" }
+        }
 
     private fun localScript(): String = localScript
         .takeIf { it.isPresent }?.invoke()

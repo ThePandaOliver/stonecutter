@@ -122,7 +122,7 @@ that depend on libraries that may not update as soon as Minecraft releases new v
 > Dependency names follow the same naming requirements as [constants](#condition-constants).
 > The provided version must either be a constant-like string or a valid [semantic version](https://semver.org/).
 
-### Constant specification
+### Dependency specification
 ::: tabs key:dsl
 == build.gradle.kts
 ```kotlin

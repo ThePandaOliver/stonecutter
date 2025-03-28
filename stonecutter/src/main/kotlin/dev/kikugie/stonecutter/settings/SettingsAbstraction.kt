@@ -14,6 +14,7 @@ import org.gradle.kotlin.dsl.newInstance
 import java.io.File
 
 /**Method variations for [StonecutterSettings]*/
+@SCDocumentation("settings")
 @OptIn(ExperimentalSerializationApi::class)
 public abstract class SettingsAbstraction(internal val settings: Settings, internal val objects: ObjectFactory) {
     private lateinit var shared: Action<TreeBuilder>
@@ -22,40 +23,55 @@ public abstract class SettingsAbstraction(internal val settings: Settings, inter
      * Enables Kotlin buildscripts for the controller.
      * - `stonecutter.gradle` -> `stonecutter.gradle.kts`
      */
-    @StonecutterAPI public abstract val kotlinController: Property<Boolean>
+    @StonecutterAPI
+    public abstract val kotlinController: Property<Boolean>
 
     /**Buildscript used by all subprojects. Defaults to `build.gradle`.*/
-    @StonecutterAPI public abstract val centralScript: Property<String>
+    @StonecutterAPI
+    public abstract val centralScript: Property<String>
 
     /* Shared configuration */
     /**Stores the provided configuration to be used in [create] methods.*/
-    @StonecutterAPI public fun shared(action: Action<TreeBuilder>) {
+    @StonecutterAPI
+    public fun shared(action: Action<TreeBuilder>) {
         shared = action
     }
 
     /* File configuration */
     /**Configures the specified [project] to be versioned with setup provided by [file].*/
-    @StonecutterAPI public fun create(project: ProjectPath, file: File): String =
+    @SCDocumentation("settings.json")
+    @StonecutterAPI
+    public fun create(project: ProjectPath, file: File): String =
         create(project.project(), file).let { BNAN }
 
     /**Configures the specified [project] to be versioned with setup provided by [file].*/
-    @StonecutterAPI public fun create(project: ProjectDescriptor, file: File): Unit =
+    @SCDocumentation("settings.json")
+    @StonecutterAPI
+    public fun create(project: ProjectDescriptor, file: File): Unit =
         create(listOf(project), file)
 
     /**Configures the specified [projects] to be versioned with setup provided by [file].*/
-    @StonecutterAPI public fun create(vararg projects: ProjectPath, file: File): String =
+    @SCDocumentation("settings.json")
+    @StonecutterAPI
+    public fun create(vararg projects: ProjectPath, file: File): String =
         create(projects.map { it.project() }, file).let { BNAN }
 
     /**Configures the specified [projects] to be versioned with setup provided by [file].*/
-    @StonecutterAPI public fun create(vararg projects: ProjectDescriptor, file: File): Unit =
+    @SCDocumentation("settings.json")
+    @StonecutterAPI
+    public fun create(vararg projects: ProjectDescriptor, file: File): Unit =
         create(projects.toList(), file)
 
     /**Configures the specified [projects] to be versioned with setup provided by [file].*/
-    @StonecutterAPI public fun create(projects: Iterable<ProjectPath>, file: File): String =
+    @SCDocumentation("settings.json")
+    @StonecutterAPI
+    public fun create(projects: Iterable<ProjectPath>, file: File): String =
         create(projects.map { it.project() }, file).let { BNAN }
 
     /**Configures the specified [projects] to be versioned with setup provided by [file].*/
-    @StonecutterAPI public fun create(projects: Iterable<ProjectDescriptor>, file: File) {
+    @SCDocumentation("settings.json")
+    @StonecutterAPI
+    public fun create(projects: Iterable<ProjectDescriptor>, file: File) {
         require(file.extension.let { it == "json" || it == "json5" }) { "Version setup file must be in JSON or JSON5 format. See Stonecutter wiki for more information." }
         val data: TreeSettings = file.inputStream().use { LENIENT_JSON.decodeFromStream(it) }
         create(projects, Action { applyData(data) })
@@ -63,27 +79,45 @@ public abstract class SettingsAbstraction(internal val settings: Settings, inter
 
     /* Action configuration */
     /**Configures the specified [project] to be versioned with setup provided by [action] or [shared].*/
-    @StonecutterAPI @JvmOverloads public fun create(project: ProjectPath, action: Action<TreeBuilder> = shared): String =
+    @SCDocumentation("settings.create")
+    @StonecutterAPI
+    @JvmOverloads
+    public fun create(project: ProjectPath, action: Action<TreeBuilder> = shared): String =
         create(project.project(), action).let { BNAN }
 
     /**Configures the specified [project] to be versioned with setup provided by [action] or [shared].*/
-    @StonecutterAPI @JvmOverloads public fun create(project: ProjectDescriptor, action: Action<TreeBuilder> = shared): Unit =
+    @SCDocumentation("settings.create")
+    @StonecutterAPI
+    @JvmOverloads
+    public fun create(project: ProjectDescriptor, action: Action<TreeBuilder> = shared): Unit =
         create(listOf(project), action)
 
     /**Configures the specified [projects] to be versioned with setup provided by [action] or [shared].*/
-    @StonecutterAPI @JvmOverloads public fun create(vararg projects: ProjectPath, action: Action<TreeBuilder> = shared): String =
+    @SCDocumentation("settings.create")
+    @StonecutterAPI
+    @JvmOverloads
+    public fun create(vararg projects: ProjectPath, action: Action<TreeBuilder> = shared): String =
         create(projects.map { it.project() }, action).let { BNAN }
 
     /**Configures the specified [projects] to be versioned with setup provided by [action] or [shared].*/
-    @StonecutterAPI @JvmOverloads public fun create(vararg projects: ProjectDescriptor, action: Action<TreeBuilder> = shared): Unit =
+    @SCDocumentation("settings.create")
+    @StonecutterAPI
+    @JvmOverloads
+    public fun create(vararg projects: ProjectDescriptor, action: Action<TreeBuilder> = shared): Unit =
         create(projects.toList(), action)
 
     /**Configures the specified [projects] to be versioned with setup provided by [action] or [shared].*/
-    @StonecutterAPI @JvmOverloads public fun create(projects: Iterable<ProjectPath>, action: Action<TreeBuilder> = shared): String =
+    @SCDocumentation("settings.create")
+    @StonecutterAPI
+    @JvmOverloads
+    public fun create(projects: Iterable<ProjectPath>, action: Action<TreeBuilder> = shared): String =
         create(projects.map { it.project() }, action).let { BNAN }
 
     /**Configures the specified [projects] to be versioned with setup provided by [action] or [shared].*/
-    @StonecutterAPI @JvmOverloads public fun create(projects: Iterable<ProjectDescriptor>, action: Action<TreeBuilder> = shared): Unit =
+    @SCDocumentation("settings.create")
+    @StonecutterAPI
+    @JvmOverloads
+    public fun create(projects: Iterable<ProjectDescriptor>, action: Action<TreeBuilder> = shared): Unit =
         projects.forEach { create(it, objects.newInstance<TreeBuilder>(this).also(action::execute)) }
 
     /* Base configuration */

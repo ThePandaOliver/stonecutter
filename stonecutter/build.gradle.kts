@@ -30,11 +30,6 @@ idea {
     }
 }
 
-repositories {
-    mavenCentral()
-    maven("https://maven.kikugie.dev/releases")
-}
-
 dependencies {
     api(project(":stitcher"))
     implementation(libs.kotlin.serialization)
@@ -46,13 +41,25 @@ dependencies {
 }
 
 kdoclink {
-    fun wiki(page: String) = "https://stonecutter.kikugie.dev/stonecutter/$page"
+    fun wiki(page: String) = "https://stonecutter.kikugie.dev/wiki/$page"
 
     annotation = "dev.kikugie.stonecutter.SCDocumentation"
+    this["settings"] = wiki("start/settings")
+    this["settings.vcs"] = wiki("start/settings#version-reset-point")
+    this["settings.create"] = wiki("start/settings#specifying-versions")
+    this["settings.json"] = wiki("config/params")
+
+    this["swaps"] = wiki("config/params#string-swaps")
+    this["swaps.spec"] = wiki("config/params#swap-specification")
+
+    this["consts"] = wiki("config/params#condition-constants")
+    this["consts.spec"] = wiki("config/params#constant-specification")
+    this["consts.choice"] = wiki("config/params#choice-selector")
+
+    this["deps"] = wiki("config/params#condition-dependencies")
+    this["deps.spec"] = wiki("config/params#dependency-specification")
+
     this["utility"] = wiki("guide/setup#checking-versions")
-    this["settings"] = wiki("guide/setup#settings-settings-gradle-kts")
-    this["controller"] = wiki("guide/setup#controller-stonecutter-gradle-kts")
-    this["controller.chisel"] = wiki("guide/setup#chiseled-tasks")
 }
 
 tasks.withType<Test>().configureEach {

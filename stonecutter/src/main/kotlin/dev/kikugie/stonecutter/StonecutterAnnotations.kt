@@ -29,4 +29,4 @@ public annotation class StonecutterDelicate
 @MustBeDocumented
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.TYPEALIAS)
-internal annotation class SCDocumentation(val id: String)
+internal annotation class SCDocumentation(vararg val ids: String)
