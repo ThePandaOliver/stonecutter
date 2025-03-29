@@ -138,7 +138,7 @@ public open class StonecutterController(root: Project) :
             nodes.map {
                 NodeInfo(it.metadata, location cut it.location, it.metadata.isActive)
             }
-        ).save(tree.location.resolve("build/stonecutter-cache")).onFailure {
+        ).save(location.resolve("build/stonecutter-cache")).onFailure {
             root.logger.warn("Failed to save branch model for '$id'", it)
         }
     }
