@@ -3,7 +3,7 @@
 package dev.kikugie.stonecutter.data.tree
 
 import dev.kikugie.stonecutter.Identifier
-import dev.kikugie.stonecutter.build.StonecutterBuild
+import dev.kikugie.stonecutter.build.StonecutterBuildExtension
 import dev.kikugie.stonecutter.data.ProjectHierarchy
 import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.locate
 import dev.kikugie.stonecutter.data.StonecutterProject
@@ -39,7 +39,8 @@ public class ProjectNode(public val light: LightNode, public val project: Projec
      * Stonecutter plugin for this node.
      * @throws UnknownDomainObjectException if the plugin is not applied.
      */
-    public val stonecutter: StonecutterBuild get() = project.extensions.getByType<StonecutterBuild>()
+    public val stonecutter: StonecutterBuildExtension
+        get() = project.extensions.getByType<StonecutterBuildExtension>()
     override val branch: ProjectBranch by lazy { light.branch.let { ProjectBranch(it, project.locate(it.hierarchy)) } }
 
     override fun peer(node: Identifier): ProjectNode? =
@@ -90,8 +91,6 @@ public class ProjectBranch(public val light: LightBranch, public val project: Pr
  */
 public class ProjectTree(public val light: LightTree, public val project: Project) :
     TreePrototype<ProjectBranch> by light as TreePrototype<ProjectBranch> {
-    /**True whenever the active version was configured in any way in `stonecutter.gradle[.kts]`*/
-    internal var configured: Boolean = false
     /**File provider for the active version.*/
     internal var provider: File? = null
         set(value) {
@@ -114,7 +113,6 @@ public class ProjectTree(public val light: LightTree, public val project: Projec
     override var current: StonecutterProject
         get() = light.current
         internal set(value) {
-            configured = true
             light.current = value
         }
     override val branches: Collection<ProjectBranch> get() = values

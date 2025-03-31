@@ -8,7 +8,7 @@ import dev.kikugie.stitcher.lexer.TokenMatcher.Companion.isValidIdentifier
 
 /**Compatibility alias for migrating from 0.4 due to the changed file structure.*/
 @Deprecated("Use `stonecutter { }` instead")
-public typealias StonecutterSettings = dev.kikugie.stonecutter.settings.StonecutterSettings
+public typealias StonecutterSettings = dev.kikugie.stonecutter.settings.StonecutterSettingsExtension
 
 public typealias RunConfigType = dev.kikugie.stonecutter.ide.RunConfigType
 

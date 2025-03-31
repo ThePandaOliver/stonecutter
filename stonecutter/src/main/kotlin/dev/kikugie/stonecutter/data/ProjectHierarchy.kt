@@ -1,5 +1,6 @@
 package dev.kikugie.stonecutter.data
 
+import dev.kikugie.stonecutter.removeStarting
 import dev.kikugie.stonecutter.then
 import kotlinx.serialization.Serializable
 import org.gradle.api.Project
@@ -62,6 +63,11 @@ public value class ProjectHierarchy(private val path: String) {
         public val Project.hierarchy: ProjectHierarchy get() = ProjectHierarchy(path)
 
         public val ProjectDescriptor.hierarchy: ProjectHierarchy get() = ProjectHierarchy(path)
+
+        public fun of(path: String): ProjectHierarchy = when {
+            path.isEmpty() || path == ":" -> ROOT
+            else -> ProjectHierarchy(":${path.removeStarting(':')}")
+        }
 
         /**
          * Gets the Gradle project for the given [hierarchy].

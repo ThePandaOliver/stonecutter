@@ -2,7 +2,6 @@ package dev.kikugie.stonecutter.data.parameters
 
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.controller.GlobalParametersAccess
-import dev.kikugie.stonecutter.controller.StonecutterController
 import kotlinx.serialization.Serializable
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty

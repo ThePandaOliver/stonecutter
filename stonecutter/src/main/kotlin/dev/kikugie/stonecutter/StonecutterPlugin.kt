@@ -1,34 +1,30 @@
 package dev.kikugie.stonecutter
 
-import dev.kikugie.stonecutter.build.StonecutterBuild
-import dev.kikugie.stonecutter.controller.StonecutterController
-import dev.kikugie.stonecutter.controller.manager.controller
-import dev.kikugie.stonecutter.settings.StonecutterSettings
-import dev.kikugie.stonecutter.data.container.ConfigurationService
+import dev.kikugie.stonecutter.build.StonecutterBuildExtension
+import dev.kikugie.stonecutter.build.StonecutterBuildImpl
+import dev.kikugie.stonecutter.controller.StonecutterControllerExtension
+import dev.kikugie.stonecutter.controller.StonecutterControllerImpl
+import dev.kikugie.stonecutter.controller.StonecutterControllerManager.Companion.getController
+import dev.kikugie.stonecutter.settings.StonecutterSettingsExtension
+import dev.kikugie.stonecutter.settings.StonecutterSettingsImpl
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.initialization.Settings
-import org.gradle.api.invocation.Gradle
 import org.gradle.api.plugins.ExtensionAware
-import org.gradle.api.provider.Provider
 
 internal open class StonecutterPlugin : Plugin<ExtensionAware> {
-    internal companion object {
-        lateinit var SERVICE: Provider<ConfigurationService>
+    override fun apply(target: ExtensionAware) = target.applyPlugin()
 
-        private fun Gradle.createConfigurationService() = sharedServices
-            .registerIfAbsent(ConfigurationService.NAME, ConfigurationService::class.java)
-            .also { SERVICE = it }
+    private fun ExtensionAware.applyPlugin() = when (this) {
+        is Settings ->
+            stonecutter<StonecutterSettingsExtension, StonecutterSettingsImpl>()
+        is Project ->
+            if (getController() == null) stonecutter<StonecutterBuildExtension, StonecutterBuildImpl>()
+            else stonecutter<StonecutterControllerExtension, StonecutterControllerImpl>()
+        else -> error("The plugin may only be applied to settings and projects")
     }
 
-    override fun apply(target: ExtensionAware) {
-        if (target is Settings) target.gradle.createConfigurationService()
-        val type = if (target is Settings)
-            StonecutterSettings::class
-        else if (target is Project)
-            if (target.controller() == null) StonecutterBuild::class
-            else StonecutterController::class
-        else error("The plugin may only be applied to settings and projects")
-        target.extensions.create("stonecutter", type.java, target)
+    private inline fun <reified P, reified R : P> ExtensionAware.stonecutter() {
+        extensions.create(P::class.java, "stonecutter", R::class.java, this)
     }
 }

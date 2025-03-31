@@ -199,8 +199,8 @@ public sealed interface ExpandedProject {
         }
     }
 
-    private object JsonSerializer : JsonContentPolymorphicSerializer<ExpandedProject>(ExpandedProject::class) {
-        override fun selectDeserializer(element: JsonElement) = when(element) {
+    public object JsonSerializer : JsonContentPolymorphicSerializer<ExpandedProject>(ExpandedProject::class) {
+        override fun selectDeserializer(element: JsonElement): KSerializer<out ExpandedProject> = when(element) {
             is JsonObject -> CompositeProject.serializer()
             is JsonPrimitive -> StringProject.serializer()
             else -> error("Unsupported element type: ${element::class.simpleName}")

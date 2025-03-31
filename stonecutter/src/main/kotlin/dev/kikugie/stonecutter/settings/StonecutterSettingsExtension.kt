@@ -1,22 +1,22 @@
 package dev.kikugie.stonecutter.settings
 
 import dev.kikugie.stonecutter.*
+import dev.kikugie.stonecutter.LENIENT_JSON
+import dev.kikugie.stonecutter.SCDocumentation
 import dev.kikugie.stonecutter.data.tree.TreeBuilder
 import dev.kikugie.stonecutter.data.tree.TreeSettings
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import org.gradle.api.Action
 import org.gradle.api.initialization.ProjectDescriptor
-import org.gradle.api.initialization.Settings
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.ProviderFactory
 import org.gradle.kotlin.dsl.newInstance
 import java.io.File
 
-/**Method variations for [StonecutterSettings]*/
 @SCDocumentation("settings")
-@OptIn(ExperimentalSerializationApi::class)
-public abstract class SettingsAbstraction(internal val settings: Settings, internal val objects: ObjectFactory) {
+public abstract class StonecutterSettingsExtension {
     private lateinit var shared: Action<TreeBuilder>
 
     /**
@@ -42,7 +42,7 @@ public abstract class SettingsAbstraction(internal val settings: Settings, inter
     @SCDocumentation("settings.json")
     @StonecutterAPI
     public fun create(project: ProjectPath, file: File): String =
-        create(project.project(), file).let { BNAN }
+        create(descriptor(project), file).let { BNAN }
 
     /**Configures the specified [project] to be versioned with setup provided by [file].*/
     @SCDocumentation("settings.json")
@@ -54,7 +54,7 @@ public abstract class SettingsAbstraction(internal val settings: Settings, inter
     @SCDocumentation("settings.json")
     @StonecutterAPI
     public fun create(vararg projects: ProjectPath, file: File): String =
-        create(projects.map { it.project() }, file).let { BNAN }
+        create(projects.map(::descriptor), file).let { BNAN }
 
     /**Configures the specified [projects] to be versioned with setup provided by [file].*/
     @SCDocumentation("settings.json")
@@ -66,9 +66,10 @@ public abstract class SettingsAbstraction(internal val settings: Settings, inter
     @SCDocumentation("settings.json")
     @StonecutterAPI
     public fun create(projects: Iterable<ProjectPath>, file: File): String =
-        create(projects.map { it.project() }, file).let { BNAN }
+        create(projects.map(::descriptor), file).let { BNAN }
 
     /**Configures the specified [projects] to be versioned with setup provided by [file].*/
+    @OptIn(ExperimentalSerializationApi::class)
     @SCDocumentation("settings.json")
     @StonecutterAPI
     public fun create(projects: Iterable<ProjectDescriptor>, file: File) {
@@ -83,7 +84,7 @@ public abstract class SettingsAbstraction(internal val settings: Settings, inter
     @StonecutterAPI
     @JvmOverloads
     public fun create(project: ProjectPath, action: Action<TreeBuilder> = shared): String =
-        create(project.project(), action).let { BNAN }
+        create(descriptor(project), action).let { BNAN }
 
     /**Configures the specified [project] to be versioned with setup provided by [action] or [shared].*/
     @SCDocumentation("settings.create")
@@ -97,7 +98,7 @@ public abstract class SettingsAbstraction(internal val settings: Settings, inter
     @StonecutterAPI
     @JvmOverloads
     public fun create(vararg projects: ProjectPath, action: Action<TreeBuilder> = shared): String =
-        create(projects.map { it.project() }, action).let { BNAN }
+        create(projects.map(::descriptor), action).let { BNAN }
 
     /**Configures the specified [projects] to be versioned with setup provided by [action] or [shared].*/
     @SCDocumentation("settings.create")
@@ -111,7 +112,7 @@ public abstract class SettingsAbstraction(internal val settings: Settings, inter
     @StonecutterAPI
     @JvmOverloads
     public fun create(projects: Iterable<ProjectPath>, action: Action<TreeBuilder> = shared): String =
-        create(projects.map { it.project() }, action).let { BNAN }
+        create(projects.map(::descriptor), action).let { BNAN }
 
     /**Configures the specified [projects] to be versioned with setup provided by [action] or [shared].*/
     @SCDocumentation("settings.create")
@@ -121,13 +122,8 @@ public abstract class SettingsAbstraction(internal val settings: Settings, inter
         projects.forEach { create(it, objects.newInstance<TreeBuilder>(this).also(action::execute)) }
 
     /* Base configuration */
+    internal abstract val providers: ProviderFactory
+    internal abstract val objects: ObjectFactory
     protected abstract fun create(project: ProjectDescriptor, setup: TreeBuilder)
-
-    protected fun ProjectPath.project(): ProjectDescriptor = removeStarting(':').let {
-        if (it.isEmpty()) settings.rootProject
-        else {
-            settings.include(it)
-            settings.project(":$it")
-        }
-    }
+    protected abstract fun descriptor(path: ProjectPath): ProjectDescriptor
 }

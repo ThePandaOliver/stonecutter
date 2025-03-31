@@ -2,15 +2,15 @@
 
 package stonecutter_samples
 
-import dev.kikugie.stonecutter.settings.StonecutterSettings
+import dev.kikugie.stonecutter.settings.StonecutterSettingsExtension
 import kotlin.collections.map
 import kotlin.text.split
 import kotlin.to
 
 private val rootProject: String get() = TODO("This is a sample, it must not be instantiated.") // Project in real case
 private val subProject: String get() = TODO("This is a sample, it must not be instantiated.") // Project in real case
-private val stonecutter: StonecutterSettings get() = TODO("This is a sample, it must not be instantiated.")
-private fun stonecutter(action: StonecutterSettings.() -> Unit) {}
+private val stonecutter: StonecutterSettingsExtension get() = TODO("This is a sample, it must not be instantiated.")
+private fun stonecutter(action: StonecutterSettingsExtension.() -> Unit) {}
 private fun property(name: String): Any = TODO("This is a sample, it must not be instantiated.")
 
 private object create {

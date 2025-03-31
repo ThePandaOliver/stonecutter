@@ -2,12 +2,12 @@
 
 package stonecutter_samples
 
-import dev.kikugie.stonecutter.build.StonecutterBuild
+import dev.kikugie.stonecutter.build.StonecutterBuildExtension
 import kotlin.collections.set
 import kotlin.to
 
-private val stonecutter: StonecutterBuild get() = TODO("This is a sample, it must not be instantiated.")
-private fun stonecutter(action: StonecutterBuild.() -> Unit) {}
+private val stonecutter: StonecutterBuildExtension get() = TODO("This is a sample, it must not be instantiated.")
+private fun stonecutter(action: StonecutterBuildExtension.() -> Unit) {}
 private fun property(name: String): Any {
     throw UnsupportedOperationException("Not yet implemented.")
 }

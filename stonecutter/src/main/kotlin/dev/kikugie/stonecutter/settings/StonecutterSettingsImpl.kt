@@ -1,10 +1,11 @@
 package dev.kikugie.stonecutter.settings
 
-import dev.kikugie.stonecutter.SCDocumentation
+import dev.kikugie.stonecutter.ProjectPath
 import dev.kikugie.stonecutter.STONECUTTER
-import dev.kikugie.stonecutter.StonecutterUtility
-import dev.kikugie.stonecutter.controller.manager.GroovyController
+import dev.kikugie.stonecutter.controller.StonecutterControllerManager
+import dev.kikugie.stonecutter.data.ProjectHierarchy
 import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
+import dev.kikugie.stonecutter.data.container.ProjectTreeContainer
 import dev.kikugie.stonecutter.data.container.TreeBuilderContainer
 import dev.kikugie.stonecutter.data.container.createContainer
 import dev.kikugie.stonecutter.data.tree.BranchBuilder
@@ -16,7 +17,10 @@ import org.gradle.api.initialization.ProjectDescriptor
 import org.gradle.api.initialization.Settings
 import org.gradle.api.invocation.Gradle
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
+import org.gradle.api.provider.ProviderFactory
 import org.gradle.internal.DefaultTaskExecutionRequest
+import org.gradle.kotlin.dsl.property
 import org.gradle.kotlin.dsl.register
 import java.io.File
 import java.nio.file.Path
@@ -25,13 +29,7 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.notExists
 
-/**
- * Configures versions used by Stonecutter and creates the corresponding Gradle projects.
- */
-@SCDocumentation("settings")
-public abstract class StonecutterSettings @Inject constructor(settings: Settings, objects: ObjectFactory) :
-    SettingsAbstraction(settings, objects),
-    StonecutterUtility {
+internal open class StonecutterSettingsImpl @Inject constructor(private val settings: Settings, final override val objects: ObjectFactory) : StonecutterSettingsExtension() {
     internal companion object {
         const val DEFAULT_CONTROLLER_STATE = true
         const val DEFAULT_BUILD_SCRIPT = "build.gradle.kts"
@@ -51,6 +49,9 @@ public abstract class StonecutterSettings @Inject constructor(settings: Settings
         """.trimIndent()
     }
 
+    override val providers: ProviderFactory get() = settings.providers
+    final override val kotlinController: Property<Boolean> = objects.property()
+    final override val centralScript: Property<String> = objects.property()
     private var groovy = false
     private val container: TreeBuilderContainer = settings.gradle.createContainer()
 
@@ -67,17 +68,27 @@ public abstract class StonecutterSettings @Inject constructor(settings: Settings
         settings.gradle.projectsLoaded {
             createIdeaConfigurations(this, rootProject)
         }
+        settings.gradle.createContainer<ProjectTreeContainer>()
+    }
+
+    override fun descriptor(path: ProjectPath): ProjectDescriptor {
+        val hierarchy = ProjectHierarchy.of(path)
+        return if (hierarchy == ProjectHierarchy.ROOT) settings.rootProject
+        else settings.run {
+            include(hierarchy.toString().removePrefix(":"))
+            project(hierarchy.toString())
+        }
     }
 
     override fun create(project: ProjectDescriptor, setup: TreeBuilder): Unit = with(setup) {
         require(container.register(project.hierarchy, this)) { "Project ${project.path} is already registered" }
 
         val controller = controller.also {
-            if (it == GroovyController) groovy = true
+            if (it == StonecutterControllerManager.Groovy) groovy = true
         }
         project.buildFileName = controller.filename
         with(project.projectDir.resolve(controller.filename).toPath()) {
-            if (notExists()) controller.createHeader(this, vcsProject.project)
+            if (notExists()) controller.create(this, vcsProject.project)
         }
 
         for (branch in branches.values) createBranch(project, branch)
@@ -93,7 +104,7 @@ public abstract class StonecutterSettings @Inject constructor(settings: Settings
 
     private fun createBranch(root: ProjectDescriptor, branch: BranchBuilder) = with(branch) {
         require(nodes.isNotEmpty()) { "Registered branch '$id' has no nodes" }
-        val project = if (id.isEmpty()) root else "${root.path}:$id".project()
+        val project = if (id.isEmpty()) root else descriptor("${root.path}:$id")
         project.projectDir.toPath().createDirectories()
         project.buildFileName = tree.controller.filename
             .also { if (it.isGroovy()) groovy = true }
@@ -102,7 +113,7 @@ public abstract class StonecutterSettings @Inject constructor(settings: Settings
     }
 
     private fun createProject(root: ProjectDescriptor, node: NodeBuilder) = with(node) {
-        val project = "${root.path}:${metadata.project}".project()
+        val project = descriptor("${root.path}:${metadata.project}")
         val versionDir = File("${root.projectDir}/versions/${metadata.project}")
         versionDir.mkdirs()
 

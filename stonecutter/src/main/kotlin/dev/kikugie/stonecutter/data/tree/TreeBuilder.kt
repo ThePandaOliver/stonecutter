@@ -1,11 +1,9 @@
 package dev.kikugie.stonecutter.data.tree
 
 import dev.kikugie.stonecutter.*
-import dev.kikugie.stonecutter.controller.manager.ControllerManager
-import dev.kikugie.stonecutter.controller.manager.GroovyController
-import dev.kikugie.stonecutter.controller.manager.KotlinController
+import dev.kikugie.stonecutter.controller.StonecutterControllerManager
 import dev.kikugie.stonecutter.data.StonecutterProject
-import dev.kikugie.stonecutter.settings.StonecutterSettings
+import dev.kikugie.stonecutter.settings.StonecutterSettingsExtension
 import groovy.lang.Closure
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
@@ -15,7 +13,7 @@ import javax.inject.Inject
 
 @SCDocumentation("settings.create")
 public abstract class TreeBuilder @Inject constructor(
-    private val settings: StonecutterSettings,
+    private val settings: StonecutterSettingsExtension,
 ) : ProjectProvider() {
     init {
         vcsVersion.convention(providers.provider {
@@ -51,11 +49,12 @@ public abstract class TreeBuilder @Inject constructor(
     internal var localBuildscriptProvider: ((Identifier, StonecutterProject) -> String)? = null
 
     internal val objects: ObjectFactory get() = settings.objects
-    internal val providers: ProviderFactory get() = settings.settings.providers
+    internal val providers: ProviderFactory get() = settings.providers
     internal val vcsProject: StonecutterProject
         get() = checkNotNull(findVcsProject()) { "Version '${vcsVersion()}' is not registered" }
-    internal val controller: ControllerManager
-        get() = if (kotlinController()) KotlinController else GroovyController
+    internal val controller: StonecutterControllerManager
+        get() = if (kotlinController()) StonecutterControllerManager.Kotlin
+        else StonecutterControllerManager.Groovy
 
     /**
      * Creates retrieves an inherited branch with the given [name], which copies all versions specified in this block.

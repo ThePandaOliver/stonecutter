@@ -4,7 +4,6 @@ import dev.kikugie.semver.Version
 import dev.kikugie.stitcher.data.replacement.Replacement
 import dev.kikugie.semver.SemanticVersion as SemanticVersionImpl
 import dev.kikugie.stonecutter.*
-import dev.kikugie.stonecutter.data.parameters.BuildParameters
 import groovy.lang.Closure
 import org.gradle.api.Action
 import org.intellij.lang.annotations.Language

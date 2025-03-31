@@ -11,6 +11,7 @@ import dev.kikugie.stonecutter.data.tree.TreePrototype
 import org.gradle.api.provider.MapProperty
 import kotlinx.serialization.json.Json
 import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.kotlin.dsl.getByType
 import java.nio.file.Path
 import kotlin.reflect.KClass
 
@@ -44,8 +45,8 @@ internal fun String.removeStarting(char: Char): String {
     return substring(index)
 }
 
-internal val Project.sourceSets: SourceSetContainer?
-    get() = project.findProperty("sourceSets") as? SourceSetContainer
+internal val Project.sourceSets: SourceSetContainer
+    get() = project.extensions.getByType<SourceSetContainer>()
 internal val Project.projectPath: Path get() = projectDir.toPath()
 internal val Project.buildDirectoryFile
     get() = layout.buildDirectory.asFile.get()

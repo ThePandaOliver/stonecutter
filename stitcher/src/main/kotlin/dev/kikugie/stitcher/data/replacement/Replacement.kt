@@ -87,7 +87,7 @@ class RegexReplacement(
 /**A delegated collection of replacements, which performs checking and merging on added elements.*/
 @JvmInline
 @Serializable
-value class ReplacementList(internal val delegate: MutableList<Replacement> = mutableListOf()) : MutableCollection<Replacement> by delegate {
+value class ReplacementList(val delegate: MutableList<Replacement> = mutableListOf()) : MutableCollection<Replacement> by delegate {
     override fun addAll(elements: Collection<Replacement>): Boolean = if (elements.isEmpty()) false else {
         elements.forEach(::addReplacement)
         true

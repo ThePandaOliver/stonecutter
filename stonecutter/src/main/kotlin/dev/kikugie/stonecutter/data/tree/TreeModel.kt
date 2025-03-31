@@ -5,7 +5,6 @@ package dev.kikugie.stonecutter.data.tree
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlConfiguration
 import dev.kikugie.stonecutter.StonecutterAPI
-import dev.kikugie.stonecutter.data.parameters.BuildParameters
 import dev.kikugie.stitcher.util.PathSerializer
 import dev.kikugie.stonecutter.data.StonecutterProject
 import dev.kikugie.stonecutter.data.parameters.GlobalParameters
@@ -68,7 +67,7 @@ public data class NodeModel(
     val root: Path,
     val branch: BranchInfo,
     val active: Boolean,
-    val parameters: BuildParameters
+//    val parameters: BuildParameters
 ) {
     public companion object {
         /**Literally `node.yml`.*/
