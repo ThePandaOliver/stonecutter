@@ -73,8 +73,8 @@ tasks.withType<AbstractDokkaParentTask> {
     moduleName = "Stonecutter KDoc"
 
     pluginConfiguration<DokkaBase, DokkaBaseConfiguration> {
-        homepageLink = "https://stonecutter.kikugie.dev/"
-        footerMessage = "(c) 2024 KikuGie"
+        homepageLink = "https://stonecutter.codeberg.page/"
+        footerMessage = "(c) 2025 KikuGie"
     }
 }
 
@@ -88,7 +88,7 @@ subprojects {
 
             sourceLink {
                 localDirectory.set(projectDir)
-                remoteUrl.set("https://github.com/stonecutter-versioning/stonecutter/tree/0.5/${project.name}/".URL)
+                remoteUrl.set("https://codeberg.org/stonecutter/stonecutter/src/branch/0.6/${project.name}/".URL)
                 remoteLineSuffix.set("#L")
             }
 
