@@ -72,8 +72,7 @@ export default defineConfig({
     }
   },
   sitemap: {
-    hostname: "https://stonecutter.kikugie.dev/",
-    transformItems: items => removeVersionedItems(items)
+    hostname: "https://stonecutter.kikugie.dev/"
   },
   markdown: {
     config(md) {

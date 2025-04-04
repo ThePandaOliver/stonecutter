@@ -13,6 +13,7 @@ import org.gradle.api.provider.ProviderFactory
 import org.gradle.kotlin.dsl.newInstance
 import javax.inject.Inject
 
+@Suppress("LeakingThis")
 @SCDocumentation("settings.create")
 public abstract class TreeBuilder @Inject constructor(
     private val settings: StonecutterSettings,
@@ -40,7 +41,8 @@ public abstract class TreeBuilder @Inject constructor(
 
     /**
      * Configures the default name for the versioned buildscript.
-     * Can be overridden by [TreeBuilder.mapBuilds] or [BranchBuilder.mapBuilds].
+     * Can be overridden, in order of priority, by:
+     * 1. [NodeProvider.buildscript]
      */
     @SCDocumentation("settings.create")
     @StonecutterAPI
@@ -149,12 +151,11 @@ public abstract class BranchBuilder @Inject constructor(
     }.let(::NodeProvider)
 }
 
-public abstract class NodeBuilder @Inject constructor(
+internal abstract class NodeBuilder @Inject constructor(
     internal val metadata: StonecutterProject,
     internal val branch: BranchBuilder,
 ) {
-    @StonecutterAPI
-    public abstract val localScript: Property<String>
+    internal abstract val localScript: Property<String>
 
     internal val buildscript: String
         get() = localScript().apply {
@@ -168,8 +169,10 @@ public abstract class NodeBuilder @Inject constructor(
         ?: branch.tree.centralScript()
 }
 
-public class NodeProvider(private val builders: Iterable<NodeBuilder>) {
+/**Provides a wrapper for one or more [NodeBuilder]s to link custom buildscript files.*/
+public class NodeProvider internal constructor(private val builders: Iterable<NodeBuilder>) {
     public var buildscript: String
         @Deprecated("Write-only property", level = DeprecationLevel.HIDDEN) get() = error("")
-        @JvmName("buildscript") set(value) = builders.forEach { it.localScript.set(value) }
+        set(value) = buildscript(value)
+    public fun buildscript(name: String): Unit = builders.forEach { it.localScript.set(name) }
 }

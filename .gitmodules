@@ -1,0 +1,3 @@
+[submodule "docs/.vitepress/dist"]
+	path = docs/.vitepress/dist
+	url = https://codeberg.org/stonecutter/pages.git
