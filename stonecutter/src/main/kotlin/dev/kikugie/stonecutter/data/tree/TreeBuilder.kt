@@ -7,23 +7,19 @@ import dev.kikugie.stonecutter.controller.manager.KotlinController
 import dev.kikugie.stonecutter.data.StonecutterProject
 import dev.kikugie.stonecutter.settings.StonecutterSettings
 import groovy.lang.Closure
-import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
-import org.gradle.api.provider.ProviderFactory
 import org.gradle.kotlin.dsl.newInstance
 import javax.inject.Inject
 
 @Suppress("LeakingThis")
 @SCDocumentation("settings.create")
 public abstract class TreeBuilder @Inject constructor(
-    private val settings: StonecutterSettings,
+    internal val settings: StonecutterSettings,
 ) : ProjectProvider() {
     init {
-        vcsVersion.convention(providers.provider {
+        vcsVersion.convention(settings.settings.providers.provider {
             checkNotNull(versions.keys.firstOrNull()?.project) { "No versions registered" }
         })
-        kotlinController.convention(settings.kotlinController)
-        centralScript.convention(settings.centralScript)
     }
 
     /**Configures the Version Control Reset project, which is used by the `Reset active project` task.*/
@@ -50,14 +46,10 @@ public abstract class TreeBuilder @Inject constructor(
 
     internal val branches: MutableMap<Identifier, BranchBuilder> = mutableMapOf()
     internal val versions: MutableMap<StonecutterProject, StonecutterProject> = mutableMapOf()
-    internal var localBuildscriptProvider: ((Identifier, StonecutterProject) -> String)? = null
+    private var localBuildScriptProvider: ((Identifier, StonecutterProject) -> String)? = null
 
-    internal val objects: ObjectFactory get() = settings.objects
-    internal val providers: ProviderFactory get() = settings.settings.providers
     internal val vcsProject: StonecutterProject
         get() = checkNotNull(findVcsProject()) { "Version '${vcsVersion()}' is not registered" }
-    internal val controller: ControllerManager
-        get() = if (kotlinController()) KotlinController else GroovyController
 
     /**
      * Creates retrieves an inherited branch with the given [name], which copies all versions specified in this block.
@@ -92,7 +84,7 @@ public abstract class TreeBuilder @Inject constructor(
      */
     @StonecutterAPI
     public fun mapBuilds(action: (Identifier, StonecutterProject) -> String) {
-        localBuildscriptProvider = action
+        localBuildScriptProvider = action
     }
 
     override fun versions(versions: Iterable<StonecutterProject>): NodeProvider =
@@ -107,13 +99,26 @@ public abstract class TreeBuilder @Inject constructor(
         for ((name, projects) in settings.entries) branch(name) {
             for (it in projects) {
                 vers(it.entry.project, it.entry.version)
-                it.buildscript?.let { b -> nodes[it.entry.project]!!.localScript.set(b) }
+                it.buildscript?.let { b -> nodes[it.entry.project]!!.buildscript = b }
             }
         }
     }
 
+    internal fun buildScriptFor(branch: Identifier, project: StonecutterProject): String =
+        localBuildScriptProvider?.invoke(branch, project)
+            ?: centralScript.orNull
+            ?: settings.centralScript.orNull
+            ?: settings.getDefaultBuildScript(branch, "build")
+
+    internal fun controllerTypeFor(branch: Identifier = ""): ControllerManager =
+        if (isKotlinController(branch)) KotlinController else GroovyController
+
+    private fun isKotlinController(branch: Identifier = ""): Boolean = kotlinController.orNull
+        ?: settings.kotlinController.orNull
+        ?: settings.getDefaultBuildScript(branch, "stonecutter").endsWith("kts")
+
     private fun getOrCreateBranch(name: Identifier): BranchBuilder =
-        branches.getOrPut(name) { objects.newInstance(name, this) }
+        branches.getOrPut(name) { settings.objects.newInstance(name, this) }
 
     private fun findVcsProject() = versions.values.find { it.project == vcsVersion() }
 }
@@ -123,10 +128,7 @@ public abstract class BranchBuilder @Inject constructor(
     internal val tree: TreeBuilder,
 ) : ProjectProvider() {
     internal val nodes: MutableMap<Identifier, NodeBuilder> = mutableMapOf()
-    internal var localBuildscriptProvider: ((StonecutterProject) -> String)? = null
-        get() = field ?: tree.localBuildscriptProvider?.run { { invoke(id, it) } }
-
-    internal val objects: ObjectFactory get() = tree.objects
+    private var localBuildScriptProvider: ((StonecutterProject) -> String)? = null
 
     /**
      * Adds versions currently present in the main branch.
@@ -142,31 +144,30 @@ public abstract class BranchBuilder @Inject constructor(
      */
     @StonecutterAPI
     public fun mapBuilds(action: (StonecutterProject) -> String) {
-        localBuildscriptProvider = action
+        localBuildScriptProvider = action
     }
 
     override fun versions(versions: Iterable<StonecutterProject>): NodeProvider = versions.map {
         require(it.project !in nodes) { "Duplicate project identifier: '${it.project}' in branch '$id'" }
-        objects.newInstance<NodeBuilder>(tree.identity(it), this).apply { nodes[it.project] = this }
+        NodeBuilder(tree.identity(it), this).apply { nodes[it.project] = this }
     }.let(::NodeProvider)
+
+    internal fun buildScriptFor(project: StonecutterProject) =
+        localBuildScriptProvider?.invoke(project)
+            ?: tree.buildScriptFor(id, project)
 }
 
-internal abstract class NodeBuilder @Inject constructor(
+internal class NodeBuilder(
     internal val metadata: StonecutterProject,
     internal val branch: BranchBuilder,
 ) {
-    internal abstract val localScript: Property<String>
-
-    internal val buildscript: String
-        get() = localScript().apply {
+    var buildscript: String
+        get() = (buildScriptOverride ?: branch.buildScriptFor(metadata)).apply {
             check(isNotBlank()) { "Buildscript must not be blank" }
             check("stonecutter.gradle" !in this) { "Buildscript must not override the controller" }
         }
-
-    private fun localScript(): String = localScript
-        .takeIf { it.isPresent }?.invoke()
-        ?: branch.localBuildscriptProvider?.invoke(metadata)
-        ?: branch.tree.centralScript()
+        set(value) { buildScriptOverride = value }
+    private var buildScriptOverride: String? = null
 }
 
 /**Provides a wrapper for one or more [NodeBuilder]s to link custom buildscript files.*/
@@ -174,5 +175,5 @@ public class NodeProvider internal constructor(private val builders: Iterable<No
     public var buildscript: String
         @Deprecated("Write-only property", level = DeprecationLevel.HIDDEN) get() = error("")
         set(value) = buildscript(value)
-    public fun buildscript(name: String): Unit = builders.forEach { it.localScript.set(name) }
+    public fun buildscript(name: String): Unit = builders.forEach { it.buildscript = name }
 }

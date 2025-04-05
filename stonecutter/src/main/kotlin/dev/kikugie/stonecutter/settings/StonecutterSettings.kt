@@ -33,9 +33,6 @@ public abstract class StonecutterSettings @Inject constructor(settings: Settings
     SettingsAbstraction(settings, objects),
     StonecutterUtility {
     internal companion object {
-        const val DEFAULT_CONTROLLER_STATE = true
-        const val DEFAULT_BUILD_SCRIPT = "build.gradle.kts"
-
         val GROOVY_COMPLAINT_DOT_TXT = """
             NOTICE: Limited Groovy DSL support for Stonecutter
             --------------------------------------------------------------------------------------------------------
@@ -55,11 +52,6 @@ public abstract class StonecutterSettings @Inject constructor(settings: Settings
     private val container: TreeBuilderContainer = settings.gradle.createContainer()
 
     init {
-        val factory = settings.providers
-        val path = settings.rootDir.toPath()
-        kotlinController.convention(factory.provider { getExistingBuildscript(path, "stonecutter").endsWith("kts") })
-        centralScript.convention(factory.provider { getExistingBuildscript(path, "build")})
-
         println("Running Stonecutter $STONECUTTER") // Printed to help identify issues
         settings.gradle.settingsEvaluated {
             if (groovy) println(GROOVY_COMPLAINT_DOT_TXT)
@@ -72,10 +64,8 @@ public abstract class StonecutterSettings @Inject constructor(settings: Settings
     override fun create(project: ProjectDescriptor, setup: TreeBuilder): Unit = with(setup) {
         require(container.register(project.hierarchy, this)) { "Project ${project.path} is already registered" }
 
-        val controller = controller.also {
-            if (it == GroovyController) groovy = true
-        }
-        project.buildFileName = controller.filename
+        val controller = controllerTypeFor("")
+        project.buildFileName = controller.filename.also(::checkGroovy)
         with(project.projectDir.resolve(controller.filename).toPath()) {
             if (notExists()) controller.createHeader(this, vcsProject.project)
         }
@@ -83,20 +73,20 @@ public abstract class StonecutterSettings @Inject constructor(settings: Settings
         for (branch in branches.values) createBranch(project, branch)
     }
 
-    private fun getExistingBuildscript(dir: Path, type: String): String = when {
+    internal fun getDefaultBuildScript(relative: String = "", type: String) =
+        getDefaultBuildScript(settings.rootDir.toPath().let { if (relative.isEmpty()) it else it.resolve(relative) }, type)
+
+    private fun getDefaultBuildScript(dir: Path, type: String): String = when {
         dir.resolve("$type.gradle.kts").exists() -> "$type.gradle.kts"
         dir.resolve("$type.gradle").exists() -> "$type.gradle"
         else -> "$type.gradle.kts"
     }
 
-    private fun String.isGroovy() = endsWith(".gradle")
-
     private fun createBranch(root: ProjectDescriptor, branch: BranchBuilder) = with(branch) {
         require(nodes.isNotEmpty()) { "Registered branch '$id' has no nodes" }
         val project = if (id.isEmpty()) root else "${root.path}:$id".project()
         project.projectDir.toPath().createDirectories()
-        project.buildFileName = tree.controller.filename
-            .also { if (it.isGroovy()) groovy = true }
+        project.buildFileName = tree.controllerTypeFor(id).filename.also(::checkGroovy)
 
         for (node in nodes.values) createProject(project, node)
     }
@@ -106,7 +96,7 @@ public abstract class StonecutterSettings @Inject constructor(settings: Settings
         val versionDir = File("${root.projectDir}/versions/${metadata.project}")
         versionDir.mkdirs()
 
-        val script = buildscript.also { if (it.isGroovy()) groovy = true }
+        val script = buildscript.also(::checkGroovy)
         project.projectDir = versionDir
         project.name = metadata.project
         project.buildFileName = "../../$script"
@@ -120,5 +110,9 @@ public abstract class StonecutterSettings @Inject constructor(settings: Settings
             if (taskRequests.none { "stonecutterIdea" in it.args })
                 setTaskRequests(taskRequests + DefaultTaskExecutionRequest(listOf("stonecutterIdea")))
         }
+    }
+
+    private fun checkGroovy(file: String) {
+        if (groovy || file.endsWith(".gradle")) groovy = true
     }
 }
