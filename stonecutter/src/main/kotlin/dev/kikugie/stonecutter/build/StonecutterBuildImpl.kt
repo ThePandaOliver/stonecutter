@@ -19,7 +19,9 @@ import dev.kikugie.stonecutter.process.FileProcessingData
 import dev.kikugie.stonecutter.process.FileProcessingData.ReplacementData
 import dev.kikugie.stonecutter.process.FileProcessingTask
 import dev.kikugie.stonecutter.sourceSets
+import kotlinx.coroutines.yield
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.file.FileSystemLocation
 import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.tasks.SourceSet
@@ -54,8 +56,6 @@ private fun ProjectTree.getControllerImpl(): StonecutterControllerImpl =
 
 private fun String.upFirst() = replaceFirstChar(Char::uppercase)
 
-private val FileSystemLocation.asPath: Path get() = asFile.toPath()
-
 internal open class StonecutterBuildImpl @JvmOverloads constructor (
     val project: Project,
     final override val tree: ProjectTree = project.findProjectTree(),
@@ -75,26 +75,35 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor (
 
     private fun configureProject() = with(project) {
         plugins.apply("java")
-        sourceSets.all {
-            val gens = allSources().map { configureSourceDirectory(this, it) }
-                .toList()
+        val prepareTasks: MutableList<String> = mutableListOf()
 
-            if (System.getProperty("idea.sync.active", "false").toBoolean()) gradle.startParameter.run {
-                val requests = taskRequests + DefaultTaskExecutionRequest(gens.map { it.name }, path, projectDir)
-                setTaskRequests(requests)
-            }
+        sourceSets.all {
+            val gens: List<String> = allSources().map { configureSourceDirectory(this, it).name }.toList()
+            prepareTasks += gens.map { "$path:$it" }
+        }
+
+        configureTaskDependencies(prepareTasks)
+    }
+
+    private fun configureTaskDependencies(prepareTasks: MutableList<String>) = project.afterEvaluate {
+        for (it in sourceSets.asSequence().flatMap(::getTargetTasks))
+            if (it in tasks.names) tasks.named(it) { dependsOn(prepareTasks) }
+
+        if (System.getProperty("idea.sync.active", "false").toBoolean()) gradle.startParameter.run {
+            val requests = taskRequests + DefaultTaskExecutionRequest(prepareTasks, path, projectDir)
+            setTaskRequests(requests)
         }
     }
 
-    private fun getTargetTasks(set: SourceSet, dir: SourceDirectorySet) = when {
-        dir == set.resources -> listOf(
+    private fun getTargetTasks(set: SourceSet): Sequence<String> = set.allSources().flatMap {
+        if (it == set.resources) listOf(
             set.processResourcesTaskName,
             set.sourcesJarTaskName
         )
-        else -> listOf(
-            set.getCompileTaskName(dir.name),
+        else listOf(
+            set.getCompileTaskName(it.name),
             set.sourcesJarTaskName,
-            set.javadocTaskName
+            set.javadocTaskName,
         )
     }
 
