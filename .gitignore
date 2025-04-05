@@ -27,3 +27,4 @@ run
 *index.md
 /.env
 /docs/public/dokka/
+/docs/.vitepress/dist/

@@ -48,7 +48,7 @@ export default defineConfig({
         items: [
           {text: "Project settings", link: "/wiki/start/settings"},
           {text: "Project controller", link: "/wiki/start/controller"},
-          {text: "Mod setup", link: "/wiki/start/build"},
+          {text: "Mod setup", link: "/wiki/start/builds"},
           {text: "Versioning code", link: "/wiki/start/comments"},
         ]
       },
