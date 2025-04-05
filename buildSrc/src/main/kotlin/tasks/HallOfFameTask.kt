@@ -65,15 +65,15 @@ abstract class HallOfFameTask : DefaultTask() {
 
         val (entries, projects) = runBlocking { Collector.get(token, config, cache) }
         entries.forEach { it.internal.keys.retainAll(listOf("curseforge_id")) }
-        cacheFile.writeYaml(ListSerializer(SearchEntry.serializer()), entries.toList())
+        cacheFile.writeYaml(ListSerializer(SearchEntry.serializer()), entries.sortedBy { it.id.lowercase() })
 
         val template = templateFile.get().asFile.readText()
         val js = projects.values
-            .sortedByDescending { it.updated }
+            .sortedByDescending { it.downloads }
             .joinToString(",\n") { it.toJS() }
             .let { template.replaceFirst("'%PLACEHOLDER%'", it) }
         outputFiles.get().files.forEach { it.writeText(js) }
-        writeUnresolved(entries.toList())
+//        writeUnresolved(entries.toList())
     }
 
     private fun writeUnresolved(entries: List<SearchEntry>) = entries.mapNotNull {
