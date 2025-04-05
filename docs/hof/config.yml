@@ -195,3 +195,29 @@ entries:
     curseforge: https://www.curseforge.com/minecraft/mc-mods/simple-smithing-overhaul
   - id: pajicadvance/simple-death-improvements
     curseforge: https://www.curseforge.com/minecraft/mc-mods/simple-death-improvements
+  - id: MicrocontrollersDev/Confirm-Disconnect
+    source: https://codeberg.org/MicrocontrollersDev/Confirm-Disconnect
+  - id: MicrocontrollersDev/Smooth-Skies
+    source: https://codeberg.org/MicrocontrollersDev/Smooth-Skies
+  - id: MicrocontrollersDev/CrosshairTweaks
+    source: https://codeberg.org/MicrocontrollersDev/CrosshairTweaks
+  - id: MicrocontrollersDev/ScoreboardTweaks
+    source: https://codeberg.org/MicrocontrollersDev/ScoreboardTweaks
+  - id: MicrocontrollersDev/NametagTweaks
+    source: https://codeberg.org/MicrocontrollersDev/NametagTweaks
+  - id: MicrocontrollersDev/OverlayTweaks
+    source: https://codeberg.org/MicrocontrollersDev/OverlayTweaks
+  - id: MicrocontrollersDev/TitleTweaks
+    source: https://codeberg.org/MicrocontrollersDev/TitleTweaks
+  - id: MicrocontrollersDev/BetterNightVision
+    source: https://codeberg.org/MicrocontrollersDev/BetterNightVision
+  - id: MicrocontrollersDev/TabTweaks
+    source: https://codeberg.org/MicrocontrollersDev/TabTweaks
+  - id: MicrocontrollersDev/DroppedItemTweaks
+    source: https://codeberg.org/MicrocontrollersDev/DroppedItemTweaks
+  - id: MicrocontrollersDev/Sciophobia
+    source: https://codeberg.org/MicrocontrollersDev/Sciophobia
+  - id: MicrocontrollersDev/ScrollTweaks
+    source: https://codeberg.org/MicrocontrollersDev/ScrollTweaks
+  - id: MicrocontrollersDev/MountOpacity
+    source: https://codeberg.org/MicrocontrollersDev/MountOpacity

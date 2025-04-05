@@ -993,8 +993,9 @@
   name: (?) Stonecraft
   source: (!) https://github.com/meza/Stonecraft
 - id: Danrus1100/DRHud
-  name: (?) DRHud
+  name: (!) DWHud
   source: (!) https://github.com/Danrus1100/DRHud
+  modrinth: (!) https://modrinth.com/mod/dwhud
 - id: nvb-uy/WelcomeScreen
   name: (!) WelcomeScreen
   source: (!) https://github.com/nvb-uy/WelcomeScreen
@@ -1360,3 +1361,67 @@
   curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/soaring-phantoms
   internal:
     curseforge_id: 1022172
+- id: MicrocontrollersDev/Confirm-Disconnect
+  name: (!) Confirm Disconnect
+  source: https://codeberg.org/MicrocontrollersDev/Confirm-Disconnect
+  modrinth: (!) https://modrinth.com/mod/confirm-disconnect
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/confirm-disconnect
+  internal:
+    curseforge_id: 1224524
+- id: MicrocontrollersDev/Smooth-Skies
+  name: (!) Smooth Skies
+  source: https://codeberg.org/MicrocontrollersDev/Smooth-Skies
+  modrinth: (!) https://modrinth.com/mod/smooth-skies
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/smooth-skies
+  internal:
+    curseforge_id: 1091678
+- id: MicrocontrollersDev/CrosshairTweaks
+  name: (!) Crosshair Tweaks
+  source: https://codeberg.org/MicrocontrollersDev/CrosshairTweaks
+  modrinth: (!) https://modrinth.com/mod/crosshairtweaks
+- id: MicrocontrollersDev/ScoreboardTweaks
+  name: (!) Scoreboard Tweaks
+  source: https://codeberg.org/MicrocontrollersDev/ScoreboardTweaks
+  modrinth: (!) https://modrinth.com/mod/scoreboardtweaks
+- id: MicrocontrollersDev/NametagTweaks
+  name: (!) Nametag Tweaks
+  source: https://codeberg.org/MicrocontrollersDev/NametagTweaks
+  modrinth: (!) https://modrinth.com/mod/nametagtweaks
+- id: MicrocontrollersDev/OverlayTweaks
+  name: (!) Overlay Tweaks
+  source: https://codeberg.org/MicrocontrollersDev/OverlayTweaks
+  modrinth: (!) https://modrinth.com/mod/overlaytweaks
+- id: MicrocontrollersDev/TitleTweaks
+  name: (!) Title Tweaks
+  source: https://codeberg.org/MicrocontrollersDev/TitleTweaks
+  modrinth: (!) https://modrinth.com/mod/titletweaks
+- id: MicrocontrollersDev/BetterNightVision
+  name: (!) Better Night Vision
+  source: https://codeberg.org/MicrocontrollersDev/BetterNightVision
+  modrinth: (!) https://modrinth.com/mod/betternightvision
+- id: MicrocontrollersDev/TabTweaks
+  name: (!) Tab Tweaks
+  source: https://codeberg.org/MicrocontrollersDev/TabTweaks
+  modrinth: (!) https://modrinth.com/mod/tabtweaks
+- id: MicrocontrollersDev/DroppedItemTweaks
+  name: (!) Dropped Item Tweaks
+  source: https://codeberg.org/MicrocontrollersDev/DroppedItemTweaks
+  modrinth: (!) https://modrinth.com/mod/droppeditemtweaks
+- id: MicrocontrollersDev/Sciophobia
+  name: (!) Sciophobia
+  source: https://codeberg.org/MicrocontrollersDev/Sciophobia
+  modrinth: (!) https://modrinth.com/mod/sciophobia
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/sciophobia
+  internal:
+    curseforge_id: 1092053
+- id: MicrocontrollersDev/ScrollTweaks
+  name: (!) Scroll Tweaks
+  source: https://codeberg.org/MicrocontrollersDev/ScrollTweaks
+  modrinth: (!) https://modrinth.com/mod/scrolltweaks
+- id: MicrocontrollersDev/MountOpacity
+  name: (!) Mount Opacity
+  source: https://codeberg.org/MicrocontrollersDev/MountOpacity
+  modrinth: (!) https://modrinth.com/mod/mountopacity
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/mount-opacity
+  internal:
+    curseforge_id: 1093371
