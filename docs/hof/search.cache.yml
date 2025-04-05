@@ -718,6 +718,9 @@
   name: (!) Sounds Be Gone!
   source: (!) https://github.com/meza/SoundsBeGone
   modrinth: (!) https://modrinth.com/mod/soundsbegone
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/sounds-be-gone
+  internal:
+    curseforge_id: 874633
 - id: txnimc/BlueprintFix
   name: (?) BlueprintFix
   source: (!) https://github.com/txnimc/BlueprintFix
@@ -847,6 +850,9 @@
   name: (!) Chunk Activity Tracker
   source: (!) https://github.com/txnimc/ChunkActivityTracker
   modrinth: (!) https://modrinth.com/mod/chunk-activity-tracker
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/chunk-activity-tracker
+  internal:
+    curseforge_id: 1193454
 - id: not-coded/NameFabric
   name: (!) NameFabric
   source: (!) https://github.com/not-coded/NameFabric
@@ -1094,6 +1100,9 @@
   name: (!) Durability Visibility Options
   source: (!) https://github.com/Danrus1100/durability_visibility_options
   modrinth: (!) https://modrinth.com/mod/durability_visibility_options
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/durability-visibility-options
+  internal:
+    curseforge_id: 1206524
 - id: PieKing1215/InvMoveCompats
   name: (!) InvMoveCompats
   source: (!) https://github.com/PieKing1215/InvMoveCompats
@@ -1239,3 +1248,115 @@
   curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/accessorify
   internal:
     curseforge_id: 1169634
+- id: Trainguy9512/locomotion
+  name: (?) locomotion
+  source: (!) https://github.com/Trainguy9512/locomotion
+- id: WerDei/Biome-Replacer
+  name: (!) Biome Replacer
+  source: (!) https://github.com/WerDei/Biome-Replacer
+  modrinth: (!) https://modrinth.com/mod/biome-replacer
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/biome-replacer
+  internal:
+    curseforge_id: 910274
+- id: rotgruengelb/Buoys
+  name: (!) Buoys
+  source: (!) https://github.com/rotgruengelb/Buoys
+  modrinth: (!) https://modrinth.com/mod/buoys
+- id: nvb-uy/Necronomicon-Mod-Template
+  valid: false
+  name: (?) Necronomicon-Mod-Template
+  source: (!) https://github.com/nvb-uy/Necronomicon-Mod-Template
+- id: MisterCheezeCake/SaveMyKeybinds
+  name: (!) SaveMyKeybinds
+  source: (!) https://github.com/MisterCheezeCake/SaveMyKeybinds
+  modrinth: (!) https://modrinth.com/mod/savemykeybinds
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/savemykeybinds
+  internal:
+    curseforge_id: 1174615
+- id: chrrs/redstone-sound-slider
+  name: (!) Redstone Sound Slider
+  source: (!) https://github.com/chrrs/redstone-sound-slider
+  modrinth: (!) https://modrinth.com/mod/redstone-sound-slider
+- id: Danrus1100/RocketUtils
+  name: (!) Rocket Utils
+  source: (!) https://github.com/Danrus1100/RocketUtils
+  modrinth: (!) https://modrinth.com/mod/rocket-utils
+- id: Nolij/TooManyRecipeViewers
+  name: (?) TooManyRecipeViewers
+  source: (!) https://github.com/Nolij/TooManyRecipeViewers
+- id: KialanK/AIChat
+  name: (!) AIChat
+  source: (!) https://github.com/KialanK/AIChat
+  modrinth: (!) https://modrinth.com/mod/aichat
+- id: Danrus1100/EmoteSounds
+  name: (?) EmoteSounds
+  source: (!) https://github.com/Danrus1100/EmoteSounds
+- id: isXander/stonecutter-branch-template
+  valid: false
+  name: (?) stonecutter-branch-template
+  source: (!) https://github.com/isXander/stonecutter-branch-template
+- id: rotgruengelb/more_paths
+  name: (!) More Paths
+  source: (!) https://github.com/rotgruengelb/more_paths
+  modrinth: (!) https://modrinth.com/mod/more-paths
+- id: nvb-uy/AVeryImportantModThatIWillWorkOnLaterWhenIHaveTimeAlsoIHaveNotYetDecidedANameForItSoItWillBeUnknown
+  name: (?) AVeryImportantModThatIWillWorkOnLaterWhenIHaveTimeAlsoIHaveNotYetDecidedANameForItSoItWillBeUnknown
+  source: (!) https://github.com/nvb-uy/AVeryImportantModThatIWillWorkOnLaterWhenIHaveTimeAlsoIHaveNotYetDecidedANameForItSoItWillBeUnknown
+- id: nvb-uy/Effect-Adjuster
+  name: (?) Effect-Adjuster
+  source: (!) https://github.com/nvb-uy/Effect-Adjuster
+- id: JumperOnJava/ImagineBook
+  name: (!) ImagineBook
+  source: (!) https://github.com/JumperOnJava/ImagineBook
+  modrinth: (!) https://modrinth.com/mod/imaginebook
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/imaginebook
+  internal:
+    curseforge_id: 1180064
+- id: Qendolin/peaceful-nights
+  name: (!) Peaceful Nights
+  source: (!) https://github.com/Qendolin/peaceful-nights
+  modrinth: (!) https://modrinth.com/mod/peaceful-nights
+- id: txnimc/DespawnTweaks
+  name: (!) Despawn Tweaks
+  source: (!) https://github.com/txnimc/DespawnTweaks
+  modrinth: (!) https://modrinth.com/mod/despawn-tweaks
+- id: txnimc/RandomEnchantFix
+  name: (!) Random Enchant Fix
+  source: (!) https://github.com/txnimc/RandomEnchantFix
+  modrinth: (!) https://modrinth.com/mod/random-enchant-fix
+- id: modunion/modstitch-stonecutter-template
+  valid: false
+  name: (?) modstitch-stonecutter-template
+  source: (!) https://github.com/modunion/modstitch-stonecutter-template
+- id: Drathonix/rockbreaker
+  name: (?) rockbreaker
+  source: (!) https://github.com/Drathonix/rockbreaker
+- id: zekk051/secure-crops
+  name: (!) Secure Crops
+  source: (!) https://github.com/zekk051/secure-crops
+  modrinth: (!) https://modrinth.com/mod/secure-crops
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/secure-crops
+  internal:
+    curseforge_id: 573127
+- id: txnimc/ImmersiveArmorHUD
+  name: (!) Immersive Armor HUD
+  source: (!) https://github.com/txnimc/ImmersiveArmorHUD
+  modrinth: (!) https://modrinth.com/mod/immersive-armor-hud
+- id: topi-banana/unitemplate
+  valid: false
+  name: (?) unitemplate
+  source: (!) https://github.com/topi-banana/unitemplate
+- id: LopyMine/Transparent-Entities
+  name: (!) Transparent Entities
+  source: (!) https://github.com/LopyMine/Transparent-Entities
+  modrinth: (!) https://modrinth.com/mod/transparent-entities
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/transparent-entities
+  internal:
+    curseforge_id: 1217446
+- id: pajicadvance/soaring-phantoms
+  name: (!) Soaring Phantoms
+  source: (!) https://github.com/pajicadvance/soaring-phantoms
+  modrinth: (!) https://modrinth.com/mod/soaring-phantoms
+  curseforge: (!) https://www.curseforge.com/minecraft/mc-mods/soaring-phantoms
+  internal:
+    curseforge_id: 1022172

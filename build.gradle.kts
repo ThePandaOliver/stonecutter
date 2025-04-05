@@ -1,3 +1,4 @@
+import com.github.gradle.node.npm.task.NpmTask
 import org.gradle.kotlin.dsl.register
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.DokkaBaseConfiguration
@@ -11,6 +12,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.dokka)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.node)
 }
 
 group = property("group").toString()
@@ -69,6 +71,15 @@ tasks.register<Sync>("syncDokkaPages") {
     dependsOn("dokkaHtmlMultiModule")
 }
 
+tasks.register<NpmTask>("buildDocPages") {
+    args = listOf("run", "docs:build")
+    mustRunAfter("updateVersion", "updateHallOfFame", "syncDokkaPages")
+}
+
+tasks.register("composeDocPages") {
+    dependsOn("updateVersion", "updateHallOfFame", "syncDokkaPages", "buildDocPages")
+}
+
 tasks.withType<AbstractDokkaParentTask> {
     moduleName = "Stonecutter KDoc"
 
@@ -76,6 +87,11 @@ tasks.withType<AbstractDokkaParentTask> {
         homepageLink = "https://stonecutter.codeberg.page/"
         footerMessage = "(c) 2025 KikuGie"
     }
+}
+
+node {
+    download = true
+    version = "23.11.0"
 }
 
 subprojects {
