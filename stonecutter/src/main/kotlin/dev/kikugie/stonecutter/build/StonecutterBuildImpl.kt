@@ -78,38 +78,24 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor (
         val prepareTasks: MutableList<String> = mutableListOf()
 
         sourceSets.all {
-            val gens: List<String> = allSources().map { configureSourceDirectory(this, it).name }.toList()
-            prepareTasks += gens.map { "$path:$it" }
+            prepareTasks += allSources()
+                .map { configureSourceDirectory(this, it) }
+                .map { "$path:${it.name}" }
         }
 
         configureTaskDependencies(prepareTasks)
     }
 
     private fun configureTaskDependencies(prepareTasks: MutableList<String>) = project.afterEvaluate {
-        for (it in sourceSets.asSequence().flatMap(::getTargetTasks))
-            if (it in tasks.names) tasks.named(it) { dependsOn(prepareTasks) }
-
         if (System.getProperty("idea.sync.active", "false").toBoolean()) gradle.startParameter.run {
             val requests = taskRequests + DefaultTaskExecutionRequest(prepareTasks, path, projectDir)
             setTaskRequests(requests)
         }
     }
 
-    private fun getTargetTasks(set: SourceSet): Sequence<String> = set.allSources().flatMap {
-        if (it == set.resources) listOf(
-            set.processResourcesTaskName,
-            set.sourcesJarTaskName
-        )
-        else listOf(
-            set.getCompileTaskName(it.name),
-            set.sourcesJarTaskName,
-            set.javadocTaskName,
-        )
-    }
-
     private fun configureSourceDirectory(set: SourceSet, dir: SourceDirectorySet): TaskProvider<FileGeneratingTask> {
         val currentDirectories = dir.sourceDirectories.files.toSet()
-        val processedDirectories = mapAndAttachSources(dir)
+        val processedDirectories = mapAndAttachSources(if (SourceSet.isMain(set)) "" else set.name, dir)
         val pathSuffix = "${set.name}/${dir.name}"
         val taskSuffix = buildString {
             if (!SourceSet.isMain(set))
@@ -141,7 +127,7 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor (
      * Sources under `versions/./src/` are replaced with root's `src/` for the active version.
      * Matched root sources are returned to be registered in [registerPrepareSourcesTask].
      */
-    private fun mapAndAttachSources(dir: SourceDirectorySet): List<File> {
+    private fun mapAndAttachSources(name: String, dir: SourceDirectorySet): List<File> {
         val root = parent.layout.projectDirectory.dir("src").asFile
         val src = project.layout.projectDirectory.dir("src").asFile
         val (match, nomatch) = dir.sourceDirectories.groupBy { it.startsWith(src) }
@@ -151,6 +137,7 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor (
         if (current.isActive) dir.setSrcDirs(remapped + nomatch)
         else for (it in match) project.layout.buildDirectory
             .dir("generated/stonecutter/${it.relativeTo(src)}")
+            .let { project.files(it).builtBy("${project.path}:stonecutterPrepare${name.upFirst()}${dir.name.upFirst()}") }
             .let(dir::srcDir)
 
         return remapped
