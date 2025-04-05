@@ -112,7 +112,15 @@ abstract class HallOfFameTask : DefaultTask() {
     private fun ProjectInfo.composeLinks() = buildString {
         modrinth?.run { appendLine("{icon:'modrinth',link:'$escapeJS' },") }
         curseforge?.run { appendLine("{icon:'curseforge',link:'$escapeJS'},") }
-        source?.run { appendLine("{icon:'github',link:'$escapeJS'},") }
+        source?.run {
+            val icon = when {
+                "github.com" in this -> "github"
+                "codeberg.org" in this -> "codeberg"
+                else -> "git"
+            }
+
+            appendLine("{icon:'$icon',link:'$escapeJS'},")
+        }
         if (isNotEmpty()) setLength(length - 2) // Remove ,\n
     }
 

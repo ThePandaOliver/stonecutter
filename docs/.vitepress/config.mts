@@ -1,6 +1,7 @@
 import {PageData, TransformPageContext, defineConfig} from "vitepress";
 import {tabsMarkdownPlugin} from "vitepress-plugin-tabs"
 import {applySEO} from "./seo";
+import codeberg from '?raw';
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -63,7 +64,7 @@ export default defineConfig({
     ],
 
     socialLinks: [
-      {icon: "github", link: "https://codeberg.org/stonecutter/stonecutter"},
+      {icon: "codeberg", link: "https://codeberg.org/stonecutter/stonecutter"},
       {icon: "discord", link: "https://discord.kikugie.dev"},
     ],
 
