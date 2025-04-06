@@ -1,11 +1,9 @@
 package dev.kikugie.stonecutter.ide
 
 import dev.kikugie.stonecutter.data.ProjectHierarchy
-import dev.kikugie.stonecutter.data.tree.TreePrototype
-import dev.kikugie.stonecutter.invoke
 import dev.kikugie.stonecutter.readResource
+import dev.kikugie.stonecutter.util.invoke
 import org.gradle.api.DefaultTask
-import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction

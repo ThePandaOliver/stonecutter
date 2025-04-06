@@ -1,6 +1,7 @@
 package dev.kikugie.stonecutter.process
 
-import dev.kikugie.stonecutter.invoke
+import dev.kikugie.stonecutter.util.clearIfNotIncremental
+import dev.kikugie.stonecutter.util.invoke
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
@@ -70,6 +71,7 @@ internal abstract class FileGeneratingTask : DefaultTask() {
 
     @TaskAction
     fun run(inputs: InputChanges) {
+        inputs.clearIfNotIncremental(generated.asFile())
         val expected: List<ExpectedFileState> = buildExpectedFileStates(inputs)
 
         val queue = executor.noIsolation()

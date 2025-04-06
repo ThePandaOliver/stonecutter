@@ -1,22 +1,19 @@
 package dev.kikugie.stonecutter.process
 
-import dev.kikugie.stonecutter.invoke
+import dev.kikugie.stonecutter.util.clearIfNotIncremental
+import dev.kikugie.stonecutter.util.invoke
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileType
-import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import org.gradle.kotlin.dsl.submit
 import org.gradle.work.*
-import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkQueue
 import org.gradle.workers.WorkerExecutor
-import java.nio.file.Path
 import javax.inject.Inject
 
-// TODO: Add file filtering
 internal abstract class FileProcessingTask : DefaultTask() {
     /**
      * Source directory for the files to be processed,
@@ -51,21 +48,13 @@ internal abstract class FileProcessingTask : DefaultTask() {
 
     @TaskAction
     fun run(inputs: InputChanges) {
-        inputs.clearCachesIfInvalid()
+        inputs.clearIfNotIncremental(caches.asFile())
         val queue = executor.noIsolation()
 
         for (change in inputs.getFileChanges(sources))
             if (change.fileType != FileType.DIRECTORY)
                 queue.processFile(change)
         queue.await()
-    }
-
-    private fun InputChanges.clearCachesIfInvalid() {
-        val cacheFile = caches.asFile()
-        if (!isIncremental && cacheFile.exists()) cacheFile.run {
-            deleteRecursively()
-            mkdir()
-        }
     }
 
     private fun WorkQueue.processFile(change: FileChange) = when (change.changeType) {

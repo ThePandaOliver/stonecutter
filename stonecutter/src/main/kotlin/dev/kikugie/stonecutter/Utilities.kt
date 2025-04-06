@@ -10,8 +10,10 @@ import dev.kikugie.stonecutter.data.tree.TreeModel
 import dev.kikugie.stonecutter.data.tree.TreePrototype
 import org.gradle.api.provider.MapProperty
 import kotlinx.serialization.json.Json
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.newInstance
 import java.nio.file.Path
 import kotlin.reflect.KClass
 
@@ -45,24 +47,7 @@ internal fun String.removeStarting(char: Char): String {
     return substring(index)
 }
 
-internal val Project.sourceSets: SourceSetContainer
-    get() = project.extensions.getByType<SourceSetContainer>()
-internal val Project.projectPath: Path get() = projectDir.toPath()
-internal val Project.buildDirectoryFile
-    get() = layout.buildDirectory.asFile.get()
-
-internal val Project.buildDirectoryPath
-    get() = layout.buildDirectory.asFile.get().toPath()
-
-internal val Project.stonecutterCacheFile
-    get() = buildDirectoryFile.resolve("stonecutter-cache")
-
-internal val Project.stonecutterCachePath
-    get() = stonecutterCacheFile.toPath()
-
 internal infix fun Path.cut(other: Path): Path = relativize(other)
-internal operator fun <T> Provider<T>.invoke() = get()
-internal operator fun <T> Property<T>.invoke(value: T) = set(value)
 
 internal inline fun <T> Iterable<T>.onEach(action: T.() -> Unit) = forEach(action)
 @Suppress("NOTHING_TO_INLINE")
@@ -88,5 +73,5 @@ internal inline fun <K, V> Map<K, V>.getChecked(
 internal inline fun <reified T> requireAs(value: Any?, message: (KClass<*>?) -> String): T = when (value) {
     is T -> value
     null -> throw kotlin.IllegalArgumentException(message(null))
-    else -> throw IllegalArgumentException(message(T::class))
+    else -> throw kotlin.IllegalArgumentException(message(T::class))
 }

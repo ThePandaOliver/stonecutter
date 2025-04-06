@@ -183,38 +183,38 @@ private object dependencies {
     }
 }
 
-private object allowExtensions {
-    fun vararg() {
-        stonecutter.allowExtensions("yml", "yaml")
-    }
-
-    fun iterable() {
-        val extensions = listOf("yml", "yaml")
-        stonecutter.allowExtensions(extensions)
-    }
-}
-
-private object overrideExtensions {
-    fun vararg() {
-        stonecutter.overrideExtensions("scala", "sc")
-    }
-
-    fun iterable() {
-        val extensions = listOf("scala", "sc")
-        stonecutter.overrideExtensions(extensions)
-    }
-}
-
-private object excludeFiles {
-    fun vararg() {
-        stonecutter.excludeFiles("src/main/resources/properties.json5")
-    }
-
-    fun iterable() {
-        val files = listOf("src/main/resources/properties.json5")
-        stonecutter.excludeFiles(files)
-    }
-}
+//private object allowExtensions {
+//    fun vararg() {
+//        stonecutter.allowExtensions("yml", "yaml")
+//    }
+//
+//    fun iterable() {
+//        val extensions = listOf("yml", "yaml")
+//        stonecutter.allowExtensions(extensions)
+//    }
+//}
+//
+//private object overrideExtensions {
+//    fun vararg() {
+//        stonecutter.overrideExtensions("scala", "sc")
+//    }
+//
+//    fun iterable() {
+//        val extensions = listOf("scala", "sc")
+//        stonecutter.overrideExtensions(extensions)
+//    }
+//}
+//
+//private object excludeFiles {
+//    fun vararg() {
+//        stonecutter.excludeFiles("src/main/resources/properties.json5")
+//    }
+//
+//    fun iterable() {
+//        val files = listOf("src/main/resources/properties.json5")
+//        stonecutter.excludeFiles(files)
+//    }
+//}
 
 private object replacements {
     fun string_basic() {
@@ -277,85 +277,85 @@ private object replacements {
         }
     }
 
-    fun string_identified() {
-        /* Replacements can be given identifiers, which allows them to be enabled for specific files.
-           The replacement tokens must be at the top of the file. For example:
-           ```
-           //~ repl_token
-           A
-           /*~ repl_token_#2*/ // this token comes after content and will not be included
-           ```
-           With token:
-           1.20: ['A', 'B'] -> 'C'
-           1.21: ['B', 'C'] -> 'A'
-           Without token:
-           1.20: ['A'] -> 'B'
-           1.21: ['B'] -> 'A'
-         */
-        stonecutter {
-            replacement(eval(current.version, "<1.21"), "A", "B")
-            replacement(eval(current.version, "<1.21"), "B", "C", identifier = "repl_token")
-            replacement(eval(current.version, "<1.21"), "C", "D", identifier = "repl_token_#2")
-        }
-    }
-
-    fun string_configuration() {
-        stonecutter {
-            stringReplacement {
-                direction = eval(current.version, "<1.21")
-                source = "A"
-                target = "B"
-                // optional
-                phase = "FIRST"
-                identifier = "repl_token"
-            }
-        }
-    }
-
-    fun regex_basic() {
-        stonecutter {
-            replacement(eval(current.version, "<1.21"), "[AB]", "C", "[BC]", "A")
-        }
-    }
-
-    fun regex_configuration() {
-        stonecutter {
-            regexReplacement {
-                direction = eval(current.version, "<1.21")
-                sourcePattern = "[AB]"
-                targetValue = "C"
-                targetPattern = "[BC]"
-                sourceValue = "A"
-            }
-        }
-    }
-
-    fun dynamic_assign() {
-        // To be used with Kotlin DSL
-        stonecutter {
-            // Adds a string replacement
-            replacements += mapOf(
-                "direction" to eval(current.version, "<1.21"),
-                "source" to "A",
-                "target" to "B",
-                // optional
-                "phase" to "FIRST",
-                "identifier" to "repl_token",
-            )
-
-            // Adds a regex replacement
-            replacements += mapOf(
-                "direction" to eval(current.version, "<1.21"),
-                "sourcePattern" to "A",
-                "targetValue" to "B",
-                "targetPattern" to "B",
-                "sourceValue" to "A",
-                // optional
-                "phase" to "FIRST",
-                "identifier" to "repl_token",
-            )
-        }
-    }
+//    fun string_identified() {
+//        /* Replacements can be given identifiers, which allows them to be enabled for specific files.
+//           The replacement tokens must be at the top of the file. For example:
+//           ```
+//           //~ repl_token
+//           A
+//           /*~ repl_token_#2*/ // this token comes after content and will not be included
+//           ```
+//           With token:
+//           1.20: ['A', 'B'] -> 'C'
+//           1.21: ['B', 'C'] -> 'A'
+//           Without token:
+//           1.20: ['A'] -> 'B'
+//           1.21: ['B'] -> 'A'
+//         */
+//        stonecutter {
+//            replacement(eval(current.version, "<1.21"), "A", "B")
+//            replacement(eval(current.version, "<1.21"), "B", "C", identifier = "repl_token")
+//            replacement(eval(current.version, "<1.21"), "C", "D", identifier = "repl_token_#2")
+//        }
+//    }
+//
+//    fun string_configuration() {
+//        stonecutter {
+//            stringReplacement {
+//                direction = eval(current.version, "<1.21")
+//                source = "A"
+//                target = "B"
+//                // optional
+//                phase = "FIRST"
+//                identifier = "repl_token"
+//            }
+//        }
+//    }
+//
+//    fun regex_basic() {
+//        stonecutter {
+//            replacement(eval(current.version, "<1.21"), "[AB]", "C", "[BC]", "A")
+//        }
+//    }
+//
+//    fun regex_configuration() {
+//        stonecutter {
+//            regexReplacement {
+//                direction = eval(current.version, "<1.21")
+//                sourcePattern = "[AB]"
+//                targetValue = "C"
+//                targetPattern = "[BC]"
+//                sourceValue = "A"
+//            }
+//        }
+//    }
+//
+//    fun dynamic_assign() {
+//        // To be used with Kotlin DSL
+//        stonecutter {
+//            // Adds a string replacement
+//            replacements += mapOf(
+//                "direction" to eval(current.version, "<1.21"),
+//                "source" to "A",
+//                "target" to "B",
+//                // optional
+//                "phase" to "FIRST",
+//                "identifier" to "repl_token",
+//            )
+//
+//            // Adds a regex replacement
+//            replacements += mapOf(
+//                "direction" to eval(current.version, "<1.21"),
+//                "sourcePattern" to "A",
+//                "targetValue" to "B",
+//                "targetPattern" to "B",
+//                "sourceValue" to "A",
+//                // optional
+//                "phase" to "FIRST",
+//                "identifier" to "repl_token",
+//            )
+//        }
+//    }
 
     fun dynamic_map() {
         // To be used with Groovy DSL

@@ -1,23 +1,21 @@
 package dev.kikugie.stonecutter.process
 
+import dev.kikugie.semver.VersionParser
+import dev.kikugie.stitcher.data.replacement.*
 import dev.kikugie.stitcher.data.replacement.ReplacementExecutor.Companion.replaceWithScannedTokens
-import dev.kikugie.stitcher.data.replacement.ReplacementPhase
 import dev.kikugie.stitcher.data.token.ContentType
-import dev.kikugie.stitcher.data.token.MarkerType
 import dev.kikugie.stitcher.data.token.Token
-import dev.kikugie.stitcher.eval.isEmpty
-import dev.kikugie.stitcher.eval.isNotEmpty
 import dev.kikugie.stitcher.eval.join
 import dev.kikugie.stitcher.exception.ErrorHandler
 import dev.kikugie.stitcher.exception.StoringErrorHandler
 import dev.kikugie.stitcher.exception.join
-import dev.kikugie.stitcher.lexer.TokenMatcher
 import dev.kikugie.stitcher.parser.FileParser
 import dev.kikugie.stitcher.scanner.CommentRecognizers
 import dev.kikugie.stitcher.scanner.Scanner
 import dev.kikugie.stitcher.transformer.TransformParameters
 import dev.kikugie.stitcher.transformer.Transformer
-import dev.kikugie.stonecutter.invoke
+import dev.kikugie.stonecutter.process.FileProcessingData.ReplacementData
+import dev.kikugie.stonecutter.util.invoke
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.workers.WorkAction
@@ -103,4 +101,16 @@ internal abstract class FileProcessingAction : WorkAction<FileProcessingAction.P
         }
     }
 
+    private fun FileProcessingData.toActualParameters(): TransformParameters = TransformParameters(
+        swaps(),
+        constants(),
+        dependencies().mapValues { (_, it) -> VersionParser.parseLenient(it, full = true).value },
+        replacements().map { it.toActualReplacement() }.run { ReplacementList(toMutableList()) }
+    )
+
+    private fun ReplacementData.toActualReplacement(): Replacement = when(type()) {
+        "REGEX" -> RegexReplacement(sources().first().toRegex(), target(), ReplacementPhase.valueOf(phase()), id.orNull)
+        "STRING" -> StringReplacement(sources().toMutableSet(), target(), ReplacementPhase.valueOf(phase()), id.orNull)
+        else -> error("Unknown replacement type: $type")
+    }
 }
