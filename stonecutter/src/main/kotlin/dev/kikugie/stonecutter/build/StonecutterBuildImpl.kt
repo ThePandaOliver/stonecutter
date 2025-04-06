@@ -3,7 +3,7 @@ package dev.kikugie.stonecutter.build
 import dev.kikugie.stonecutter.*
 import dev.kikugie.stonecutter.build.param.StonecutterBuildData
 import dev.kikugie.stonecutter.build.param.StonecutterBuildParams
-import dev.kikugie.stonecutter.build.task.StonecutterBuildTasksImpl
+import dev.kikugie.stonecutter.build.task.StonecutterBuildInternalTasks
 import dev.kikugie.stonecutter.controller.StonecutterControllerImpl
 import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
 import dev.kikugie.stonecutter.data.tree.ProjectBranch
@@ -28,7 +28,7 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor(
     val data: StonecutterBuildData = controller.getOrCreateParameters(project.hierarchy),
 ) : StonecutterBuildExtension, StonecutterBuildParams by data {
     private val parent get() = project.parent!!
-    internal val tasksImpl = StonecutterBuildTasksImpl()
+    internal val internals = StonecutterBuildInternalTasks()
     final override val branch: ProjectBranch = tree.getChecked(project.parent!!.hierarchy) {
         "Branch for '$it' not found in ${tree.hierarchy}: ${keysToString()}"
     }
@@ -49,11 +49,11 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor(
     }
 
     private fun configureTaskDependencies() = project.afterEvaluate {
-        if (isIdeaSync) tasksImpl.prepareTasks.map { "$path:${it.name}" }
+        if (isIdeaSync) internals.prepareTasks.map { "$path:${it.name}" }
             .let { gradle.requestTasks(it, path, projectDir) }
 
-        controller.tasksImpl.switchTaskProvider(current.project)?.configure {
-            dependsOn(tasksImpl.mergeTasks)
+        controller.internals.switchTaskProvider(current.project)?.configure {
+            dependsOn(internals.mergeTasks)
         }
     }
 
@@ -64,7 +64,7 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor(
         val cacheDirectory = project.layout.buildDirectory.dir("stonecutter-cache/sources/$pathSuffix")
         val generatedDirectory = project.layout.buildDirectory.dir("generated/stonecutter/$pathSuffix")
 
-        val prepareTask = tasksImpl.registerPrepareTask(project, set, dir) {
+        val prepareTask = internals.registerPrepareTask(project, set, dir) {
             description = "Internal Stonecutter task. Do not call manually."
 
             sources.from(processedDirectories)
@@ -72,7 +72,7 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor(
             parameters.set(project.provider { data.asProcessingData("minecraft", current.version) })
         }
 
-        tasksImpl.registerMergeTask(project, set, dir) {
+        internals.registerMergeTask(project, set, dir) {
             description = "Internal Stonecutter task. Do not call manually."
 
             from(cacheDirectory)
@@ -80,7 +80,7 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor(
             dependsOn(prepareTask)
         }
 
-        return tasksImpl.registerGenerateTask(project, set, dir) {
+        return internals.registerGenerateTask(project, set, dir) {
             description = "Internal Stonecutter task. Do not call manually."
 
             sources.from(processedDirectories)
@@ -105,7 +105,7 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor(
         if (current.isActive) dir.srcDirs(project.files(remapped))
         else for (it in match) project.layout.buildDirectory
             .dir("generated/stonecutter/${it.relativeTo(src)}")
-            .let { project.files(it).builtBy("${project.path}:${tasksImpl.prepareTaskName(set, dir)}") }
+            .let { project.files(it).builtBy("${project.path}:${internals.prepareTaskName(set, dir)}") }
             .let(dir::srcDir)
 
         return remapped

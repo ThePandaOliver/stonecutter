@@ -9,7 +9,7 @@ import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.register
 
-internal class StonecutterBuildTasksImpl {
+internal class StonecutterBuildInternalTasks {
     val prepareTasks: MutableCollection<TaskProvider<FileProcessingTask>> = mutableListOf()
     val generateTasks: MutableCollection<TaskProvider<FileGeneratingTask>> = mutableListOf()
     val mergeTasks: MutableCollection<TaskProvider<Copy>> = mutableListOf()

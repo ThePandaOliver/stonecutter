@@ -10,7 +10,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.register
 
-internal class StonecutterControllerTasksImpl {
+internal class StonecutterControllerInternalTasks {
     val switchTasks: MutableCollection<TaskProvider<out DefaultTask>> = mutableListOf()
 
     fun switchTaskName(project: Identifier): String = "stonecutterSwitchTo$project"

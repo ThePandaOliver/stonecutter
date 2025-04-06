@@ -2,7 +2,6 @@ package dev.kikugie.stonecutter.settings
 
 import dev.kikugie.stonecutter.ProjectPath
 import dev.kikugie.stonecutter.STONECUTTER
-import dev.kikugie.stonecutter.controller.StonecutterControllerManager
 import dev.kikugie.stonecutter.data.ProjectHierarchy
 import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
 import dev.kikugie.stonecutter.data.container.ProjectTreeContainer
@@ -21,7 +20,6 @@ import org.gradle.api.invocation.Gradle
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.ProviderFactory
-import org.gradle.internal.DefaultTaskExecutionRequest
 import org.gradle.kotlin.dsl.property
 import org.gradle.kotlin.dsl.register
 import java.io.File

@@ -3,17 +3,10 @@ package dev.kikugie.stonecutter
 import dev.kikugie.stonecutter.data.ProjectHierarchy
 import dev.kikugie.stonecutter.data.tree.BranchPrototype
 import dev.kikugie.stonecutter.data.tree.NodePrototype
-import org.gradle.api.Project
-import org.gradle.api.provider.Property
-import org.gradle.api.provider.Provider
 import dev.kikugie.stonecutter.data.tree.TreeModel
 import dev.kikugie.stonecutter.data.tree.TreePrototype
-import org.gradle.api.provider.MapProperty
 import kotlinx.serialization.json.Json
-import org.gradle.api.model.ObjectFactory
-import org.gradle.api.tasks.SourceSetContainer
-import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.newInstance
+import org.gradle.api.provider.MapProperty
 import java.nio.file.Path
 import kotlin.reflect.KClass
 

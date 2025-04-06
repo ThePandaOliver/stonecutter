@@ -3,7 +3,7 @@ package dev.kikugie.stonecutter.controller
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.build.param.StonecutterBuildData
 import dev.kikugie.stonecutter.controller.StonecutterControllerManager.Companion.getController
-import dev.kikugie.stonecutter.controller.tasks.StonecutterControllerTasksImpl
+import dev.kikugie.stonecutter.controller.tasks.StonecutterControllerInternalTasks
 import dev.kikugie.stonecutter.data.ProjectHierarchy
 import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
 import dev.kikugie.stonecutter.data.StonecutterProject
@@ -26,10 +26,11 @@ internal open class StonecutterControllerImpl(private val root: Project) : Stone
     override val tree: ProjectTree = constructTree().also {
         root.gradle.getContainer<ProjectTreeContainer>().register(root.hierarchy, it)
     }
+    internal val internals = StonecutterControllerInternalTasks()
     private val manager: StonecutterControllerManager get() = root.getController()!!
     private val configurations: MutableMap<ProjectHierarchy, StonecutterBuildData> = mutableMapOf()
     private var initilizer: (() -> Unit)? = ::initializeSwitchTasks
-    internal val tasksImpl = StonecutterControllerTasksImpl()
+
 
     init {
         configureProject()
@@ -62,24 +63,24 @@ internal open class StonecutterControllerImpl(private val root: Project) : Stone
         tasks.register("Reset active project") {
             group = "stonecutter"
             description = "Sets active version to ${tree.vcs.project}. Run this before making a commit."
-            dependsOn("${root.hierarchy.orBlank()}:${tasksImpl.switchTaskName(tree.vcs.project)}")
+            dependsOn("${root.hierarchy.orBlank()}:${internals.switchTaskName(tree.vcs.project)}")
         }
 
         tasks.register("Refresh active project") {
             group = "stonecutter"
             description = "Runs the comment processor on the active version. Useful for fixing comments in wrong states."
-            dependsOn("${root.hierarchy.orBlank()}:${tasksImpl.switchTaskName(tree.current.project)}")
+            dependsOn("${root.hierarchy.orBlank()}:${internals.switchTaskName(tree.current.project)}")
         }
 
         for (it in tree.versions) tasks.register("Set active project to ${it.project}") {
             group = "stonecutter"
             description = "Sets the active project to ${it.project}, processing all versioned comments."
-            dependsOn("${root.hierarchy.orBlank()}:${tasksImpl.switchTaskName(it.project)}")
+            dependsOn("${root.hierarchy.orBlank()}:${internals.switchTaskName(it.project)}")
         }
     }
 
     private fun initializeSwitchTasks() {
-        for (it in tree.versions) tasksImpl.registerSwitchTask(it.project, tree, manager)
+        for (it in tree.versions) internals.registerSwitchTask(it.project, tree, manager)
     }
 
     private fun constructTree(): ProjectTree {
