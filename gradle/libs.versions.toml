@@ -19,6 +19,7 @@ zip4j = "2.11.5"
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlin-assignment = { id = "org.jetbrains.kotlin.plugin.assignment", version.ref = "kotlin" }
 kotlin-dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp"}
 gradle-publishing = { id = "com.gradle.plugin-publish", version.ref = "gradlepub" }

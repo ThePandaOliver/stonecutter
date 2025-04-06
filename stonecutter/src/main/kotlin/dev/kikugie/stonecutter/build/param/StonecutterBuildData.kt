@@ -5,8 +5,9 @@ import dev.kikugie.stitcher.data.replacement.*
 import dev.kikugie.stonecutter.*
 import dev.kikugie.stonecutter.build.param.ReplacementVariants.RegexReplacementBuilder
 import dev.kikugie.stonecutter.build.param.ReplacementVariants.StringReplacementBuilder
-import dev.kikugie.stonecutter.data.container.ParameterMap
-import dev.kikugie.stonecutter.data.container.newParameterMap
+import dev.kikugie.stonecutter.data.build.FileProcessingFilter
+import dev.kikugie.stonecutter.data.build.ParameterMap
+import dev.kikugie.stonecutter.data.build.newParameterMap
 import dev.kikugie.stonecutter.isValid
 import dev.kikugie.stonecutter.util.newInstance
 import dev.kikugie.stonecutter.util.invoke
@@ -14,9 +15,14 @@ import dev.kikugie.stonecutter.process.FileProcessingData
 import dev.kikugie.stonecutter.process.FileProcessingData.ReplacementData
 import org.gradle.api.model.ObjectFactory
 import org.gradle.kotlin.dsl.newInstance
+import java.nio.file.Path
 import javax.inject.Inject
 
-public open class StonecutterBuildData @Inject constructor(private val objects: ObjectFactory) : StonecutterBuildParams {
+public open class StonecutterBuildData @Inject constructor(private val dir: Path, private val objects: ObjectFactory) : StonecutterBuildParams {
+    internal companion object {
+        val DEFAULT_EXTENSIONS = setOf("java", "kt", "kts", "groovy", "gradle", "scala", "sc", "json5", "hjson")
+    }
+
     public override val swaps: ParameterMap<Identifier, String> = newParameterMap(
         keyCheck = { checkKey(it, "Swap") }
     )
@@ -33,7 +39,12 @@ public open class StonecutterBuildData @Inject constructor(private val objects: 
             { "Dependency value '$it' must be a valid identifier or semver." }
         }
     )
+    override val filter: FileProcessingFilter
+        get() = FileProcessingFilter(allowedExtensions, excludedFiles)
+
     private val replacements: ReplacementList = ReplacementList()
+    private val allowedExtensions: MutableSet<String> = DEFAULT_EXTENSIONS.toMutableSet()
+    private val excludedFiles: MutableSet<Path> = mutableSetOf()
 
     override fun replacement(direction: Boolean, from: String, to: String, phase: String, id: Identifier?) {
         require(id == null || id.isValid()) { "Invalid identifier: '$id'" }
@@ -62,6 +73,19 @@ public open class StonecutterBuildData @Inject constructor(private val objects: 
 
     override fun regexReplacement(build: RegexReplacementBuilder.() -> Unit): Unit =
         objects.newInstance<RegexReplacementBuilder>().build(this)
+
+    override fun allowExtensions(extensions: Iterable<String>) {
+        allowedExtensions += extensions
+    }
+
+    override fun overrideExtensions(extensions: Iterable<String>) {
+        allowedExtensions.clear(); allowedExtensions += extensions
+    }
+
+    override fun excludeFiles(files: Iterable<String>): Unit = files.forEach {
+        require(it.startsWith("src/")) { "Filtered files must be in the src/ directory" }
+        excludedFiles.add(dir.resolve(it))
+    }
 
     internal fun asProcessingData(key: Identifier, version: AnyVersion): FileProcessingData = objects.newInstance {
         constants.set(this@StonecutterBuildData.consts)

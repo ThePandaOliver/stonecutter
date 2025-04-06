@@ -10,8 +10,6 @@ import dev.kikugie.stitcher.lexer.TokenMatcher.Companion.isValidIdentifier
 @Deprecated("Use `stonecutter { }` instead")
 public typealias StonecutterSettings = dev.kikugie.stonecutter.settings.StonecutterSettingsExtension
 
-public typealias RunConfigType = dev.kikugie.stonecutter.ide.RunConfigType
-
 /**
  * Stonecutter identifiers may only contain alphanumeric characters,
  * underscores, dashes and periods.

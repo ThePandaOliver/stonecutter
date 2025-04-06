@@ -5,16 +5,14 @@ import dev.kikugie.stonecutter.build.param.StonecutterBuildData
 import dev.kikugie.stonecutter.build.param.StonecutterBuildParams
 import dev.kikugie.stonecutter.build.task.StonecutterBuildInternalTasks
 import dev.kikugie.stonecutter.controller.StonecutterControllerImpl
+import dev.kikugie.stonecutter.controller.flag.FlagContainer
+import dev.kikugie.stonecutter.controller.flag.GENERATE_SOURCES_ON_SYNC
+import dev.kikugie.stonecutter.controller.flag.IMPLICIT_RECEIVER
 import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
 import dev.kikugie.stonecutter.data.tree.ProjectBranch
 import dev.kikugie.stonecutter.data.tree.ProjectNode
 import dev.kikugie.stonecutter.data.tree.ProjectTree
 import dev.kikugie.stonecutter.util.*
-import dev.kikugie.stonecutter.util.allSources
-import dev.kikugie.stonecutter.util.findProjectTree
-import dev.kikugie.stonecutter.util.getControllerImpl
-import dev.kikugie.stonecutter.util.isIdeaSync
-import dev.kikugie.stonecutter.util.sourceSets
 import org.gradle.api.Project
 import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.tasks.SourceSet
@@ -35,6 +33,8 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor(
     final override val node: ProjectNode = branch.getChecked(project.hierarchy) {
         "Node for '$it' not found in ${branch.hierarchy}: ${keysToString()}"
     }
+    override val flags: FlagContainer
+        get() = controller.flags
 
     init {
         configureProject()
@@ -49,11 +49,17 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor(
     }
 
     private fun configureTaskDependencies() = project.afterEvaluate {
-        if (isIdeaSync) internals.prepareTasks.map { "$path:${it.name}" }
+        if (flags[GENERATE_SOURCES_ON_SYNC] && isIdeaSync) internals.generateTasks.map { "$path:${it.name}" }
             .let { gradle.requestTasks(it, path, projectDir) }
 
         controller.internals.switchTaskProvider(current.project)?.configure {
             dependsOn(internals.mergeTasks)
+        }
+
+        with(filter) {
+            for (it in internals.prepareTasks) it.configure {
+                sources.from(sources.asFileTree.filter { filter(it.toPath()) })
+            }
         }
     }
 
@@ -69,7 +75,7 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor(
 
             sources.from(processedDirectories)
             caches.set(cacheDirectory)
-            parameters.set(project.provider { data.asProcessingData("minecraft", current.version) })
+            parameters.set(project.provider { data.asProcessingData(flags[IMPLICIT_RECEIVER], current.version) })
         }
 
         internals.registerMergeTask(project, set, dir) {

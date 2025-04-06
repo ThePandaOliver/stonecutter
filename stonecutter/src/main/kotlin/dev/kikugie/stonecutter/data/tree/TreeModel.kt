@@ -7,7 +7,6 @@ import com.charleskorn.kaml.YamlConfiguration
 import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stitcher.util.PathSerializer
 import dev.kikugie.stonecutter.data.StonecutterProject
-import dev.kikugie.stonecutter.data.parameters.GlobalParameters
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
@@ -110,7 +109,7 @@ public data class TreeModel(
     val current: StonecutterProject,
     val branches: List<BranchInfo>,
     val nodes: List<NodeInfo>,
-    val parameters: GlobalParameters,
+//    val parameters: GlobalParameters,
 ) {
     public companion object {
         /**Literally `tree.yml`.*/

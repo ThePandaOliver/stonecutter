@@ -3,7 +3,7 @@ package dev.kikugie.stonecutter.build.param
 import dev.kikugie.stonecutter.AnyVersion
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterAPI
-import dev.kikugie.stonecutter.data.container.ParameterMap
+import dev.kikugie.stonecutter.data.build.ParameterMap
 
 public interface DependencyVariants {
     @StonecutterAPI

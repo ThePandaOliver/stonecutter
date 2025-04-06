@@ -18,14 +18,10 @@ internal abstract class IdeaSetupTask : DefaultTask() {
     @get:Input
     abstract val versions: MapProperty<ProjectHierarchy, Iterable<String>>
 
-    @get:Input
-    abstract val tasks: MapProperty<ProjectHierarchy, Iterable<String>>
-
     private val folder = project.rootDir.absoluteFile.resolve(".idea/runConfigurations").toPath()
 
     init {
         versions.convention(mutableMapOf())
-        tasks.convention(mutableMapOf())
     }
 
     @TaskAction
@@ -36,14 +32,9 @@ internal abstract class IdeaSetupTask : DefaultTask() {
 
         val files = mutableSetOf<String>()
         for ((project, versions) in versions()) files.addAll(configureTree(project, versions))
-        for ((project, tasks) in tasks()) files.addAll(configureChiseled(project, tasks))
 
         for (file in folder.listDirectoryEntries()) if (file.fileName.toString().let { it.startsWith("Stonecutter") && it !in files })
             kotlin.runCatching { file.deleteExisting() }.onFailure { logger.error("Failed to delete configuration file $file", it) }
-    }
-
-    private fun configureChiseled(project: ProjectHierarchy, tasks: Iterable<String>) = buildList {
-        for (it in tasks) writeConfiguration(project, "Task: $it", it)
     }
 
     private fun configureTree(project: ProjectHierarchy, versions: Iterable<String>) = buildList {

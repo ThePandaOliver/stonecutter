@@ -1,4 +1,4 @@
-package dev.kikugie.stonecutter.data.container
+package dev.kikugie.stonecutter.data.build
 
 import dev.kikugie.stonecutter.then
 import kotlin.collections.MutableMap.MutableEntry
