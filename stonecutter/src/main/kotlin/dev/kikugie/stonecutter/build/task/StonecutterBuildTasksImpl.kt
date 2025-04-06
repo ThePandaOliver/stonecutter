@@ -9,14 +9,10 @@ import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.register
 
-internal class StonecutterBuildInternalTasks {
-    val prepareTasks: MutableCollection<TaskProvider<FileProcessingTask>> = mutableListOf()
-    val generateTasks: MutableCollection<TaskProvider<FileGeneratingTask>> = mutableListOf()
-    val mergeTasks: MutableCollection<TaskProvider<Copy>> = mutableListOf()
-
-    fun prepareTaskName(src: SourceSet, dir: SourceDirectorySet) = "stonecutterPrepare${taskSuffix(src, dir)}"
-    fun generateTaskName(src: SourceSet, dir: SourceDirectorySet) = "stonecutterGenerate${taskSuffix(src, dir)}"
-    fun mergeTaskName(src: SourceSet, dir: SourceDirectorySet) = "stonecutterMerge${taskSuffix(src, dir)}"
+internal class StonecutterBuildTasksImpl : StonecutterBuildTasks {
+    override val prepare: MutableCollection<TaskProvider<FileProcessingTask>> = mutableListOf()
+    override val generate: MutableCollection<TaskProvider<FileGeneratingTask>> = mutableListOf()
+    override val merge: MutableCollection<TaskProvider<Copy>> = mutableListOf()
 
     inline fun registerPrepareTask(project: Project, src: SourceSet, dir: SourceDirectorySet, crossinline config: FileProcessingTask.() -> Unit): TaskProvider<FileProcessingTask> {
         val task = project.tasks.register<FileProcessingTask>(prepareTaskName(src, dir)) {
@@ -24,7 +20,7 @@ internal class StonecutterBuildInternalTasks {
             description = "Internal Stonecutter task. Do not call manually."
             config()
         }
-        prepareTasks += task
+        prepare += task
         return task
     }
 
@@ -34,7 +30,7 @@ internal class StonecutterBuildInternalTasks {
             description = "Internal Stonecutter task. Do not call manually."
             config()
         }
-        generateTasks += task
+        generate += task
         return task
     }
 
@@ -44,10 +40,7 @@ internal class StonecutterBuildInternalTasks {
             description = "Internal Stonecutter task. Do not call manually."
             config()
         }
-        mergeTasks += task
+        merge += task
         return task
     }
-
-    private fun taskSuffix(src: SourceSet, dir: SourceDirectorySet) =
-        (if (SourceSet.isMain(src)) "" else src.name.replaceFirstChar(Char::uppercase)) + dir.name.replaceFirstChar(Char::uppercase)
 }

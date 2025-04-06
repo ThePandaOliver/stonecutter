@@ -14,7 +14,7 @@ import org.gradle.workers.WorkQueue
 import org.gradle.workers.WorkerExecutor
 import javax.inject.Inject
 
-internal abstract class FileProcessingTask : DefaultTask() {
+public abstract class FileProcessingTask : DefaultTask() {
     /**
      * Source directory for the files to be processed,
      * which should be the `src` directory in the branch root.
@@ -24,13 +24,13 @@ internal abstract class FileProcessingTask : DefaultTask() {
     @get:IgnoreEmptyDirectories
     @get:NormalizeLineEndings
     @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val sources: ConfigurableFileCollection
+    public abstract val sources: ConfigurableFileCollection
 
     /**
      * Processor parameters used for file processing.
      */
     @get:Input
-    abstract val parameters: Property<FileProcessingData>
+    public abstract val parameters: Property<FileProcessingData>
 
     /**
      * Cache directory for processed files,
@@ -38,16 +38,16 @@ internal abstract class FileProcessingTask : DefaultTask() {
      * or `/build/stonecutter-cache/oob/{dest version}/sources/` in the branch root.
      */
     @get:OutputDirectory
-    abstract val caches: DirectoryProperty
+    public abstract val caches: DirectoryProperty
 
     /**
      * Concurrent executor for the file processing.
      */
     @get:Inject
-    abstract val executor: WorkerExecutor
+    public abstract val executor: WorkerExecutor
 
     @TaskAction
-    fun run(inputs: InputChanges) {
+    public fun run(inputs: InputChanges) {
         inputs.clearIfNotIncremental(caches.asFile())
         val queue = executor.noIsolation()
 

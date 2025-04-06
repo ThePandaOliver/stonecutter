@@ -23,9 +23,9 @@ import kotlin.io.path.copyTo
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
 
-internal abstract class FileGeneratingTask : DefaultTask() {
-    data class ExpectedFileState(val file: String, val source: File?)
-    abstract class Action : WorkAction<Parameters> {
+public abstract class FileGeneratingTask : DefaultTask() {
+    internal data class ExpectedFileState(val file: String, val source: File?)
+    internal abstract class Action : WorkAction<Parameters> {
         override fun execute() = try {
             if (!parameters.source.isPresent) parameters.outputPath.deleteIfExists()
             else parameters.outputPath.let {
@@ -37,7 +37,7 @@ internal abstract class FileGeneratingTask : DefaultTask() {
         }.let { }
     }
 
-    interface Parameters : WorkParameters {
+    internal interface Parameters : WorkParameters {
         @get:Optional
         val source: RegularFileProperty
         val output: RegularFileProperty
@@ -50,27 +50,27 @@ internal abstract class FileGeneratingTask : DefaultTask() {
     @get:IgnoreEmptyDirectories
     @get:Incremental
     @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val sources: ConfigurableFileCollection
+    public abstract val sources: ConfigurableFileCollection
 
     @get:InputFiles
     @get:IgnoreEmptyDirectories
     @get:Incremental
     @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val excludes: ConfigurableFileCollection
+    public abstract val excludes: ConfigurableFileCollection
 
     @get:InputDirectory
     @get:Incremental
     @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val processed: DirectoryProperty
+    public abstract val processed: DirectoryProperty
 
     @get:OutputDirectory
-    abstract val generated: DirectoryProperty
+    public abstract val generated: DirectoryProperty
 
     @get:Inject
-    abstract val executor: WorkerExecutor
+    public abstract val executor: WorkerExecutor
 
     @TaskAction
-    fun run(inputs: InputChanges) {
+    public fun run(inputs: InputChanges) {
         inputs.clearIfNotIncremental(generated.asFile())
         val expected: List<ExpectedFileState> = buildExpectedFileStates(inputs)
 

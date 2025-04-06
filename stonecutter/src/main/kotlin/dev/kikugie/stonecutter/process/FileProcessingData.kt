@@ -6,17 +6,17 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 
-internal interface FileProcessingData {
-    val constants: MapProperty<Identifier, Boolean>
-    val swaps: MapProperty<Identifier, String>
-    val dependencies: MapProperty<Identifier, AnyVersion>
-    val replacements: ListProperty<ReplacementData>
+public interface FileProcessingData {
+    public val constants: MapProperty<Identifier, Boolean>
+    public val swaps: MapProperty<Identifier, String>
+    public val dependencies: MapProperty<Identifier, AnyVersion>
+    public val replacements: ListProperty<ReplacementData>
 
-    interface ReplacementData {
-        val type: Property<String>
-        val phase: Property<String>
-        val id: Property<String>
-        val sources: ListProperty<String>
-        val target: Property<String>
+    public interface ReplacementData {
+        public val type: Property<String>
+        public val phase: Property<String>
+        public val id: Property<String>
+        public val sources: ListProperty<String>
+        public val target: Property<String>
     }
 }

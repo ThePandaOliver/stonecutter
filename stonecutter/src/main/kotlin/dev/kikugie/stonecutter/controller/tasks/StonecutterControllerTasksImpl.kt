@@ -5,25 +5,23 @@ import dev.kikugie.stonecutter.controller.StonecutterControllerManager
 import dev.kikugie.stonecutter.data.tree.ProjectTree
 import dev.kikugie.stonecutter.process.ControllerExternalUpdateTask
 import dev.kikugie.stonecutter.process.ControllerScriptUpdateTask
+import dev.kikugie.stonecutter.process.StonecutterUpdateTask
 import dev.kikugie.stonecutter.util.invoke
 import org.gradle.api.DefaultTask
+import org.gradle.api.Task
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.register
 
-internal class StonecutterControllerInternalTasks {
-    val switchTasks: MutableCollection<TaskProvider<out DefaultTask>> = mutableListOf()
+internal class StonecutterControllerTasksImpl : StonecutterControllerTasks {
+    override val switch: MutableCollection<TaskProvider<out StonecutterUpdateTask>> = mutableListOf()
 
-    fun switchTaskName(project: Identifier): String = "stonecutterSwitchTo$project"
-    fun switchTaskProvider(project: Identifier): TaskProvider<out DefaultTask>? =
-        switchTasks.find { it.name == switchTaskName(project) }
-
-    fun registerSwitchTask(project: Identifier, tree: ProjectTree, manager: StonecutterControllerManager): TaskProvider<out DefaultTask> {
+    fun registerSwitchTask(project: Identifier, tree: ProjectTree, manager: StonecutterControllerManager): TaskProvider<out StonecutterUpdateTask> {
         val task = registerMatchingSwitchTask(project, tree, manager)
-        switchTasks += task
+        switch += task
         return task
     }
 
-    private fun registerMatchingSwitchTask(project: Identifier, tree: ProjectTree, manager: StonecutterControllerManager) =
+    private fun registerMatchingSwitchTask(project: Identifier, tree: ProjectTree, manager: StonecutterControllerManager): TaskProvider<out StonecutterUpdateTask> =
         if (tree.provider != null) registerExternalSwitchTask(project, tree)
         else registerSelfSwitchTask(project, tree, manager)
 

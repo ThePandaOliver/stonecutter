@@ -2,6 +2,7 @@ package dev.kikugie.stonecutter.build
 
 import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.build.param.StonecutterBuildParams
+import dev.kikugie.stonecutter.build.task.StonecutterBuildTasks
 import dev.kikugie.stonecutter.controller.flag.FlagContainer
 import dev.kikugie.stonecutter.data.StonecutterProject
 import dev.kikugie.stonecutter.data.tree.ProjectBranch
@@ -13,6 +14,7 @@ public interface StonecutterBuildExtension : StonecutterBuildParams {
     @StonecutterAPI public val branch: ProjectBranch
     @StonecutterAPI public val node: ProjectNode
     @StonecutterAPI public val flags: FlagContainer
+    public val tasks: StonecutterBuildTasks
 
     @StonecutterAPI public val active: StonecutterProject
         get() = tree.current

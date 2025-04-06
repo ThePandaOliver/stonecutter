@@ -3,7 +3,7 @@ package dev.kikugie.stonecutter.build
 import dev.kikugie.stonecutter.*
 import dev.kikugie.stonecutter.build.param.StonecutterBuildData
 import dev.kikugie.stonecutter.build.param.StonecutterBuildParams
-import dev.kikugie.stonecutter.build.task.StonecutterBuildInternalTasks
+import dev.kikugie.stonecutter.build.task.StonecutterBuildTasksImpl
 import dev.kikugie.stonecutter.controller.StonecutterControllerImpl
 import dev.kikugie.stonecutter.controller.flag.FlagContainer
 import dev.kikugie.stonecutter.controller.flag.GENERATE_SOURCES_ON_SYNC
@@ -16,7 +16,6 @@ import dev.kikugie.stonecutter.util.*
 import org.gradle.api.Project
 import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.tasks.SourceSet
-import org.gradle.api.tasks.TaskProvider
 import java.io.File
 
 internal open class StonecutterBuildImpl @JvmOverloads constructor(
@@ -26,13 +25,13 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor(
     val data: StonecutterBuildData = controller.getOrCreateParameters(project.hierarchy),
 ) : StonecutterBuildExtension, StonecutterBuildParams by data {
     private val parent get() = project.parent!!
-    internal val internals = StonecutterBuildInternalTasks()
     final override val branch: ProjectBranch = tree.getChecked(project.parent!!.hierarchy) {
         "Branch for '$it' not found in ${tree.hierarchy}: ${keysToString()}"
     }
     final override val node: ProjectNode = branch.getChecked(project.hierarchy) {
         "Node for '$it' not found in ${branch.hierarchy}: ${keysToString()}"
     }
+    override val tasks: StonecutterBuildTasksImpl = StonecutterBuildTasksImpl()
     override val flags: FlagContainer
         get() = controller.flags
 
@@ -49,28 +48,29 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor(
     }
 
     private fun configureTaskDependencies() = project.afterEvaluate {
-        if (flags[GENERATE_SOURCES_ON_SYNC] && isIdeaSync) internals.generateTasks.map { "$path:${it.name}" }
+        if (flags[GENERATE_SOURCES_ON_SYNC] && isIdeaSync) this@StonecutterBuildImpl.tasks.generate.map { "$path:${it.name}" }
             .let { gradle.requestTasks(it, path, projectDir) }
 
-        controller.internals.switchTaskProvider(current.project)?.configure {
-            dependsOn(internals.mergeTasks)
+        controller.tasks.switchTaskProvider(current.project)?.configure {
+            dependsOn(this@StonecutterBuildImpl.tasks.merge)
         }
 
         with(filter) {
-            for (it in internals.prepareTasks) it.configure {
-                sources.from(sources.asFileTree.filter { filter(it.toPath()) })
+            for (it in this@StonecutterBuildImpl.tasks.prepare) it.configure {
+                sources.from(files(sources.files).asFileTree.filter { filter(it.toPath()) })
             }
         }
     }
 
-    private fun configureSourceDirectory(set: SourceSet, dir: SourceDirectorySet): TaskProvider<*> {
+    private fun configureSourceDirectory(set: SourceSet, dir: SourceDirectorySet) {
         val pathSuffix = "${set.name}/${dir.name}"
         val currentDirectories = dir.sourceDirectories.files.toSet()
         val processedDirectories = mapAndAttachSources(set, dir)
         val cacheDirectory = project.layout.buildDirectory.dir("stonecutter-cache/sources/$pathSuffix")
         val generatedDirectory = project.layout.buildDirectory.dir("generated/stonecutter/$pathSuffix")
+        if (processedDirectories.isEmpty()) return
 
-        val prepareTask = internals.registerPrepareTask(project, set, dir) {
+        val prepareTask = tasks.registerPrepareTask(project, set, dir) {
             description = "Internal Stonecutter task. Do not call manually."
 
             sources.from(processedDirectories)
@@ -78,7 +78,7 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor(
             parameters.set(project.provider { data.asProcessingData(flags[IMPLICIT_RECEIVER], current.version) })
         }
 
-        internals.registerMergeTask(project, set, dir) {
+        tasks.registerMergeTask(project, set, dir) {
             description = "Internal Stonecutter task. Do not call manually."
 
             from(cacheDirectory)
@@ -86,7 +86,7 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor(
             dependsOn(prepareTask)
         }
 
-        return internals.registerGenerateTask(project, set, dir) {
+        tasks.registerGenerateTask(project, set, dir) {
             description = "Internal Stonecutter task. Do not call manually."
 
             sources.from(processedDirectories)
@@ -98,10 +98,6 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor(
         }
     }
 
-    /**
-     * Sources under `versions/./src/` are replaced with root's `src/` for the active version.
-     * Matched root sources are returned to be registered in [registerPrepareSourcesTask].
-     */
     private fun mapAndAttachSources(set: SourceSet, dir: SourceDirectorySet): List<File> {
         val root = parent.layout.projectDirectory.dir("src").asFile
         val src = project.layout.projectDirectory.dir("src").asFile
@@ -111,7 +107,7 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor(
         if (current.isActive) dir.srcDirs(project.files(remapped))
         else for (it in match) project.layout.buildDirectory
             .dir("generated/stonecutter/${it.relativeTo(src)}")
-            .let { project.files(it).builtBy("${project.path}:${internals.prepareTaskName(set, dir)}") }
+            .let { project.files(it).builtBy("${project.path}:${tasks.prepareTaskName(set, dir)}") }
             .let(dir::srcDir)
 
         return remapped
