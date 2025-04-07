@@ -24,6 +24,10 @@ import kotlin.io.path.copyTo
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
 
+/**
+ * Updates versioned generated sources, excluding files from [excludes]
+ * and copying the matching ones from [processed] or [sources].
+ */
 public abstract class FileGeneratingTask : DefaultTask() {
     internal data class ExpectedFileState(val file: File, val source: File?)
     internal abstract class Action : WorkAction<Parameters> {
@@ -48,12 +52,21 @@ public abstract class FileGeneratingTask : DefaultTask() {
         val outputPath: Path get() = output.asFile().toPath()
     }
 
+    /**
+     * Root directory for [processed] files.
+     */
     @get:Input
     public abstract val cache: Property<File>
 
+    /**
+     * Root directory for [sources].
+     */
     @get:Input
     public abstract val root: Property<File>
 
+    /**
+     * Root directory for [excludes].
+     */
     @get:Input
     public abstract val source: Property<File>
 

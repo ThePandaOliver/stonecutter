@@ -15,7 +15,14 @@ import org.gradle.workers.WorkerExecutor
 import java.io.File
 import javax.inject.Inject
 
+/**
+ * Processes files that have versioned comments from [sources] into the [caches] directory.
+ * This allows simply copying them recursively for version switching and generating sources.
+ */
 public abstract class FileProcessingTask : DefaultTask() {
+    /**
+     * Base directory for [sources] to determine the relative location in [caches].
+     */
     @get:Input
     public abstract val root: Property<File>
     /**
@@ -35,15 +42,11 @@ public abstract class FileProcessingTask : DefaultTask() {
 
     /**
      * Cache directory for processed files,
-     * which should be `versions/{dest version}/build/stonecutter-cache/sources/`
-     * or `/build/stonecutter-cache/oob/{dest version}/sources/` in the branch root.
+     * which is under `versions/{dest version}/build/stonecutter-cache/sources/`
      */
     @get:OutputDirectory
     public abstract val caches: DirectoryProperty
 
-    /**
-     * Concurrent executor for the file processing.
-     */
     @get:Inject
     public abstract val executor: WorkerExecutor
 

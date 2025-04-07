@@ -6,6 +6,10 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 
+/**
+ * Parameters stored in [dev.kikugie.stonecutter.build.param.StonecutterBuildParams],
+ * but in Gradle properties to allow task caching.
+ */
 public interface FileProcessingData {
     public val constants: MapProperty<Identifier, Boolean>
     public val swaps: MapProperty<Identifier, String>
