@@ -3,9 +3,8 @@ package dev.kikugie.stonecutter
 import kotlin.annotation.AnnotationTarget.*
 
 /**
- * Annotated members are stable parts of the API available in configuration scripts.
- * Some public members may not be annotated with this in case the functionality
- * only needs to be public for addons, but not the end user.
+ * Marks members intended to be used as a part of the standard
+ * Stonecutter configuration.
  */
 @MustBeDocumented
 @Suppress("unused", "MemberVisibilityCanBePrivate")
@@ -13,12 +12,21 @@ import kotlin.annotation.AnnotationTarget.*
 @Target(CLASS, FUNCTION, PROPERTY, FIELD, TYPEALIAS)
 public annotation class StonecutterAPI
 
+/**
+ * Marks members used for advanced configuration by
+ * Stonecutter addons and case-specific fixes
+ * and should be used with care.
+ */
 @MustBeDocumented
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 @Retention(AnnotationRetention.BINARY)
 @Target(CLASS, FUNCTION, PROPERTY, FIELD, TYPEALIAS)
 public annotation class StonecutterDevAPI
 
+/**
+ * Marks members that should not be used,
+ * but need to have public visibility for technical reasons.
+ */
 @Retention(AnnotationRetention.BINARY)
 @Target(CLASS, FUNCTION, PROPERTY, FIELD, TYPEALIAS)
 public annotation class StonecutterInternalAPI
