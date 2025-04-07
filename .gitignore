@@ -23,7 +23,8 @@ eclipse
 run
 /docs/.vitepress/cache/
 /node_modules/
-/docs/.vitepress/dist/
 /.vitepress/
 *index.md
 /.env
+/docs/public/dokka/
+/docs/.vitepress/dist/

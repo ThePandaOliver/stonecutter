@@ -1,3 +1,4 @@
+import com.github.gradle.node.npm.task.NpmTask
 import org.gradle.kotlin.dsl.register
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.DokkaBaseConfiguration
@@ -11,6 +12,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.dokka)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.node)
 }
 
 group = property("group").toString()
@@ -40,11 +42,11 @@ tasks.register<UpdateVersionTask>("updateVersion") {
     replacements {
         file("stonecutter/src/main/kotlin/dev/kikugie/stonecutter/Utilities.kt") replace "val STONECUTTER: String = .+\"" with "val STONECUTTER: String = \"$ver\""
         file("stonecutter/src/main/kotlin/dev/kikugie/stonecutter/StonecutterPlugin.kt") replace "VERSION: String = \".+\"" with "VERSION: String = \"$ver\""
-        file("docs/.vitepress/config.mts") replace "latestVersion: '.+'" with "latestVersion: '$ver'"
-//        file("docs/stonecutter/guide/setup.md") replace listOf(
-//            "stonecutter\"\\ version \".+\"" to "stonecutter\" version \"$ver\"",
-//            "stonecutter\"\\) version \".+\"" to "stonecutter\") version \"$ver\""
-//        )
+        file("docs/.vitepress/config.mts") replace "latestVersion: \".+\"" with "latestVersion: \"$ver\""
+        file("docs/wiki/start/settings.md") replace listOf(
+            "stonecutter\"\\ version \".+\"" to "stonecutter\" version \"$ver\"",
+            "stonecutter\"\\) version \".+\"" to "stonecutter\") version \"$ver\""
+        )
     }
 }
 
@@ -62,13 +64,34 @@ tasks.register<HallOfFameTask>("updateHallOfFame") {
     outputFiles.set(files("docs/index.md"))
 }
 
+tasks.register<Sync>("syncDokkaPages") {
+    from(fileTree("build/dokka/htmlMultiModule"))
+    into(file("docs/public/dokka"))
+
+    dependsOn("dokkaHtmlMultiModule")
+}
+
+tasks.register<NpmTask>("buildDocPages") {
+    args = listOf("run", "docs:build")
+    mustRunAfter("updateVersion", "updateHallOfFame", "syncDokkaPages")
+}
+
+tasks.register("composeDocPages") {
+    dependsOn("updateVersion", "updateHallOfFame", "syncDokkaPages", "buildDocPages")
+}
+
 tasks.withType<AbstractDokkaParentTask> {
     moduleName = "Stonecutter KDoc"
 
     pluginConfiguration<DokkaBase, DokkaBaseConfiguration> {
-        homepageLink = "https://stonecutter.kikugie.dev/"
+        homepageLink = "https://stonecutter.codeberg.page/"
         footerMessage = "(c) 2025 KikuGie"
     }
+}
+
+node {
+    download = true
+    version = "23.11.0"
 }
 
 subprojects {
@@ -81,7 +104,7 @@ subprojects {
 
             sourceLink {
                 localDirectory.set(projectDir)
-                remoteUrl.set("https://codeberg.org/stonecutter/stonecutter/src/branch/0.7/${project.name}/".URL)
+                remoteUrl.set("https://codeberg.org/stonecutter/stonecutter/src/branch/0.6/${project.name}/".URL)
                 remoteLineSuffix.set("#L")
             }
 

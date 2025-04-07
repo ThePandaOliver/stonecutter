@@ -41,6 +41,8 @@ features:
 import { VPTeamMembers } from 'vitepress/theme';
 import modrinth from '/assets/modrinth.svg?raw';
 import curseforge from '/assets/curseforge.svg?raw';
+import codeberg from '/assets/codeberg.svg?raw';
+import git from '/assets/git.svg?raw';
 
 const members = [
 '%PLACEHOLDER%'

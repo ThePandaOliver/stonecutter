@@ -1,6 +1,7 @@
 import {PageData, TransformPageContext, defineConfig} from "vitepress";
 import {tabsMarkdownPlugin} from "vitepress-plugin-tabs"
 import {applySEO} from "./seo";
+import codeberg from '?raw';
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -48,7 +49,7 @@ export default defineConfig({
         items: [
           {text: "Project settings", link: "/wiki/start/settings"},
           {text: "Project controller", link: "/wiki/start/controller"},
-          {text: "Mod setup", link: "/wiki/start/build"},
+          {text: "Mod setup", link: "/wiki/start/builds"},
           {text: "Versioning code", link: "/wiki/start/comments"},
         ]
       },
@@ -63,17 +64,16 @@ export default defineConfig({
     ],
 
     socialLinks: [
-      {icon: "github", link: "https://github.com/stonecutter-versioning/stonecutter"},
-      {icon: "discord", link: "https://discord.gg/TBgNUCfryS"},
+      {icon: "codeberg", link: "https://codeberg.org/stonecutter/stonecutter"},
+      {icon: "discord", link: "https://discord.kikugie.dev"},
     ],
 
     footer: {
-      message: "Released under the <a href=\"https://github.com/stonecutter-versioning/stonecutter/blob/0.5/LICENSE\">LGPL-3.0 License</a> by KikuGie (git.kikugie@protonmail.com she/her)"
+      message: "Released under the <a href=\"https://codeberg.org/stonecutter/stonecutter/src/branch/0.6/LICENSE\">LGPL-3.0 License</a> by KikuGie (git.kikugie@protonmail.com she/her)"
     }
   },
   sitemap: {
-    hostname: "https://stonecutter.kikugie.dev/",
-    transformItems: items => removeVersionedItems(items)
+    hostname: "https://stonecutter.codeberg.page/"
   },
   markdown: {
     config(md) {

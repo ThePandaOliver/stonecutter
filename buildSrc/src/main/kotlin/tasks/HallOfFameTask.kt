@@ -65,15 +65,15 @@ abstract class HallOfFameTask : DefaultTask() {
 
         val (entries, projects) = runBlocking { Collector.get(token, config, cache) }
         entries.forEach { it.internal.keys.retainAll(listOf("curseforge_id")) }
-        cacheFile.writeYaml(ListSerializer(SearchEntry.serializer()), entries.toList())
+        cacheFile.writeYaml(ListSerializer(SearchEntry.serializer()), entries.sortedBy { it.id.lowercase() })
 
         val template = templateFile.get().asFile.readText()
         val js = projects.values
-            .sortedByDescending { it.updated }
+            .sortedByDescending { it.downloads }
             .joinToString(",\n") { it.toJS() }
             .let { template.replaceFirst("'%PLACEHOLDER%'", it) }
         outputFiles.get().files.forEach { it.writeText(js) }
-        writeUnresolved(entries.toList())
+//        writeUnresolved(entries.toList())
     }
 
     private fun writeUnresolved(entries: List<SearchEntry>) = entries.mapNotNull {
@@ -112,7 +112,15 @@ abstract class HallOfFameTask : DefaultTask() {
     private fun ProjectInfo.composeLinks() = buildString {
         modrinth?.run { appendLine("{icon:'modrinth',link:'$escapeJS' },") }
         curseforge?.run { appendLine("{icon:'curseforge',link:'$escapeJS'},") }
-        source?.run { appendLine("{icon:'github',link:'$escapeJS'},") }
+        source?.run {
+            val icon = when {
+                "github.com" in this -> "github"
+                "codeberg.org" in this -> "codeberg"
+                else -> "git"
+            }
+
+            appendLine("{icon:'$icon',link:'$escapeJS'},")
+        }
         if (isNotEmpty()) setLength(length - 2) // Remove ,\n
     }
 
