@@ -97,7 +97,7 @@ public abstract class FileGeneratingTask : DefaultTask() {
 
         val queue = executor.noIsolation()
         for ((path, origin) in expected) queue.submit(Action::class) {
-            output.set(generated.file(path.toString()))
+            output.set(generated.asFile().resolve(path))
             origin?.let(source::set)
         }
     }

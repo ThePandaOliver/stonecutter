@@ -15,13 +15,10 @@ import dev.kikugie.stonecutter.data.tree.ProjectTree
 import dev.kikugie.stonecutter.getChecked
 import dev.kikugie.stonecutter.keysToString
 import dev.kikugie.stonecutter.process.FileProcessingData
-import dev.kikugie.stonecutter.then
 import dev.kikugie.stonecutter.util.*
 import org.gradle.api.Project
-import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
-import java.io.File
 
 internal open class StonecutterBuildImpl @JvmOverloads constructor(
     val project: Project,
@@ -45,7 +42,10 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor(
 
     private fun configureProject() = with(project) {
         plugins.apply("java")
-        sourceSets.all(this@StonecutterBuildImpl.tasks::configureSource)
+        sourceSets.all {
+            createProcessingTasks(this)
+            this@StonecutterBuildImpl.tasks.configureSource(this)
+        }
         configureTaskDependencies()
     }
 
@@ -62,6 +62,34 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor(
             for (it in this@StonecutterBuildImpl.tasks.prepare.values) it.configure {
                 sources.from(files(sources.files).asFileTree.filter { filter(it.toPath()) })
             }
+        }
+    }
+
+    private fun createProcessingTasks(src: SourceSet) {
+        val prepareTask = tasks.registerPrepareTask(src) {
+            sources.from(parent.projectDirectory.resolve("src/${src.name}"))
+            root.set(parent.projectDirectory.resolve("src/${src.name}"))
+            caches.set(tasks.processedCacheDir.resolve(src.name))
+            project.provider { data.asProcessingData(flags[IMPLICIT_RECEIVER], current.version) }
+                .let<Provider<FileProcessingData>, Unit>(parameters::set)
+        }
+
+        tasks.registerGenerateTask(src) {
+            root.set(parent.projectDirectory.resolve("src/${src.name}"))
+            source.set(project.projectDirectory.resolve("src/${src.name}"))
+            cache.set(tasks.processedCacheDir.resolve(src.name))
+
+            sources.from(parent.projectDirectory.resolve("src/${src.name}"))
+            excludes.from(project.layout.projectDirectory.dir("src/${src.name}"))
+            processed.set(tasks.processedCacheDir.resolve(src.name))
+            generated.set(tasks.generatedSourcesDir.resolve(src.name))
+            dependsOn(prepareTask)
+        }
+
+        tasks.registerMergeTask(src) {
+            from(tasks.processedCacheDir.resolve(src.name))
+            into(parent.projectDirectory.resolve("src/${src.name}"))
+            dependsOn(prepareTask)
         }
     }
 }
