@@ -2,20 +2,23 @@ package dev.kikugie.stonecutter.build.task
 
 import dev.kikugie.stonecutter.process.FileGeneratingTask
 import dev.kikugie.stonecutter.process.FileProcessingTask
-import org.gradle.api.file.SourceDirectorySet
+import dev.kikugie.stonecutter.util.TaskProviderMap
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.SourceSet
-import org.gradle.api.tasks.TaskProvider
+import java.io.File
 
 public interface StonecutterBuildTasks {
-    public val prepare: Collection<TaskProvider<FileProcessingTask>>
-    public val generate: Collection<TaskProvider<FileGeneratingTask>>
-    public val merge: Collection<TaskProvider<Copy>>
+    public val prepare: TaskProviderMap<FileProcessingTask>
+    public val generate: TaskProviderMap<FileGeneratingTask>
+    public val merge: TaskProviderMap<Copy>
+    public val processedCacheDir: File
+    public val generatedSourcesDir: File
 
-    public fun prepareTaskName(src: SourceSet, dir: SourceDirectorySet): String = "stonecutterPrepare${taskSuffix(src, dir)}"
-    public fun generateTaskName(src: SourceSet, dir: SourceDirectorySet): String = "stonecutterGenerate${taskSuffix(src, dir)}"
-    public fun mergeTaskName(src: SourceSet, dir: SourceDirectorySet): String = "stonecutterMerge${taskSuffix(src, dir)}"
+    public fun prepareTaskName(src: SourceSet): String = "stonecutterPrepare${taskSuffix(src)}"
+    public fun generateTaskName(src: SourceSet): String = "stonecutterGenerate${taskSuffix(src)}"
+    public fun mergeTaskName(src: SourceSet): String = "stonecutterMerge${taskSuffix(src)}"
+    public fun taskSuffix(src: SourceSet): String =
+        if (SourceSet.isMain(src)) "" else src.name.replaceFirstChar(Char::uppercase)
 
-    private fun taskSuffix(src: SourceSet, dir: SourceDirectorySet) =
-        (if (SourceSet.isMain(src)) "" else src.name.replaceFirstChar(Char::uppercase)) + dir.name.replaceFirstChar(Char::uppercase)
+    public fun configureSource(src: SourceSet)
 }

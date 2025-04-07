@@ -19,12 +19,16 @@ import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.internal.DefaultTaskExecutionRequest
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.newInstance
 import org.gradle.work.InputChanges
 import java.io.File
+
+public typealias TaskProviderMap<T> = Map<String, TaskProvider<T>>
+internal typealias MutableTaskProviderMap<T> = MutableMap<String, TaskProvider<T>>
 
 internal val Project.sourceSets: SourceSetContainer
     get() = project.extensions.getByType<SourceSetContainer>()
@@ -77,3 +81,6 @@ internal val isIdeaSync: Boolean get() = System.getProperty("idea.sync.active", 
 internal fun Gradle.requestTasks(tasks: Iterable<String>, path: String? = null, dir: File? = null) = startParameter.run {
     setTaskRequests(taskRequests + DefaultTaskExecutionRequest(tasks, path, dir))
 }
+
+internal val Project.projectDirectory get() = layout.projectDirectory.asFile
+internal val Project.buildDirectory get() = layout.buildDirectory.asFile()

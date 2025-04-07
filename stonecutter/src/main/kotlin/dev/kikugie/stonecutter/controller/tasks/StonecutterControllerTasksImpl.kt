@@ -6,6 +6,7 @@ import dev.kikugie.stonecutter.data.tree.ProjectTree
 import dev.kikugie.stonecutter.process.ControllerExternalUpdateTask
 import dev.kikugie.stonecutter.process.ControllerScriptUpdateTask
 import dev.kikugie.stonecutter.process.StonecutterUpdateTask
+import dev.kikugie.stonecutter.util.MutableTaskProviderMap
 import dev.kikugie.stonecutter.util.invoke
 import org.gradle.api.DefaultTask
 import org.gradle.api.Task
@@ -13,13 +14,10 @@ import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.register
 
 internal class StonecutterControllerTasksImpl : StonecutterControllerTasks {
-    override val switch: MutableCollection<TaskProvider<out StonecutterUpdateTask>> = mutableListOf()
+    override val switch: MutableTaskProviderMap<out StonecutterUpdateTask> = mutableMapOf()
 
-    fun registerSwitchTask(project: Identifier, tree: ProjectTree, manager: StonecutterControllerManager): TaskProvider<out StonecutterUpdateTask> {
-        val task = registerMatchingSwitchTask(project, tree, manager)
-        switch += task
-        return task
-    }
+    fun registerSwitchTask(project: Identifier, tree: ProjectTree, manager: StonecutterControllerManager): TaskProvider<out StonecutterUpdateTask> =
+        registerMatchingSwitchTask(project, tree, manager).also { switch[it.name] = it }
 
     private fun registerMatchingSwitchTask(project: Identifier, tree: ProjectTree, manager: StonecutterControllerManager): TaskProvider<out StonecutterUpdateTask> =
         if (tree.provider != null) registerExternalSwitchTask(project, tree)

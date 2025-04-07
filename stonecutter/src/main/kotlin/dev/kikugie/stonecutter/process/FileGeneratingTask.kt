@@ -7,6 +7,7 @@ import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileType
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import org.gradle.kotlin.dsl.submit
 import org.gradle.work.ChangeType
@@ -24,7 +25,7 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
 
 public abstract class FileGeneratingTask : DefaultTask() {
-    internal data class ExpectedFileState(val file: String, val source: File?)
+    internal data class ExpectedFileState(val file: File, val source: File?)
     internal abstract class Action : WorkAction<Parameters> {
         override fun execute() = try {
             if (!parameters.source.isPresent) parameters.outputPath.deleteIfExists()
@@ -32,9 +33,10 @@ public abstract class FileGeneratingTask : DefaultTask() {
                 it.parent.createDirectories()
                 parameters.sourcePath.copyTo(it, overwrite = true)
             }
+            Unit
         } catch (e: Exception) {
             throw RuntimeException("Failed to process file: [${e::class.qualifiedName}: ${e.message}", e)
-        }.let { }
+        }
     }
 
     internal interface Parameters : WorkParameters {
@@ -46,21 +48,27 @@ public abstract class FileGeneratingTask : DefaultTask() {
         val outputPath: Path get() = output.asFile().toPath()
     }
 
+    @get:Input
+    public abstract val cache: Property<File>
+
+    @get:Input
+    public abstract val root: Property<File>
+
+    @get:Input
+    public abstract val source: Property<File>
+
     @get:InputFiles
     @get:IgnoreEmptyDirectories
     @get:Incremental
-    @get:PathSensitive(PathSensitivity.RELATIVE)
     public abstract val sources: ConfigurableFileCollection
 
     @get:InputFiles
     @get:IgnoreEmptyDirectories
     @get:Incremental
-    @get:PathSensitive(PathSensitivity.RELATIVE)
     public abstract val excludes: ConfigurableFileCollection
 
     @get:InputDirectory
     @get:Incremental
-    @get:PathSensitive(PathSensitivity.RELATIVE)
     public abstract val processed: DirectoryProperty
 
     @get:OutputDirectory
@@ -76,7 +84,7 @@ public abstract class FileGeneratingTask : DefaultTask() {
 
         val queue = executor.noIsolation()
         for ((path, origin) in expected) queue.submit(Action::class) {
-            output.set(generated.file(path))
+            output.set(generated.file(path.toString()))
             origin?.let(source::set)
         }
     }
@@ -90,13 +98,13 @@ public abstract class FileGeneratingTask : DefaultTask() {
         val (ignored, freed) = inputs.getFileChanges(excludes)
             .analyzeExcludes(this)
 
-        inputs.getFileChanges(processed).analyzeSource(ignored, this).let { (added, removed) ->
+        inputs.getFileChanges(processed).analyzeSource(cache(), ignored, this).let { (added, removed) ->
             ignored += added
             freed -= added
             freed += removed
         }
 
-        inputs.getFileChanges(sources).analyzeSource(ignored, this).let { (added, removed) ->
+        inputs.getFileChanges(sources).analyzeSource(root(), ignored, this).let { (added, removed) ->
             ignored += added
             freed -= added
             freed += removed
@@ -105,34 +113,36 @@ public abstract class FileGeneratingTask : DefaultTask() {
         for (it in freed) this += ExpectedFileState(it, null)
     }
 
-    private fun Iterable<FileChange>.analyzeExcludes(collector: MutableList<ExpectedFileState>): Pair<MutableSet<String>, MutableSet<String>> {
-        val ignoredPaths = mutableSetOf<String>()
-        val freedPaths = mutableSetOf<String>()
+    private fun Iterable<FileChange>.analyzeExcludes(collector: MutableList<ExpectedFileState>): Pair<MutableSet<File>, MutableSet<File>> {
+        val ignoredPaths = mutableSetOf<File>()
+        val freedPaths = mutableSetOf<File>()
         for (change in this) when {
             change.isExistingFile -> {
-                collector += ExpectedFileState(change.normalizedPath, change.file)
-                ignoredPaths += change.normalizedPath
+                val path = change.file.relativeTo(source())
+                collector += ExpectedFileState(path, change.file)
+                ignoredPaths += path
             }
             change.isRemovedFile -> {
-                freedPaths += change.normalizedPath
+                freedPaths += change.file.relativeTo(source())
             }
         }
 
         return ignoredPaths to freedPaths
     }
 
-    private fun Iterable<FileChange>.analyzeSource(ignored: Set<String>, collector: MutableList<ExpectedFileState>): Pair<MutableSet<String>, MutableSet<String>> {
-        val addedPaths = mutableSetOf<String>()
-        val freedPaths = mutableSetOf<String>()
+    private fun Iterable<FileChange>.analyzeSource(root: File, ignored: Set<File>, collector: MutableList<ExpectedFileState>): Pair<MutableSet<File>, MutableSet<File>> {
+        val addedPaths = mutableSetOf<File>()
+        val freedPaths = mutableSetOf<File>()
 
         for (change in this) when {
-            change.normalizedPath in ignored -> continue
+            change.file.relativeTo(root) in ignored -> continue
             change.isExistingFile -> {
-                collector += ExpectedFileState(change.normalizedPath, change.file)
-                addedPaths += change.normalizedPath
+                val path = change.file.relativeTo(root)
+                collector += ExpectedFileState(path, change.file)
+                addedPaths += path
             }
             change.isRemovedFile -> {
-                freedPaths += change.normalizedPath
+                freedPaths += change.file.relativeTo(root)
             }
         }
 

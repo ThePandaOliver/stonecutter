@@ -12,9 +12,12 @@ import org.gradle.kotlin.dsl.submit
 import org.gradle.work.*
 import org.gradle.workers.WorkQueue
 import org.gradle.workers.WorkerExecutor
+import java.io.File
 import javax.inject.Inject
 
 public abstract class FileProcessingTask : DefaultTask() {
+    @get:Input
+    public abstract val root: Property<File>
     /**
      * Source directory for the files to be processed,
      * which should be the `src` directory in the branch root.
@@ -22,8 +25,6 @@ public abstract class FileProcessingTask : DefaultTask() {
     @get:InputFiles
     @get:Incremental
     @get:IgnoreEmptyDirectories
-    @get:NormalizeLineEndings
-    @get:PathSensitive(PathSensitivity.RELATIVE)
     public abstract val sources: ConfigurableFileCollection
 
     /**
@@ -63,14 +64,15 @@ public abstract class FileProcessingTask : DefaultTask() {
     }
 
     private fun WorkQueue.processDeleted(change: FileChange) = submit(FileProcessingAction::class) {
-        output.set(change.normalizedPath.tempFile())
+        output.set(change.file.cacheFile())
     }
 
     private fun WorkQueue.processModified(change: FileChange) = submit(FileProcessingAction::class) {
         source.set(change.file)
-        output.set(change.normalizedPath.tempFile())
+        output.set(change.file.cacheFile())
         transform.set(parameters)
     }
 
-    private fun String.tempFile() = caches().asFile.resolve(this)
+    private fun File.fromRoot() = relativeTo(root())
+    private fun File.cacheFile() = caches().asFile.resolve(fromRoot())
 }
