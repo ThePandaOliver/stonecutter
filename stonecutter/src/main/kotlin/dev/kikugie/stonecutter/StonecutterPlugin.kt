@@ -12,16 +12,28 @@ import org.gradle.api.Project
 import org.gradle.api.initialization.Settings
 import org.gradle.api.plugins.ExtensionAware
 
-internal open class StonecutterPlugin : Plugin<ExtensionAware> {
-    override fun apply(target: ExtensionAware) = target.applyPlugin()
+public open class StonecutterPlugin : Plugin<ExtensionAware> {
+    public companion object {
+        /**Current Stonecutter version.*/
+        @StonecutterAPI
+        public const val VERSION: String = "0.7-alpha.4"
+    }
+
+    /**
+     * Applies the plugin either to [Settings] or [Project].
+     * Applying the plugin to an incorrect target will throw an exception.
+     */
+    @StonecutterDevAPI
+    override fun apply(target: ExtensionAware): Unit = target.applyPlugin()
 
     private fun ExtensionAware.applyPlugin() = when (this) {
         is Settings ->
             stonecutter<StonecutterSettingsExtension, StonecutterSettingsImpl>()
-        is Project ->
+        is Project  ->
             if (getController() == null) stonecutter<StonecutterBuildExtension, StonecutterBuildImpl>()
             else stonecutter<StonecutterControllerExtension, StonecutterControllerImpl>()
-        else -> error("The plugin may only be applied to settings and projects")
+        else        ->
+            error("The plugin may only be applied to settings and projects")
     }
 
     private inline fun <reified P, reified R : P> ExtensionAware.stonecutter() {

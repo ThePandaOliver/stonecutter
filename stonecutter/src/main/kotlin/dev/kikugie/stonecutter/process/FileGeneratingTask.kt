@@ -39,7 +39,7 @@ public abstract class FileGeneratingTask : DefaultTask() {
             }
             Unit
         } catch (e: Exception) {
-            throw RuntimeException("Failed to process file: [${e::class.qualifiedName}: ${e.message}", e)
+            throw RuntimeException("Failed to process file: [${e::class.qualifiedName}]: ${e.message}", e)
         }
     }
 

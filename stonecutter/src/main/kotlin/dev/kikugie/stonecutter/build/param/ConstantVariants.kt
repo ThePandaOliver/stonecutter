@@ -5,8 +5,10 @@ import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.data.build.ParameterMap
 
 public interface ConstantVariants {
-    @StonecutterAPI
-    public val consts: ParameterMap<Identifier, Boolean>
+    /**
+     * Checked map for accessing and modifying constants used in file processing.
+     */
+    @StonecutterAPI public val consts: ParameterMap<Identifier, Boolean>
 
     @StonecutterAPI
     public fun const(id: Identifier, value: Boolean) {

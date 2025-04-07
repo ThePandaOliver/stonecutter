@@ -19,6 +19,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.dokka)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlin.validator)
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.kdoclink)
 }
@@ -60,6 +61,11 @@ kdoclink {
     this["deps.spec"] = wiki("config/params#dependency-specification")
 
     this["utility"] = wiki("guide/setup#checking-versions")
+}
+
+apiValidation {
+    ignoredPackages += "stonecutter_samples"
+    nonPublicMarkers += "dev.kikugie.stonecutter.StonecutterInternalAPI"
 }
 
 tasks.withType<Test>().configureEach {

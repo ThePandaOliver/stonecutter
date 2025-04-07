@@ -19,8 +19,7 @@ public interface StonecutterUtility {
      * @throws VersionParsingException
      * @see VersionParser.parsePredicate
      */
-    @SCDocumentation("utility")
-    @Contract(pure = true) @StonecutterAPI
+    @StonecutterAPI @SCDocumentation("utility") @Contract(pure = true)
     public fun eval(version: SemanticVersion, predicate: String): Boolean {
         val target = VersionParser.parse(version).value
         return predicate.split(' ').all {
@@ -34,8 +33,7 @@ public interface StonecutterUtility {
      * @sample stonecutter_samples.eval.lenient
      * @see VersionParser.parsePredicateLenient
      */
-    @SCDocumentation("utility")
-    @Contract(pure = true) @StonecutterAPI
+    @StonecutterAPI @SCDocumentation("utility") @Contract(pure = true)
     public fun evalLenient(version: AnyVersion, predicate: String): Boolean {
         val target = VersionParser.parseLenient(version).value
         return predicate.split(' ').all {
@@ -48,8 +46,7 @@ public interface StonecutterUtility {
      *
      * @return 1 if the [left] is greater, -1 if the [right] is greater, 0 if they are equal
      */
-    @SCDocumentation("utility")
-    @Contract(pure = true) @StonecutterAPI
+    @StonecutterAPI @SCDocumentation("utility") @Contract(pure = true)
     public fun compare(left: SemanticVersion, right: SemanticVersion): Int =
         VersionParser.parse(left).value.compareTo(VersionParser.parse(right).value)
 
@@ -58,8 +55,7 @@ public interface StonecutterUtility {
      *
      * @return 1 if the [left] is greater, -1 if the [right] is greater, 0 if they are equal
      */
-    @SCDocumentation("utility")
-    @Contract(pure = true) @StonecutterAPI
+    @StonecutterAPI @SCDocumentation("utility") @Contract(pure = true)
     public fun compareLenient(left: AnyVersion, right: AnyVersion): Int =
         VersionParser.parseLenient(left).value.compareTo(VersionParser.parse(right).value)
 }

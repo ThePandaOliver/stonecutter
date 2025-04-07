@@ -3,8 +3,6 @@ import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.DokkaBaseConfiguration
 import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
 import org.jetbrains.dokka.gradle.AbstractDokkaParentTask
-import org.jetbrains.dokka.versioning.VersioningConfiguration
-import org.jetbrains.dokka.versioning.VersioningPlugin
 import tasks.HallOfFameTask
 import tasks.UpdateVersionTask
 import java.net.URI
@@ -18,7 +16,6 @@ plugins {
 group = property("group").toString()
 version = property("version").toString()
 
-val unzipTarget = rootProject.layout.buildDirectory.file("dokka/versions").get().asFile
 val String.URL get() = URI.create(this).toURL()
 
 buildscript {
@@ -28,31 +25,11 @@ buildscript {
 
     dependencies {
         classpath(libs.dokka.base)
-        classpath(libs.dokka.versioning)
-        classpath(libs.zip4j)
     }
 }
 
 repositories {
     mavenCentral()
-}
-
-dependencies {
-    dokkaPlugin(libs.dokka.versioning)
-}
-
-tasks.register("extractOldDocs") {
-    group = "documentation"
-    val source = projectDir.resolve("docs/kdoc")
-    inputs.files(fileTree(source).matching { include("**/*.zip") })
-    outputs.dir(unzipTarget)
-
-    doLast {
-        if (unzipTarget.exists()) unzipTarget.deleteRecursively()
-        source.listFiles()!!.filter { it.extension == "zip" }.forEach {
-            it.unzip(unzipTarget.resolve(it.nameWithoutExtension))
-        }
-    }
 }
 
 tasks.register<UpdateVersionTask>("updateVersion") {
@@ -62,6 +39,7 @@ tasks.register<UpdateVersionTask>("updateVersion") {
     version = ver
     replacements {
         file("stonecutter/src/main/kotlin/dev/kikugie/stonecutter/Utilities.kt") replace "val STONECUTTER: String = .+\"" with "val STONECUTTER: String = \"$ver\""
+        file("stonecutter/src/main/kotlin/dev/kikugie/stonecutter/StonecutterPlugin.kt") replace "VERSION: String = \".+\"" with "VERSION: String = \"$ver\""
         file("docs/.vitepress/config.mts") replace "latestVersion: '.+'" with "latestVersion: '$ver'"
 //        file("docs/stonecutter/guide/setup.md") replace listOf(
 //            "stonecutter\"\\ version \".+\"" to "stonecutter\" version \"$ver\"",
@@ -89,16 +67,8 @@ tasks.withType<AbstractDokkaParentTask> {
 
     pluginConfiguration<DokkaBase, DokkaBaseConfiguration> {
         homepageLink = "https://stonecutter.kikugie.dev/"
-        footerMessage = "(c) 2024 KikuGie"
+        footerMessage = "(c) 2025 KikuGie"
     }
-
-    pluginConfiguration<VersioningPlugin, VersioningConfiguration> {
-        version = project.version.toString()
-        olderVersionsDir = unzipTarget
-        renderVersionsNavigationOnAllPages = true
-    }
-
-    dependsOn(tasks.named("extractOldDocs"))
 }
 
 subprojects {
@@ -111,7 +81,7 @@ subprojects {
 
             sourceLink {
                 localDirectory.set(projectDir)
-                remoteUrl.set("https://github.com/stonecutter-versioning/stonecutter/tree/0.5/${project.name}/".URL)
+                remoteUrl.set("https://codeberg.org/stonecutter/stonecutter/src/branch/0.7/${project.name}/".URL)
                 remoteLineSuffix.set("#L")
             }
 

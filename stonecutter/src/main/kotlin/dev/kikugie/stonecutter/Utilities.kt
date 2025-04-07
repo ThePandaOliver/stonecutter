@@ -7,20 +7,12 @@ import dev.kikugie.stonecutter.data.tree.TreeModel
 import dev.kikugie.stonecutter.data.tree.TreePrototype
 import kotlinx.serialization.json.Json
 import org.gradle.api.provider.MapProperty
+import org.jetbrains.annotations.Contract
 import java.nio.file.Path
 import kotlin.reflect.KClass
 
-/**
- * Used as a return value by some configuration methods.
- * Generic type erasure makes `func(iter: Iterable<A>)` and `func(iter: Iterable<B>)`
- * have conflicting signatures on the JVM.
- */
-public const val BNAN: String = "🍌"
-
-// Updated by the 'updateVersion' task
-/**
- * Currently running Stonecutter version, serialised in [TreeModel].
- */
+@StonecutterInternalAPI
+@Deprecated("Use StonecutterPlugin.VERSION instead", replaceWith = ReplaceWith("StonecutterPlugin.VERSION"))
 public const val STONECUTTER: String = "0.7-alpha.4"
 
 internal val LENIENT_JSON = Json {
