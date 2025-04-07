@@ -12,9 +12,12 @@ package dev.kikugie.stonecutter
 @StonecutterAPI
 public typealias Identifier = String
 
+@StonecutterAPI
+public typealias Version = String
+
 /**
  * Project notation used in [StonecutterSettings][dev.kikugie.stonecutter.settings.StonecutterSettingsExtension],
- * which can be either [CharSequence], [Provider<String>][org.gradle.api.provider.Provider] or
+ * which can be either [String], [Provider][org.gradle.api.provider.Provider] or
  * [ProjectDescriptor][org.gradle.api.initialization.ProjectDescriptor].
  */
 @StonecutterAPI

@@ -87,7 +87,7 @@ internal open class StonecutterBuildData @Inject constructor(private val dir: Pa
         excludedFiles.add(dir.resolve(it))
     }
 
-    internal fun asProcessingData(key: Identifier, version: AnyVersion): FileProcessingData = objects.newInstance {
+    internal fun asProcessingData(key: Identifier, version: Version): FileProcessingData = objects.newInstance {
         constants.set(this@StonecutterBuildData.consts)
         swaps.set(this@StonecutterBuildData.swaps)
         dependencies.set(this@StonecutterBuildData.dependencies.withDefaultVersion(key, version))
@@ -105,7 +105,7 @@ internal open class StonecutterBuildData @Inject constructor(private val dir: Pa
         }
     }
 
-    private fun ParameterMap<Identifier, AnyVersion>.withDefaultVersion(key: Identifier, version: AnyVersion) = toMutableMap().apply {
+    private fun ParameterMap<Identifier, Version>.withDefaultVersion(key: Identifier, version: Version) = toMutableMap().apply {
         getOrDefault(key, version).let { this[key] = it; this[""] = it }
     }
 

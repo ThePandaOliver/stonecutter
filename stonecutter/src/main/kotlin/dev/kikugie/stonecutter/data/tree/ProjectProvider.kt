@@ -1,6 +1,6 @@
 package dev.kikugie.stonecutter.data.tree
 
-import dev.kikugie.stonecutter.AnyVersion
+import dev.kikugie.stonecutter.Version
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.data.StonecutterProject
@@ -15,7 +15,7 @@ public abstract class ProjectProvider {
      * @sample stonecutter_samples.settings.single
      */
     @StonecutterAPI
-    public fun vers(name: Identifier, version: AnyVersion): NodeProvider =
+    public fun vers(name: Identifier, version: Version): NodeProvider =
         versions(listOf(StonecutterProject.create(name, version)))
 
     /**
@@ -23,7 +23,7 @@ public abstract class ProjectProvider {
      * @sample stonecutter_samples.settings.basic_vararg
      */
     @StonecutterAPI
-    public fun versions(vararg versions: AnyVersion): NodeProvider =
+    public fun versions(vararg versions: Version): NodeProvider =
         versions(versions.map { StonecutterProject.create(it, it) })
 
 
@@ -32,7 +32,7 @@ public abstract class ProjectProvider {
      * @sample stonecutter_samples.settings.basic_iterable
      */
     @StonecutterAPI
-    public fun versions(versions: Iterable<AnyVersion>): NodeProvider =
+    public fun versions(versions: Iterable<Version>): NodeProvider =
         versions(versions.map { StonecutterProject.create(it, it) })
 
     /**
@@ -41,7 +41,7 @@ public abstract class ProjectProvider {
      * @return [BNAN]
      */
     @StonecutterAPI @JvmName("versionsPairs")
-    public fun versions(vararg versions: Pair<Identifier, AnyVersion>): NodeProvider =
+    public fun versions(vararg versions: Pair<Identifier, Version>): NodeProvider =
         versions(versions.map { StonecutterProject.create(it.first, it.second) })
 
     /**
@@ -50,7 +50,7 @@ public abstract class ProjectProvider {
      * @return [BNAN]
      */
     @StonecutterAPI @JvmName("versionsPairs")
-    public fun versions(versions: Iterable<Pair<Identifier, AnyVersion>>): NodeProvider =
+    public fun versions(versions: Iterable<Pair<Identifier, Version>>): NodeProvider =
         versions(versions.map { StonecutterProject.create(it.first, it.second) })
 
     internal abstract fun versions(versions: Iterable<StonecutterProject>): NodeProvider

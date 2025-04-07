@@ -1,7 +1,7 @@
 package dev.kikugie.stonecutter.process
 
-import dev.kikugie.stonecutter.AnyVersion
 import dev.kikugie.stonecutter.Identifier
+import dev.kikugie.stonecutter.Version
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
@@ -13,7 +13,7 @@ import org.gradle.api.provider.Property
 public interface FileProcessingData {
     public val constants: MapProperty<Identifier, Boolean>
     public val swaps: MapProperty<Identifier, String>
-    public val dependencies: MapProperty<Identifier, AnyVersion>
+    public val dependencies: MapProperty<Identifier, Version>
     public val replacements: ListProperty<ReplacementData>
 
     public interface ReplacementData {

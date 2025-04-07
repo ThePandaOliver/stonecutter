@@ -3,17 +3,15 @@ package dev.kikugie.stonecutter
 import dev.kikugie.stonecutter.data.ProjectHierarchy
 import dev.kikugie.stonecutter.data.tree.BranchPrototype
 import dev.kikugie.stonecutter.data.tree.NodePrototype
-import dev.kikugie.stonecutter.data.tree.TreeModel
 import dev.kikugie.stonecutter.data.tree.TreePrototype
 import kotlinx.serialization.json.Json
 import org.gradle.api.provider.MapProperty
-import org.jetbrains.annotations.Contract
 import java.nio.file.Path
 import kotlin.reflect.KClass
 
 @StonecutterInternalAPI
 @Deprecated("Use StonecutterPlugin.VERSION instead", replaceWith = ReplaceWith("StonecutterPlugin.VERSION"))
-public const val STONECUTTER: String = "0.7-alpha.4"
+public const val STONECUTTER: String = "0.7-alpha.5"
 
 internal val LENIENT_JSON = Json {
     ignoreUnknownKeys = true

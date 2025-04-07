@@ -20,7 +20,7 @@ public open class StonecutterPlugin @Inject constructor(problems: Problems) : Pl
     public companion object {
         /**Current Stonecutter version.*/
         @StonecutterAPI
-        public const val VERSION: String = "0.7-alpha.4"
+        public const val VERSION: String = "0.7-alpha.5"
     }
 
     internal val reporter: ProblemReporter = problems.reporter
@@ -35,10 +35,10 @@ public open class StonecutterPlugin @Inject constructor(problems: Problems) : Pl
     private fun ExtensionAware.applyPlugin() = when (this) {
         is Settings ->
             stonecutter<StonecutterSettingsExtension, StonecutterSettingsImpl>()
-        is Project  ->
+        is Project ->
             if (getController() == null) stonecutter<StonecutterBuildExtension, StonecutterBuildImpl>()
             else stonecutter<StonecutterControllerExtension, StonecutterControllerImpl>()
-        else        ->
+        else ->
             error("The plugin may only be applied to settings and projects")
     }
 

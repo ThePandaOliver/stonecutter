@@ -20,7 +20,7 @@ public interface StonecutterUtility {
      * @see VersionParser.parsePredicate
      */
     @StonecutterAPI @SCDocumentation("utility") @Contract(pure = true)
-    public fun eval(version: SemanticVersion, predicate: String): Boolean {
+    public fun eval(version: Version, predicate: String): Boolean {
         val target = VersionParser.parse(version).value
         return predicate.split(' ').all {
             VersionParser.parsePredicateLenient(it).value.eval(target)
@@ -28,13 +28,13 @@ public interface StonecutterUtility {
     }
 
     /**
-     * Evaluates the passed version as [SemanticVersion] or [AnyVersion] and compares to the given predicate(s).
+     * Evaluates the passed version as [SemanticVersion] or [Version] and compares to the given predicate(s).
      *
      * @sample stonecutter_samples.eval.lenient
      * @see VersionParser.parsePredicateLenient
      */
     @StonecutterAPI @SCDocumentation("utility") @Contract(pure = true)
-    public fun evalLenient(version: AnyVersion, predicate: String): Boolean {
+    public fun evalLenient(version: Version, predicate: String): Boolean {
         val target = VersionParser.parseLenient(version).value
         return predicate.split(' ').all {
             VersionParser.parsePredicateLenient(it).value.eval(target)
@@ -47,15 +47,15 @@ public interface StonecutterUtility {
      * @return 1 if the [left] is greater, -1 if the [right] is greater, 0 if they are equal
      */
     @StonecutterAPI @SCDocumentation("utility") @Contract(pure = true)
-    public fun compare(left: SemanticVersion, right: SemanticVersion): Int =
+    public fun compare(left: Version, right: Version): Int =
         VersionParser.parse(left).value.compareTo(VersionParser.parse(right).value)
 
     /**
-     * Parses both parameters as [SemanticVersion] or [AnyVersion] and compares them.
+     * Parses both parameters as [SemanticVersion] or [Version] and compares them.
      *
      * @return 1 if the [left] is greater, -1 if the [right] is greater, 0 if they are equal
      */
     @StonecutterAPI @SCDocumentation("utility") @Contract(pure = true)
-    public fun compareLenient(left: AnyVersion, right: AnyVersion): Int =
+    public fun compareLenient(left: Version, right: Version): Int =
         VersionParser.parseLenient(left).value.compareTo(VersionParser.parse(right).value)
 }

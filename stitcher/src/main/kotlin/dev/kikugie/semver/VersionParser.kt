@@ -20,14 +20,14 @@ object VersionParser {
 
     @Throws(VersionParsingException::class)
     fun parse(input: CharSequence, start: Int = 0, full: Boolean = false): ParseResult<SemanticVersion> =
-        parseSemanticVersion(input, start).also { if (full) it.requireFullMatch(input) }
+        parseSemanticVersion(input, start).checkFullMatch(full, input)
 
     @Throws(VersionParsingException::class)
     fun parseLenient(input: CharSequence, start: Int = 0, full: Boolean = false): ParseResult<out Version> = try {
-        parseSemanticVersion(input, start)
+        parseSemanticVersion(input, start).checkFullMatch(full, input)
     } catch (_: VersionParsingException) {
-        parseStringVersion(input, start)
-    }.also { if (full) it.requireFullMatch(input) }
+        parseStringVersion(input, start).checkFullMatch(full, input)
+    }
 
     @Throws(VersionParsingException::class)
     fun parsePredicate(input: CharSequence, start: Int = 0, full: Boolean = false): ParseResult<VersionPredicate> {
@@ -49,8 +49,8 @@ object VersionParser {
         return VersionPredicate(operator, version) end end
     }
 
-    private fun ParseResult<*>.requireFullMatch(input: CharSequence) {
-        if (end != input.length) throw NOT_FULL_MATCH
+    private fun <T : Version> ParseResult<T>.checkFullMatch(full: Boolean, input: CharSequence) = apply {
+        if (full && end != input.length) throw NOT_FULL_MATCH
     }
 
     private fun parseSemanticVersion(input: CharSequence, start: Int): ParseResult<SemanticVersion> {

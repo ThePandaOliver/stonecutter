@@ -1,6 +1,6 @@
 package dev.kikugie.stonecutter.data
 
-import dev.kikugie.stonecutter.AnyVersion
+import dev.kikugie.stonecutter.Version
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.data.tree.TreePrototype
@@ -19,20 +19,20 @@ public sealed interface StonecutterProject {
     /**The name of this project's directory, as in `versions/${project}`.*/
     @StonecutterAPI public val project: Identifier
     /**The assigned version of this project, used in comment evaluation.*/
-    @StonecutterAPI public val version: AnyVersion
+    @StonecutterAPI public val version: Version
     /**The active status of this version, transient in the serialization process.*/
     @StonecutterAPI public val isActive: Boolean
 
     /**Returns the [project] component.*/
     public operator fun component1(): Identifier = project
     /**Returns the [version] component.*/
-    public operator fun component2(): AnyVersion = version
+    public operator fun component2(): Version = version
     /**Returns the [isActive] component.*/
     public operator fun component3(): Boolean = isActive
 
     @Serializable
     public data class DataStonecutterProject(
-        override val version: AnyVersion,
+        override val version: Version,
         override val project: Identifier
     ) : StonecutterProject {
         /**Represents the active status with a mutable value defaulting to `false`*/
@@ -55,11 +55,11 @@ public sealed interface StonecutterProject {
         override fun toString(): String = "$project:$version"
     }
 
-    private object StonecutterProjectSerializer : KSerializer<StonecutterProject> {
+    public object StonecutterProjectSerializer : KSerializer<StonecutterProject> {
         private val serializer = DataStonecutterProject.serializer()
         override val descriptor: SerialDescriptor = serializer.descriptor
 
-        override fun serialize(encoder: Encoder, value: StonecutterProject) = when(value) {
+        override fun serialize(encoder: Encoder, value: StonecutterProject): Unit = when(value) {
             is DataStonecutterProject -> serializer.serialize(encoder, value)
             is LinkedStonecutterProject -> serializer.serialize(encoder, value.delegate)
         }
@@ -80,9 +80,9 @@ public sealed interface StonecutterProject {
     }
 
     public companion object {
-        public fun create(project: Identifier, version: AnyVersion): StonecutterProject =
+        public fun create(project: Identifier, version: Version): StonecutterProject =
             DataStonecutterProject(version, project)
-        public fun create(project: Identifier, version: AnyVersion, active: Boolean): StonecutterProject =
+        public fun create(project: Identifier, version: Version, active: Boolean): StonecutterProject =
             DataStonecutterProject(version, project).apply { isActive = active }
         internal fun StonecutterProject.linked(): StonecutterProject = when(this) {
             is DataStonecutterProject -> LinkedStonecutterProject(this)
