@@ -1,5 +1,7 @@
 package dev.kikugie.stonecutter
 
+import kotlin.annotation.AnnotationTarget.*
+
 /**
  * Annotated members are stable parts of the API available in configuration scripts.
  * Some public members may not be annotated with this in case the functionality
@@ -8,17 +10,17 @@ package dev.kikugie.stonecutter
 @MustBeDocumented
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 @Retention(AnnotationRetention.BINARY)
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.FIELD)
+@Target(CLASS, FUNCTION, PROPERTY, FIELD, TYPEALIAS)
 public annotation class StonecutterAPI
 
 @MustBeDocumented
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 @Retention(AnnotationRetention.BINARY)
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.FIELD)
+@Target(CLASS, FUNCTION, PROPERTY, FIELD, TYPEALIAS)
 public annotation class StonecutterDevAPI
 
 @Retention(AnnotationRetention.BINARY)
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.FIELD)
+@Target(CLASS, FUNCTION, PROPERTY, FIELD, TYPEALIAS)
 public annotation class StonecutterInternalAPI
 
 /**
@@ -29,5 +31,5 @@ public annotation class StonecutterInternalAPI
 @Repeatable
 @MustBeDocumented
 @Retention(AnnotationRetention.SOURCE)
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.TYPEALIAS)
+@Target(CLASS, FUNCTION, PROPERTY, TYPEALIAS)
 internal annotation class SCDocumentation(vararg val ids: String)

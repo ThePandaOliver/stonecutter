@@ -12,12 +12,13 @@ import org.gradle.kotlin.dsl.register
 import java.io.File
 import kotlin.reflect.KClass
 
-internal class StonecutterBuildTasksImpl(val ext: StonecutterBuildImpl) : StonecutterBuildTasks {
+internal class StonecutterBuildTasksImpl(private val ext: StonecutterBuildImpl) : StonecutterBuildTasks {
     override val prepare: MutableTaskProviderMap<FileProcessingTask> = mutableMapOf()
     override val generate: MutableTaskProviderMap<FileGeneratingTask> = mutableMapOf()
     override val merge: MutableTaskProviderMap<Copy> = mutableMapOf()
     override val processedCacheDir: File get() = ext.project.buildDirectory.resolve("stonecutter-cache/sources")
     override val generatedSourcesDir: File get() = ext.project.buildDirectory.resolve("generated/stonecutter")
+    private val registeredSources: MutableSet<File> = mutableSetOf()
     private val logger by logger("StonecutterBuildTasks")
 
     fun registerPrepareTask(src: SourceSet, config: FileProcessingTask.() -> Unit) : TaskProvider<FileProcessingTask> =
@@ -38,17 +39,20 @@ internal class StonecutterBuildTasksImpl(val ext: StonecutterBuildImpl) : Stonec
         val branchSrc: File = ext.parent.projectDirectory.resolve("src")
         val versionSrc: File = ext.project.projectDirectory.resolve("src")
         val prepareTask = "${ext.project.path}:${prepareTaskName(src)}"
-        src.allSources().forEach { set ->
+        for (set in src.allSources()) {
             val matchingDirs = set.sourceDirectories
                 .map { it.relativeTo(versionSrc) }
                 .filterNot { it.startsWith("..") }
 
-            val sourceDirs = matchingDirs.mapNotNull { branchSrc.resolve(it).takeUnless(src.allSource::contains) }
+            val sourceDirs = matchingDirs.mapNotNull { branchSrc.resolve(it).takeUnless(registeredSources::contains) }
             if (ext.current.isActive) {
-                set.srcDirs(ext.project.files(sourceDirs))
+                if (sourceDirs.isEmpty()) continue
+                registeredSources += sourceDirs
+                ext.project.files(sourceDirs).let(set::srcDir)
                 logger.debug { "Adding active sources to ${sourceID(src)}:\n${sourceDirs.joinToString("\n") { "\t- $it" }}" }
-            }
-            else matchingDirs.mapNotNull { generatedSourcesDir.resolve(it).takeUnless(src.allSource::contains) }.let {
+            } else matchingDirs.mapNotNull { generatedSourcesDir.resolve(it).takeUnless(registeredSources::contains) }.let {
+                if (it.isEmpty()) return@let
+                registeredSources += it
                 ext.project.files(it).builtBy(prepareTask).let(set::srcDir)
                 logger.debug { "Adding generated sources to ${sourceID(src)}:\n${it.joinToString("\n") { "\t- $it" }}" }
             }

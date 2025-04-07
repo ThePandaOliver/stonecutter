@@ -3,11 +3,10 @@ package dev.kikugie.stonecutter.build.param
 import dev.kikugie.stonecutter.AnyVersion
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterAPI
-import dev.kikugie.stonecutter.data.build.ParameterMap
 
 public interface DependencyVariants {
     @StonecutterAPI
-    public val dependencies: ParameterMap<Identifier, AnyVersion>
+    public val dependencies: MutableMap<Identifier, AnyVersion>
 
     @StonecutterAPI
     public fun dependency(id: Identifier, version: AnyVersion) {

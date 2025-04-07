@@ -5,26 +5,13 @@ import dev.kikugie.stonecutter.SCDocumentation
 import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.controller.StonecutterControllerManager
 import dev.kikugie.stonecutter.data.StonecutterProject
-import dev.kikugie.stonecutter.isValid
 import dev.kikugie.stonecutter.settings.StonecutterSettingsImpl
 import dev.kikugie.stonecutter.util.invoke
+import dev.kikugie.stonecutter.util.isIdentifier
 import groovy.lang.Closure
 import org.gradle.api.provider.Property
 import org.gradle.kotlin.dsl.newInstance
 import javax.inject.Inject
-import kotlin.collections.Iterable
-import kotlin.collections.MutableMap
-import kotlin.collections.component1
-import kotlin.collections.component2
-import kotlin.collections.contains
-import kotlin.collections.find
-import kotlin.collections.firstOrNull
-import kotlin.collections.forEach
-import kotlin.collections.getOrPut
-import kotlin.collections.iterator
-import kotlin.collections.map
-import kotlin.collections.mutableMapOf
-import kotlin.collections.set
 
 @Suppress("LeakingThis")
 @SCDocumentation("settings.create")
@@ -89,7 +76,7 @@ public abstract class TreeBuilder @Inject internal constructor(
      */
     @StonecutterAPI
     public fun branch(name: Identifier, action: BranchBuilder.() -> Unit) {
-        require(name.isEmpty() || name.isValid()) { "Invalid branch identifier: '$name'" }
+        require(isIdentifier(name)) { "Invalid branch identifier: '$name'" }
         getOrCreateBranch(name).apply(action)
     }
 
@@ -181,7 +168,9 @@ internal class NodeBuilder(
             check(isNotBlank()) { "Buildscript must not be blank" }
             check("stonecutter.gradle" !in this) { "Buildscript must not override the controller" }
         }
-        set(value) { buildScriptOverride = value }
+        set(value) {
+            buildScriptOverride = value
+        }
     private var buildScriptOverride: String? = null
 }
 
@@ -190,5 +179,6 @@ public class NodeProvider internal constructor(private val builders: Iterable<No
     public var buildscript: String
         @Deprecated("Write-only property", level = DeprecationLevel.HIDDEN) get() = error("")
         set(value) = buildscript(value)
+
     public fun buildscript(name: String): Unit = builders.forEach { it.buildscript = name }
 }

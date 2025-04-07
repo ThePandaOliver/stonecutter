@@ -11,13 +11,19 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.initialization.Settings
 import org.gradle.api.plugins.ExtensionAware
+import org.gradle.api.problems.ProblemReporter
+import org.gradle.api.problems.Problems
+import javax.inject.Inject
 
-public open class StonecutterPlugin : Plugin<ExtensionAware> {
+@Suppress("UnstableApiUsage")
+public open class StonecutterPlugin @Inject constructor(problems: Problems) : Plugin<ExtensionAware> {
     public companion object {
         /**Current Stonecutter version.*/
         @StonecutterAPI
         public const val VERSION: String = "0.7-alpha.4"
     }
+
+    internal val reporter: ProblemReporter = problems.reporter
 
     /**
      * Applies the plugin either to [Settings] or [Project].

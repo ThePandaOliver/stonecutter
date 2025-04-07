@@ -2,11 +2,10 @@ package dev.kikugie.stonecutter.build.param
 
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterAPI
-import dev.kikugie.stonecutter.data.build.ParameterMap
 
 public interface SwapVariants {
     @StonecutterAPI
-    public val swaps: ParameterMap<Identifier, String>
+    public val swaps: MutableMap<Identifier, String>
 
     @StonecutterAPI
     public fun swap(id: Identifier, replacement: String) {

@@ -23,26 +23,15 @@ public interface StonecutterBuildTasks {
      */
     public val generate: TaskProviderMap<FileGeneratingTask>
 
-    /**
-     * Version switch merging tasks for each source set in the project.
-     */
+    /**Version switch merging tasks for each source set in the project.*/
     public val merge: TaskProviderMap<Copy>
     /**`versions/**/build/stonecutter-cache/sources/`*/
     public val processedCacheDir: File
     /**`versions/**/build/generated/stonecutter/`*/
     public val generatedSourcesDir: File
 
-    /**
-     * @return `stonecutterPrepare[[taskSuffix]]
-     */
     public fun prepareTaskName(src: SourceSet): String = "stonecutterPrepare${taskSuffix(src)}"
-    /**
-     * @return `stonecutterGenerate[[taskSuffix]]
-     */
     public fun generateTaskName(src: SourceSet): String = "stonecutterGenerate${taskSuffix(src)}"
-    /**
-     * @return `stonecutterMerge[[taskSuffix]]
-     */
     public fun mergeTaskName(src: SourceSet): String = "stonecutterMerge${taskSuffix(src)}"
 
     /**

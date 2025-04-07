@@ -34,7 +34,7 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor(
     }
     override val tasks: StonecutterBuildTasksImpl = StonecutterBuildTasksImpl(this)
     override val flags: FlagContainer get() = controller.flags
-    internal val parent get() = project.parent!!
+    internal val parent: Project get() = project.parent!!
 
     init {
         configureProject()

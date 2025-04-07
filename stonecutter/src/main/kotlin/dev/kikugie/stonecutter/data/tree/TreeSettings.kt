@@ -2,7 +2,7 @@ package dev.kikugie.stonecutter.data.tree
 
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.data.StonecutterProject
-import dev.kikugie.stonecutter.validateId
+import dev.kikugie.stonecutter.util.isIdentifier
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -94,9 +94,8 @@ public sealed interface TreeSettings {
         override val entries: Map<Identifier, List<ExpandedProject>>
     ) : TreeSettings {
         init {
-            entries.keys
-                .filter(Identifier::isNotEmpty)
-                .forEach(Identifier::validateId)
+            for (it in entries.keys.filter(Identifier::isNotEmpty))
+                require(isIdentifier(it)) { "Invalid identifier: $it" }
         }
     }
 
@@ -108,9 +107,8 @@ public sealed interface TreeSettings {
         val branches: Map<Identifier, ProjectList>
     ) : TreeSettings {
         init {
-            branches.keys
-                .filter(Identifier::isNotEmpty)
-                .forEach(Identifier::validateId)
+            for (it in branches.keys.filter(Identifier::isNotEmpty))
+                require(isIdentifier(it)) { "Invalid identifier: $it" }
         }
 
         override val entries: Map<Identifier, List<ExpandedProject>>
@@ -125,9 +123,8 @@ public sealed interface TreeSettings {
         val versions: Map<ExpandedProject, BranchList>
     ) : TreeSettings {
         init {
-            versions.entries.flatMap { it.value.entries }
-                .filter(Identifier::isNotEmpty)
-                .forEach(Identifier::validateId)
+            for (it in versions.entries.flatMap { it.value.entries }.filter(Identifier::isNotEmpty))
+                require(isIdentifier(it)) { "Invalid identifier: $it" }
         }
 
         override val entries: Map<Identifier, List<ExpandedProject>>

@@ -1,7 +1,7 @@
 package dev.kikugie.stonecutter.settings
 
-import dev.kikugie.stonecutter.ProjectPath
-import dev.kikugie.stonecutter.STONECUTTER
+import dev.kikugie.stonecutter.ProjectReference
+import dev.kikugie.stonecutter.StonecutterPlugin
 import dev.kikugie.stonecutter.data.ProjectHierarchy
 import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
 import dev.kikugie.stonecutter.data.container.ProjectTreeContainer
@@ -11,14 +11,16 @@ import dev.kikugie.stonecutter.data.tree.BranchBuilder
 import dev.kikugie.stonecutter.data.tree.NodeBuilder
 import dev.kikugie.stonecutter.data.tree.TreeBuilder
 import dev.kikugie.stonecutter.ide.IdeaSetupTask
-import dev.kikugie.stonecutter.util.isIdeaSync
-import dev.kikugie.stonecutter.util.requestTasks
+import dev.kikugie.stonecutter.util.*
 import org.gradle.api.Project
 import org.gradle.api.initialization.ProjectDescriptor
 import org.gradle.api.initialization.Settings
 import org.gradle.api.invocation.Gradle
+import org.gradle.api.logging.Logger
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.problems.ProblemReporter
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.kotlin.dsl.property
 import org.gradle.kotlin.dsl.register
@@ -29,34 +31,21 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.notExists
 
-internal open class StonecutterSettingsImpl @Inject constructor(private val settings: Settings, final override val objects: ObjectFactory) : StonecutterSettingsExtension() {
-    internal companion object {
-
-        val GROOVY_COMPLAINT_DOT_TXT = """
-            NOTICE: Limited Groovy DSL support for Stonecutter
-            --------------------------------------------------------------------------------------------------------
-            While functional, the plugin's features are limited by the Groovy syntax and it has reduced IDE support.
-            
-            For the best experience, including enhanced syntax, autocompletion, documentation lookup and debugging, 
-            it's recommended to use Kotlin DSL.
-            
-            See for more info:
-                https://stonecutter.kikugie.dev/stonecutter/guide/setup
-                https://docs.gradle.org/current/userguide/migrating_from_groovy_to_kotlin_dsl.html
-            --------------------------------------------------------------------------------------------------------
-        """.trimIndent()
-    }
-
-    override val providers: ProviderFactory get() = settings.providers
+@Suppress("UnstableApiUsage")
+internal open class StonecutterSettingsImpl @Inject constructor(private val settings: Settings, objects: ObjectFactory) :
+    StonecutterSettingsExtension(objects) {
     final override val kotlinController: Property<Boolean> = objects.property()
     final override val centralScript: Property<String> = objects.property()
+    internal val providers: ProviderFactory get() = settings.providers
     private var groovy = false
     private val container: TreeBuilderContainer = settings.gradle.createContainer()
+    private val reporter: ProblemReporter get() = settings.problemReporter
+    private val logger: Logger by logger("StonecutterSettings")
 
     init {
-        println("Running Stonecutter $STONECUTTER") // Printed to help identify issues
+        logger.lifecycle { "Running Stonecutter ${StonecutterPlugin.VERSION}" }
         settings.gradle.settingsEvaluated {
-            if (groovy) println(GROOVY_COMPLAINT_DOT_TXT)
+            if (groovy) reportGroovyComplaint()
         }
         settings.gradle.projectsLoaded {
             createIdeaConfigurations(this, rootProject)
@@ -64,16 +53,8 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
         settings.gradle.createContainer<ProjectTreeContainer>()
     }
 
-    override fun descriptor(path: ProjectPath): ProjectDescriptor {
-        val hierarchy = ProjectHierarchy.of(path)
-        return if (hierarchy == ProjectHierarchy.ROOT) settings.rootProject
-        else settings.run {
-            include(hierarchy.toString().removePrefix(":"))
-            project(hierarchy.toString())
-        }
-    }
-
-    override fun create(project: ProjectDescriptor, setup: TreeBuilder): Unit = with(setup) {
+    override fun create(ref: ProjectReference, setup: TreeBuilder): Unit = with(setup) {
+        val project = getDescriptor(ref)
         require(container.register(project.hierarchy, this)) { "Project ${project.path} is already registered" }
 
         val controller = controllerTypeFor("")
@@ -96,7 +77,7 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
 
     private fun createBranch(root: ProjectDescriptor, branch: BranchBuilder) = with(branch) {
         require(nodes.isNotEmpty()) { "Registered branch '$id' has no nodes" }
-        val project = if (id.isEmpty()) root else descriptor("${root.path}:$id")
+        val project = if (id.isEmpty()) root else createDescriptor("${root.path}:$id")
         project.projectDir.toPath().createDirectories()
         project.buildFileName = tree.controllerTypeFor(id).filename.also(::checkGroovy)
 
@@ -104,7 +85,7 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
     }
 
     private fun createProject(root: ProjectDescriptor, node: NodeBuilder) = with(node) {
-        val project = descriptor("${root.path}:${metadata.project}")
+        val project = createDescriptor("${root.path}:${metadata.project}")
         val versionDir = File("${root.projectDir}/versions/${metadata.project}")
         versionDir.mkdirs()
 
@@ -114,6 +95,23 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
         project.buildFileName = "../../$script"
     }
 
+    private fun getDescriptor(ref: ProjectReference): ProjectDescriptor = when (ref) {
+        is ProjectDescriptor -> ref
+        is Provider<*> -> (ref.orNull as? String)?.let(::createDescriptor)
+            ?: report("Project descriptor not found for $ref")
+        is CharSequence -> createDescriptor(ref.toString())
+        else -> report("Unsupported type ${ref::class.qualifiedName}")
+    }
+
+    private fun createDescriptor(path: String): ProjectDescriptor {
+        val hierarchy = ProjectHierarchy.of(path)
+        return if (hierarchy == ProjectHierarchy.ROOT)
+            settings.rootProject
+        else settings.run {
+            include(hierarchy.toString().removePrefix(":"))
+            project(hierarchy.toString())
+        }
+    }
 
     private fun createIdeaConfigurations(gradle: Gradle, root: Project) {
         root.tasks.register<IdeaSetupTask>("stonecutterIdea") {
@@ -127,4 +125,12 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
         if (groovy || file.endsWith(".gradle")) groovy = true
     }
 
+    private fun reportGroovyComplaint() = reporter.reporting(SCProblems.GROOVY_BUILD_USED) {
+        label = "NOTICE: Limited Groovy DSL support for Stonecutter"
+        details = """
+            While functional, the plugin's features are limited by the Groovy syntax and it has reduced IDE support.
+            For the best experience, including enhanced syntax, autocompletion, documentation lookup and debugging, it's recommended to use Kotlin DSL.
+        """.trimIndent()
+        documentation = "https://stonecutter.codeberg.page/wiki/faq#groovy-support"
+    }
 }

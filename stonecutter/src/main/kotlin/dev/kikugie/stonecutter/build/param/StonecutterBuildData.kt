@@ -8,34 +8,34 @@ import dev.kikugie.stonecutter.build.param.ReplacementVariants.StringReplacement
 import dev.kikugie.stonecutter.data.build.FileProcessingFilter
 import dev.kikugie.stonecutter.data.build.ParameterMap
 import dev.kikugie.stonecutter.data.build.newParameterMap
-import dev.kikugie.stonecutter.isValid
 import dev.kikugie.stonecutter.util.newInstance
 import dev.kikugie.stonecutter.util.invoke
 import dev.kikugie.stonecutter.process.FileProcessingData
 import dev.kikugie.stonecutter.process.FileProcessingData.ReplacementData
+import dev.kikugie.stonecutter.util.isIdentifier
 import org.gradle.api.model.ObjectFactory
 import org.gradle.kotlin.dsl.newInstance
 import java.nio.file.Path
 import javax.inject.Inject
 
-public open class StonecutterBuildData @Inject constructor(private val dir: Path, private val objects: ObjectFactory) : StonecutterBuildParams {
+internal open class StonecutterBuildData @Inject constructor(private val dir: Path, private val objects: ObjectFactory) : StonecutterBuildParams {
     internal companion object {
         val DEFAULT_EXTENSIONS = setOf("java", "kt", "kts", "groovy", "gradle", "scala", "sc", "json5", "hjson")
     }
 
-    public override val swaps: ParameterMap<Identifier, String> = newParameterMap(
+    override val swaps: ParameterMap<Identifier, String> = newParameterMap(
         keyCheck = { checkKey(it, "Swap") }
     )
 
-    public override val consts: ParameterMap<Identifier, Boolean> = newParameterMap(
+    override val consts: ParameterMap<Identifier, Boolean> = newParameterMap(
         keyCheck = { checkKey(it, "Constant") }
     )
 
-    public override val dependencies: ParameterMap<Identifier, String> = newParameterMap(
+    override val dependencies: ParameterMap<Identifier, String> = newParameterMap(
         keyCheck = { checkKey(it, "Dependency") },
         valueCheck = {
             require(it.isNotBlank()) { "Dependency value '$it' must not be blank." }
-            require(it.isValid() || it.runCatching { VersionParser.parseLenient(it, full = true) }.isSuccess)
+            require(isIdentifier(it) || it.runCatching { VersionParser.parseLenient(it, full = true) }.isSuccess)
             { "Dependency value '$it' must be a valid identifier or semver." }
         }
     )
@@ -47,7 +47,7 @@ public open class StonecutterBuildData @Inject constructor(private val dir: Path
     private val excludedFiles: MutableSet<Path> = mutableSetOf()
 
     override fun replacement(direction: Boolean, from: String, to: String, phase: String, id: Identifier?) {
-        require(id == null || id.isValid()) { "Invalid identifier: '$id'" }
+        require(id == null || isIdentifier(id)) { "Invalid identifier: '$id'" }
         val realPhase = ReplacementPhase.valueOf(phase.uppercase())
         if (direction) replacements.addString(from, to, realPhase, id)
         else replacements.addString(to, from, realPhase, id)
@@ -62,7 +62,7 @@ public open class StonecutterBuildData @Inject constructor(private val dir: Path
         phase: String,
         id: Identifier?,
     ) {
-        require(id == null || id.isValid()) { "Invalid identifier: '$id'" }
+        require(id == null || isIdentifier(id)) { "Invalid identifier: '$id'" }
         val realPhase = ReplacementPhase.valueOf(phase.uppercase())
         if (direction) replacements.addRegex(fromPattern.toRegex(), toValue, realPhase, id)
         else replacements.addRegex(reversePattern.toRegex(), reverseValue, realPhase, id)
@@ -111,6 +111,6 @@ public open class StonecutterBuildData @Inject constructor(private val dir: Path
 
     private fun checkKey(key: String, type: String) {
         require(key.isNotBlank()) { "$type key '$key' must not be blank." }
-        require(key.isValid()) { "$type key '$key' must be a valid identifier." }
+        require(isIdentifier(key)) { "$type key '$key' must be a valid identifier." }
     }
 }

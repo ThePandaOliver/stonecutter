@@ -1,12 +1,14 @@
 package dev.kikugie.stonecutter.controller
 
 import dev.kikugie.stonecutter.Identifier
+import dev.kikugie.stonecutter.StonecutterInternalAPI
 import org.gradle.api.Project
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
+@StonecutterInternalAPI
 public interface StonecutterControllerManager {
     public val filename: String
     public fun create(file: Path, version: Identifier)
@@ -38,11 +40,6 @@ public interface StonecutterControllerManager {
                 id "dev.kikugie.stonecutter"
             }
             stonecutter.active "$version"
-            
-            stonecutter.registerChiseled tasks.register("chiseledBuild", stonecutter.chiseled) { 
-                setGroup "project"
-                ofTask "build"
-            }
         """.trimIndent()
     }
 
@@ -53,11 +50,6 @@ public interface StonecutterControllerManager {
                 id("dev.kikugie.stonecutter")
             }
             stonecutter active "$version"
-            
-            stonecutter registerChiseled tasks.register("chiseledBuild", stonecutter.chiseled) { 
-                group = "project"
-                ofTask("build")
-            }
         """.trimIndent()
     }
 }

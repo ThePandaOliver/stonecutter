@@ -1,7 +1,6 @@
 package dev.kikugie.stonecutter.data.tree
 
 import dev.kikugie.stonecutter.AnyVersion
-import dev.kikugie.stonecutter.BNAN
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.data.StonecutterProject
