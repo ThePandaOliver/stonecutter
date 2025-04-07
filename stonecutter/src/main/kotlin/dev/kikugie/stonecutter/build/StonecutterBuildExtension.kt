@@ -10,9 +10,7 @@ import dev.kikugie.stonecutter.data.tree.ProjectBranch
 import dev.kikugie.stonecutter.data.tree.ProjectNode
 import dev.kikugie.stonecutter.data.tree.ProjectTree
 
-/**
- * Stonecutter plugin available in `build.gradle[.kts]`.
- */
+/**Stonecutter plugin available in `build.gradle[.kts]`.*/
 @StonecutterAPI
 public interface StonecutterBuildExtension : StonecutterBuildParams {
     @StonecutterAPI public val tree: ProjectTree

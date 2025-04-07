@@ -24,6 +24,7 @@ import org.gradle.internal.DefaultTaskExecutionRequest
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.newInstance
+import org.gradle.kotlin.dsl.the
 import org.gradle.work.InputChanges
 import java.io.File
 
@@ -31,7 +32,7 @@ public typealias TaskProviderMap<T> = Map<String, TaskProvider<T>>
 internal typealias MutableTaskProviderMap<T> = MutableMap<String, TaskProvider<T>>
 
 internal val Project.sourceSets: SourceSetContainer
-    get() = project.extensions.getByType<SourceSetContainer>()
+    get() = project.the<SourceSetContainer>()
 
 internal inline operator fun <T> Provider<T>.invoke(): T = get()
 internal inline operator fun <T> ListProperty<T>.invoke(): List<T> = get()

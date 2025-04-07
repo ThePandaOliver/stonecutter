@@ -4,10 +4,8 @@ import dev.kikugie.stonecutter.build.param.StonecutterBuildData
 import dev.kikugie.stonecutter.build.param.StonecutterBuildParams
 import dev.kikugie.stonecutter.build.task.StonecutterBuildTasksImpl
 import dev.kikugie.stonecutter.controller.StonecutterControllerImpl
-import dev.kikugie.stonecutter.controller.flag.APPEND_SOURCES_AFTER_EVAL
 import dev.kikugie.stonecutter.controller.flag.FlagContainer
-import dev.kikugie.stonecutter.controller.flag.GENERATE_SOURCES_ON_SYNC
-import dev.kikugie.stonecutter.controller.flag.IMPLICIT_RECEIVER
+import dev.kikugie.stonecutter.controller.flag.StonecutterFlag
 import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
 import dev.kikugie.stonecutter.data.tree.ProjectBranch
 import dev.kikugie.stonecutter.data.tree.ProjectNode
@@ -50,8 +48,8 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor(
     }
 
     private fun configureTaskDependencies() = project.afterEvaluate {
-        if (flags[APPEND_SOURCES_AFTER_EVAL]) sourceSets.forEach(this@StonecutterBuildImpl.tasks::configureSource)
-        if (flags[GENERATE_SOURCES_ON_SYNC] && isIdeaSync) this@StonecutterBuildImpl.tasks.generate.keys.map { "$path:$it" }
+        if (flags[StonecutterFlag.APPEND_SOURCES_AFTER_EVAL]) sourceSets.forEach(this@StonecutterBuildImpl.tasks::configureSource)
+        if (flags[StonecutterFlag.GENERATE_SOURCES_ON_SYNC] && isIdeaSync) this@StonecutterBuildImpl.tasks.generate.keys.map { "$path:$it" }
             .let { gradle.requestTasks(it, path, projectDir) }
 
         controller.tasks.switchTaskProvider(current.project)?.configure {
@@ -70,7 +68,7 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor(
             sources.from(parent.projectDirectory.resolve("src/${src.name}"))
             root.set(parent.projectDirectory.resolve("src/${src.name}"))
             caches.set(tasks.processedCacheDir.resolve(src.name))
-            project.provider { data.asProcessingData(flags[IMPLICIT_RECEIVER], current.version) }
+            project.provider { data.asProcessingData(flags[StonecutterFlag.IMPLICIT_RECEIVER], current.version) }
                 .let<Provider<FileProcessingData>, Unit>(parameters::set)
         }
 

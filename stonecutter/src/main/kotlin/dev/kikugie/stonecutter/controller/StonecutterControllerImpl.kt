@@ -4,8 +4,8 @@ import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.build.param.StonecutterBuildData
 import dev.kikugie.stonecutter.controller.StonecutterControllerManager.Companion.getController
 import dev.kikugie.stonecutter.controller.flag.FlagContainerImpl
-import dev.kikugie.stonecutter.controller.flag.GENERATE_SWITCH_ACTIONS
 import dev.kikugie.stonecutter.controller.flag.MutableFlagContainer
+import dev.kikugie.stonecutter.controller.flag.StonecutterFlag
 import dev.kikugie.stonecutter.controller.tasks.StonecutterControllerTasksImpl
 import dev.kikugie.stonecutter.data.ProjectHierarchy
 import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
@@ -20,13 +20,11 @@ import dev.kikugie.stonecutter.getChecked
 import dev.kikugie.stonecutter.ide.IdeaSetupTask
 import dev.kikugie.stonecutter.keysToString
 import dev.kikugie.stonecutter.onEach
+import dev.kikugie.stonecutter.util.newInstance
 import dev.kikugie.stonecutter.util.set
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.named
-import org.gradle.kotlin.dsl.newInstance
 import java.io.File
-import kotlin.collections.component1
-import kotlin.collections.component2
 
 internal open class StonecutterControllerImpl(private val root: Project) : StonecutterControllerExtension {
     override val tree: ProjectTree = constructTree().also {
@@ -34,9 +32,10 @@ internal open class StonecutterControllerImpl(private val root: Project) : Stone
     }
     override val flags: MutableFlagContainer = FlagContainerImpl()
     override val tasks: StonecutterControllerTasksImpl = StonecutterControllerTasksImpl()
-    private val manager: StonecutterControllerManager get() = root.getController()!!
-    private val configurations: MutableMap<ProjectHierarchy, StonecutterBuildData> = mutableMapOf()
     private var initilizer: (() -> Unit)? = ::initializeSwitchTasks
+    private val manager: StonecutterControllerManager get() = root.getController()!!
+    private val data: MutableMap<ProjectHierarchy, StonecutterBuildData> = mutableMapOf()
+    private val configurations: MutableMap<ProjectHierarchy, MutableList<(StonecutterDelegatedBuildParams) -> Unit>> = mutableMapOf()
 
     init {
         configureProject()
@@ -54,13 +53,17 @@ internal open class StonecutterControllerImpl(private val root: Project) : Stone
     }
 
     override fun parameters(config: StonecutterDelegatedBuildParams.() -> Unit) {
-        for (branch in tree.branches) for (version in versions)
-            getOrCreateParameters(branch.hierarchy + version.project)
-                .let { StonecutterDelegatedBuildParams(branch, version, it).config() }
+        for (branch in tree.branches) for (version in versions) configurations
+            .getOrPut(branch.hierarchy + version.project, ::mutableListOf) += config
     }
 
-    internal fun getOrCreateParameters(hierarchy: ProjectHierarchy): StonecutterBuildData =
-        configurations.getOrPut(hierarchy) { root.objects.newInstance(root.projectDir.toPath()) }
+    internal fun getOrCreateParameters(hierarchy: ProjectHierarchy): StonecutterBuildData = data.getOrPut(hierarchy) {
+        root.objects.newInstance(root.projectDir.toPath()) {
+            if (hierarchy !in configurations) return@newInstance
+            val delegate = StonecutterDelegatedBuildParams(tree.nodes.first { it.hierarchy == hierarchy }, this)
+            for (config in configurations.remove(hierarchy) ?: listOf()) config(delegate)
+        }
+    }
 
     private fun configureProject() = with(root) {
         afterEvaluate {
@@ -91,7 +94,7 @@ internal open class StonecutterControllerImpl(private val root: Project) : Stone
     }
 
     private fun configureSyncTask() = root.rootProject.afterEvaluate {
-        if (flags[GENERATE_SWITCH_ACTIONS]) tasks.named<IdeaSetupTask>("stonecutterIdea") {
+        if (flags[StonecutterFlag.GENERATE_SWITCH_ACTIONS]) tasks.named<IdeaSetupTask>("stonecutterIdea") {
             versions[tree.hierarchy] = tree.versions.map(StonecutterProject::project)
         }
     }
@@ -105,7 +108,7 @@ internal open class StonecutterControllerImpl(private val root: Project) : Stone
         val branches: Map<Identifier, LightBranch> = builder.branches.mapValues { (id, br) ->
             val project: Project = if (id.isEmpty()) root else root.project(id)
             val nodes: Map<Identifier, LightNode> = br.nodes.mapValues { (_, n) ->
-                val identity = mapping.getChecked(n.metadata) { "Unknown version '$it' in ${keysToString()}"}
+                val identity = mapping.getChecked(n.metadata) { "Unknown version '$it' in ${keysToString()}" }
                 LightNode(project.project(n.metadata.project).projectDir.toPath(), identity)
             }
             LightBranch(project.projectDir.toPath(), id, nodes).also {

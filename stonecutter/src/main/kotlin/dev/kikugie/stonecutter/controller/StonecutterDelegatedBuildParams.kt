@@ -8,10 +8,11 @@ import dev.kikugie.stonecutter.data.tree.ProjectBranch
 import dev.kikugie.stonecutter.data.tree.ProjectNode
 
 public class StonecutterDelegatedBuildParams internal constructor (
-    @StonecutterAPI public val branch: ProjectBranch,
-    @StonecutterAPI public val metadata: StonecutterProject,
+    @StonecutterAPI public val node: ProjectNode,
     holder: StonecutterBuildData
 ) : StonecutterBuildParams by holder {
-    @StonecutterAPI public val node: ProjectNode?
-        get() = branch[metadata.project]
+    @StonecutterAPI public val branch: ProjectBranch
+        get() = node.branch
+    @StonecutterAPI public val metadata: StonecutterProject
+        get() = node.metadata
 }

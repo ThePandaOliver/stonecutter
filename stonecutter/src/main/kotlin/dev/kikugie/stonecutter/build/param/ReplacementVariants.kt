@@ -28,29 +28,41 @@ public interface ReplacementVariants {
     public infix fun replacement(properties: Map<String, Any>): Unit =
         replacementMap(properties)
 
+    @StonecutterAPI
     public fun stringReplacement(build: StringReplacementBuilder.() -> Unit)
+
+    @StonecutterAPI
     public fun stringReplacement(build: Closure<StringReplacementBuilder>): Unit =
         stringReplacement(build::call)
 
+    @StonecutterAPI
     public fun regexReplacement(build: RegexReplacementBuilder.() -> Unit)
+
+    @StonecutterAPI
     public fun regexReplacement(build: Closure<RegexReplacementBuilder>): Unit =
         regexReplacement(build::call)
 
+    @StonecutterAPI
     public sealed interface ReplacementBuilder {
         public val direction: Property<Boolean>
         public val phase: Property<String>
         public val id: Property<Identifier>
     }
 
+    @StonecutterAPI
     public interface StringReplacementBuilder : ReplacementBuilder {
         public val from: Property<String>
         public val to: Property<String>
 
         @ApiStatus.Internal
-        public fun build(instance: ReplacementVariants): Unit = instance
-            .replacement(direction.get(), from.get(), to.get(), phase.getOrElse("LAST"), id.orNull)
+        public fun build(instance: ReplacementVariants): Unit = instance.replacement(
+            direction.get(),
+            from.get(), to.get(),
+            phase.getOrElse("LAST"), id.orNull
+        )
     }
 
+    @StonecutterAPI
     public interface RegexReplacementBuilder : ReplacementBuilder {
         public val fromPattern: Property<String>
         public val toValue: Property<String>
@@ -58,8 +70,12 @@ public interface ReplacementVariants {
         public val reverseValue: Property<String>
 
         @ApiStatus.Internal
-        public fun build(instance: ReplacementVariants): Unit = instance
-            .replacement(direction.get(), fromPattern.get(), toValue.get(), reversePattern.get(), reverseValue.get(), phase.getOrElse("LAST"), id.orNull)
+        public fun build(instance: ReplacementVariants): Unit = instance.replacement(
+            direction.get(),
+            fromPattern.get(), toValue.get(),
+            reversePattern.get(), reverseValue.get(),
+            phase.getOrElse("LAST"), id.orNull
+        )
     }
 }
 
@@ -68,7 +84,8 @@ private object ReplacementVariantsImpl {
         properties.containsAny("source", "from", "target", "to") -> stringReplacement(properties)
         properties.containsAny(
             "sourcePattern", "targetValue", "targetPattern", "sourceValue",
-            "fromPattern", "toValue", "reversePattern", "reverseValue") -> regexReplacement(properties)
+            "fromPattern", "toValue", "reversePattern", "reverseValue"
+        ) -> regexReplacement(properties)
         else -> throw IllegalArgumentException("Invalid replacement properties: $properties")
     }
 
@@ -98,7 +115,7 @@ private object ReplacementVariantsImpl {
         replacement(direction, fromPattern, toValue, reversePattern, reverseValue, phase, id)
     }
 
-    private inline fun <reified T: Any> Map<String, Any>.getAsOrElse(key: String, default: T) =
+    private inline fun <reified T : Any> Map<String, Any>.getAsOrElse(key: String, default: T) =
         getAsOrNull(key) ?: default
 
     private inline fun <reified T : Any> Map<String, Any>.getAs(key: String): T =

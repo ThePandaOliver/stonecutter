@@ -4,6 +4,7 @@ import dev.kikugie.stonecutter.Version
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterAPI
 
+@StonecutterAPI
 public interface DependencyVariants {
     @StonecutterAPI
     public val dependencies: MutableMap<Identifier, Version>
