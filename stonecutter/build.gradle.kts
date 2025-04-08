@@ -1,7 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 @file:OptIn(ExperimentalPathApi::class)
 
-import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
@@ -68,12 +67,46 @@ apiValidation {
     nonPublicMarkers += "dev.kikugie.stonecutter.StonecutterInternalAPI"
 }
 
-tasks.withType<Test>().configureEach {
-    useJUnitPlatform()
+dokka {
+    moduleName = "Stonecutter Gradle"
+
+    pluginsConfiguration.html {
+        homepageLink = "https://stonecutter.codeberg.page/"
+        footerMessage = "(c) 2025 KikuGie"
+    }
+
+    dokkaPublications.html {
+        suppressInheritedMembers = true
+        suppressObviousFunctions = true
+    }
+
+    dokkaSourceSets.main {
+        reportUndocumented = true
+        skipEmptyPackages = true
+
+        sourceLink {
+            localDirectory = file("src/main/kotlin")
+            remoteLineSuffix = "#L"
+            remoteUrl("https://codeberg.org/stonecutter/stonecutter/src/branch/0.7/stonecutter/")
+        }
+
+        externalDocumentationLinks.register("gradle-kotlin-dsl") {
+            url("https://docs.gradle.org/current/kotlin-dsl/")
+            packageListUrl("https://docs.gradle.org/current/kotlin-dsl/gradle/package-list")
+        }
+
+        externalDocumentationLinks.register("kotlin-stdlib") {
+            url("https://kotlinlang.org/api/core/")
+        }
+
+        externalDocumentationLinks.register("kotlinx-serialization") {
+            url("https://kotlinlang.org/api/kotlinx.serialization/")
+        }
+    }
 }
 
-tasks.withType<AbstractDokkaLeafTask>().configureEach {
-    moduleName.set("Stonecutter Gradle")
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }
 
 java {
@@ -92,7 +125,6 @@ tasks.compileKotlin {
 
 java {
     withSourcesJar()
-    withJavadocJar()
 }
 
 tasks.shadowJar {
@@ -101,20 +133,9 @@ tasks.shadowJar {
     archiveVersion.set("")
 }
 
-tasks.named<Jar>("javadocJar") {
-    from(tasks.named("dokkaJavadoc"))
-}
-
 tasks.all {
     if (this is Jar || this is DokkaTask || this is KotlinCompile)
         dependsOn(rootProject.tasks.findByName("updateVersion"))
-}
-
-tasks.withType<AbstractDokkaLeafTask> {
-    moduleName = "Stonecutter Gradle"
-    dokkaSourceSets.configureEach {
-        samples.from("src/samples/kotlin")
-    }
 }
 
 publishing {
@@ -149,7 +170,6 @@ gradlePlugin {
             implementationClass = "dev.kikugie.stonecutter.StonecutterPlugin"
             displayName = "Stonecutter"
             description = "Modern Gradle plugin for multi-version management"
-            tags = setOf("minecraft", "mods")
         }
     }
 }

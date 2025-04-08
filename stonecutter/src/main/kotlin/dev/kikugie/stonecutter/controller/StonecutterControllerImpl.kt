@@ -1,6 +1,7 @@
 package dev.kikugie.stonecutter.controller
 
 import dev.kikugie.stonecutter.Identifier
+import dev.kikugie.stonecutter.StonecutterInternalAPI
 import dev.kikugie.stonecutter.build.param.StonecutterBuildData
 import dev.kikugie.stonecutter.controller.StonecutterControllerManager.Companion.getController
 import dev.kikugie.stonecutter.controller.flag.FlagContainerImpl
@@ -26,15 +27,22 @@ import org.gradle.api.Project
 import org.gradle.kotlin.dsl.named
 import java.io.File
 
+@OptIn(StonecutterInternalAPI::class)
 internal open class StonecutterControllerImpl(private val root: Project) : StonecutterControllerExtension {
     override val tree: ProjectTree = constructTree().also {
         root.gradle.getContainer<ProjectTreeContainer>().register(root.hierarchy, it)
     }
     override val flags: MutableFlagContainer = FlagContainerImpl()
     override val tasks: StonecutterControllerTasksImpl = StonecutterControllerTasksImpl()
+    /**Resettable callback to switch task init used to verify it's only called once.*/
     private var initilizer: (() -> Unit)? = ::initializeSwitchTasks
-    private val manager: StonecutterControllerManager get() = root.getController()!!
+    /**Stores configured build data instances.*/
     private val data: MutableMap<ProjectHierarchy, StonecutterBuildData> = mutableMapOf()
+    /**
+     * Stores lazy functions for build configuration.
+     * When a [StonecutterBuildData] instance is created,
+     * the functions are applied and removed from the map.
+     */
     private val configurations: MutableMap<ProjectHierarchy, MutableList<(StonecutterDelegatedBuildParams) -> Unit>> = mutableMapOf()
 
     init {
@@ -61,7 +69,7 @@ internal open class StonecutterControllerImpl(private val root: Project) : Stone
         root.objects.newInstance(root.projectDir.toPath()) {
             if (hierarchy !in configurations) return@newInstance
             val delegate = StonecutterDelegatedBuildParams(tree.nodes.first { it.hierarchy == hierarchy }, this)
-            for (config in configurations.remove(hierarchy) ?: listOf()) config(delegate)
+            for (config in configurations.remove(hierarchy) ?: emptyList()) config(delegate)
         }
     }
 
@@ -90,7 +98,8 @@ internal open class StonecutterControllerImpl(private val root: Project) : Stone
     }
 
     private fun initializeSwitchTasks() {
-        for (it in tree.versions) tasks.registerSwitchTask(it.project, tree, manager)
+        val controller = root.getController()!!
+        for (it in tree.versions) tasks.registerSwitchTask(it.project, tree, controller)
     }
 
     private fun configureSyncTask() = root.rootProject.afterEvaluate {

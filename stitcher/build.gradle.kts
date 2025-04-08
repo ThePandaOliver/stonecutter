@@ -1,4 +1,3 @@
-import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -22,12 +21,40 @@ dependencies {
     testImplementation(libs.bundles.test)
 }
 
-tasks.withType<Test>().configureEach {
-    useJUnitPlatform()
+dokka {
+    moduleName = "Stitcher Processor"
+    dokkaPublications.html {
+        suppressInheritedMembers = true
+        suppressObviousFunctions = true
+    }
+
+    pluginsConfiguration.html {
+        homepageLink = "https://stonecutter.codeberg.page/"
+        footerMessage = "(c) 2025 KikuGie"
+    }
+
+    dokkaSourceSets.main {
+        reportUndocumented = false
+        skipEmptyPackages = true
+
+        sourceLink {
+            localDirectory = file("src/main/kotlin")
+            remoteLineSuffix = "#L"
+            remoteUrl("https://codeberg.org/stonecutter/stonecutter/src/branch/0.7/stitcher/")
+        }
+
+        externalDocumentationLinks.register("kotlin-stdlib") {
+            url("https://kotlinlang.org/api/core/")
+        }
+
+        externalDocumentationLinks.register("kotlinx-serialization") {
+            url("https://kotlinlang.org/api/kotlinx.serialization/")
+        }
+    }
 }
 
-tasks.withType<AbstractDokkaLeafTask> {
-    moduleName = "Stitcher"
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }
 
 java {
@@ -43,25 +70,25 @@ tasks.withType<KotlinCompile> {
         jvmTarget.set(JvmTarget.JVM_16)
     }
 }
-
-publishing {
-    repositories {
-        maven {
-            name = "kikugieMaven"
-            url = uri("https://maven.kikugie.dev/snapshots")
-            credentials(PasswordCredentials::class)
-            authentication {
-                create("basic", BasicAuthentication::class)
-            }
-        }
-    }
-
-    publications {
-        register("mavenJava", MavenPublication::class) {
-            groupId = project.group.toString()
-            artifactId = "stitcher"
-            version = project.version.toString()
-            artifact(tasks.getByName("jar"))
-        }
-    }
-}
+//
+//publishing {
+//    repositories {
+//        maven {
+//            name = "kikugieMaven"
+//            url = uri("https://maven.kikugie.dev/snapshots")
+//            credentials(PasswordCredentials::class)
+//            authentication {
+//                create("basic", BasicAuthentication::class)
+//            }
+//        }
+//    }
+//
+//    publications {
+//        register("mavenJava", MavenPublication::class) {
+//            groupId = project.group.toString()
+//            artifactId = "stitcher"
+//            version = project.version.toString()
+//            artifact(tasks.getByName("jar"))
+//        }
+//    }
+//}
