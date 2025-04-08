@@ -1,6 +1,7 @@
 @file:Suppress("UnstableApiUsage")
 @file:OptIn(ExperimentalPathApi::class)
 
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
@@ -107,10 +108,19 @@ java {
 }
 
 tasks {
+    register<ShadowJar>("slimJar") {
+        group = "build"
+        archiveClassifier = "slim"
+        configurations = project.configurations.runtimeClasspath.map(::listOf)
+
+        from(sourceSets.main.map(SourceSet::getOutput))
+        dependencies {
+            include(project(":stitcher"))
+        }
+    }
+
     shadowJar {
         archiveClassifier = ""
-        archiveBaseName = "stonecutter"
-        archiveVersion = project.version as String
     }
 
     compileKotlin {
@@ -152,11 +162,12 @@ publishing {
     }
 
     publications {
-        register("mavenJava", MavenPublication::class) {
+        register<MavenPublication>("mavenJava") {
             groupId = project.group.toString()
             artifactId = "stonecutter"
             version = project.version.toString()
             from(components["java"])
+            artifact(tasks.named("slimJar"))
         }
     }
 }
