@@ -20,7 +20,7 @@ public open class StonecutterPlugin @Inject constructor(problems: Problems) : Pl
     public companion object {
         /**Current Stonecutter version.*/
         @StonecutterAPI
-        public const val VERSION: String = "0.7-alpha.5"
+        public const val VERSION: String = "0.7-alpha.6"
     }
 
     internal val reporter: ProblemReporter = problems.reporter

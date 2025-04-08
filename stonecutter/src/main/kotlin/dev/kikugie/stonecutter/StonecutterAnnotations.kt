@@ -27,10 +27,7 @@ public annotation class StonecutterDevAPI
  * Marks members that should not be used,
  * but need to have public visibility for technical reasons.
  */
-@RequiresOptIn(
-    message= "This API is internal to Stonecutter and should not be used.",
-    level = RequiresOptIn.Level.WARNING
-)
+@RequiresOptIn("This API is internal to Stonecutter and should not be used.", RequiresOptIn.Level.WARNING)
 @Retention(AnnotationRetention.BINARY)
 @Target(CLASS, FUNCTION, PROPERTY, FIELD, TYPEALIAS)
 public annotation class StonecutterInternalAPI
