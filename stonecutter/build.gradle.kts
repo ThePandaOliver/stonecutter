@@ -13,14 +13,14 @@ plugins {
     idea
     java
     `kotlin-dsl`
-    alias(libs.plugins.shadow)
-    alias(libs.plugins.gradle.publishing)
+    alias(libs.plugins.gradle.shadow)
+    alias(libs.plugins.gradle.publish)
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.dokka)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlin.validator)
     alias(libs.plugins.kotlin.ksp)
-    alias(libs.plugins.kdoclink)
+    alias(libs.plugins.extra.kdoclink)
 }
 
 idea {
@@ -32,12 +32,7 @@ idea {
 
 dependencies {
     api(project(":stitcher"))
-    implementation(libs.kotlin.serialization)
-    implementation(libs.kotlin.serialization.json)
-    implementation(libs.kotlin.coroutines)
-    implementation(libs.kaml)
-
-    testImplementation(libs.bundles.test)
+    implementation(libs.bundles.stonecutter)
 }
 
 kdoclink {
@@ -80,7 +75,7 @@ dokka {
         suppressObviousFunctions = true
     }
 
-    dokkaSourceSets.main {
+    dokkaSourceSets.register("main") {
         reportUndocumented = true
         skipEmptyPackages = true
 
@@ -105,37 +100,47 @@ dokka {
     }
 }
 
-tasks.withType<Test>().configureEach {
-    useJUnitPlatform()
-}
-
 java {
-    sourceCompatibility = JavaVersion.VERSION_16
-    targetCompatibility = JavaVersion.VERSION_16
-}
-
-tasks.compileKotlin {
-    explicitApiMode = ExplicitApiMode.Strict
-    compilerOptions {
-        languageVersion = KotlinVersion.KOTLIN_2_1
-        apiVersion = KotlinVersion.KOTLIN_2_1
-        jvmTarget.set(JvmTarget.JVM_16)
-    }
-}
-
-java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
     withSourcesJar()
 }
 
-tasks.shadowJar {
-    archiveBaseName.set("shadow")
-    archiveClassifier.set("")
-    archiveVersion.set("")
-}
+tasks {
+    shadowJar {
+        archiveClassifier = ""
+        archiveBaseName = "stonecutter"
+        archiveVersion = project.version as String
 
-tasks.all {
-    if (this is Jar || this is DokkaTask || this is KotlinCompile)
-        dependsOn(rootProject.tasks.findByName("updateVersion"))
+        dependencies {
+            include(project(":stitcher"))
+        }
+    }
+
+    compileKotlin {
+        explicitApiMode = ExplicitApiMode.Strict
+        compilerOptions {
+            languageVersion = KotlinVersion.KOTLIN_2_1
+            apiVersion = KotlinVersion.KOTLIN_2_1
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+    }
+
+    withType<Test> {
+        useJUnitPlatform()
+    }
+
+    withType<Jar> {
+        dependsOn(":updateVersion")
+    }
+
+    withType<DokkaTask> {
+        dependsOn(":updateVersion")
+    }
+
+    withType<KotlinCompile> {
+        dependsOn(":updateVersion")
+    }
 }
 
 publishing {
@@ -161,8 +166,8 @@ publishing {
 }
 
 gradlePlugin {
-    website = "https://stonecutter.kikugie.dev/"
-    vcsUrl = "https://github.com/stonecutter-versioning/stonecutter"
+    website = "https://stonecutter.codeberg.page/"
+    vcsUrl = "https://codeberg.org/stonecutter/stonecutter"
 
     plugins {
         create("stonecutter") {

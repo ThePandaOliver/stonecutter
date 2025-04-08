@@ -1,6 +1,7 @@
 package dev.kikugie.stonecutter.settings
 
 import dev.kikugie.stonecutter.ProjectReference
+import dev.kikugie.stonecutter.StonecutterInternalAPI
 import dev.kikugie.stonecutter.StonecutterPlugin
 import dev.kikugie.stonecutter.data.ProjectHierarchy
 import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
@@ -31,6 +32,7 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.notExists
 
+@OptIn(StonecutterInternalAPI::class)
 @Suppress("UnstableApiUsage")
 internal open class StonecutterSettingsImpl @Inject constructor(private val settings: Settings, objects: ObjectFactory) :
     StonecutterSettingsExtension(objects) {
@@ -125,12 +127,13 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
         if (groovy || file.endsWith(".gradle")) groovy = true
     }
 
-    private fun reportGroovyComplaint() = reporter.reporting(SCProblems.GROOVY_BUILD_USED) {
-        label = "NOTICE: Limited Groovy DSL support for Stonecutter"
-        details = """
-            While functional, the plugin's features are limited by the Groovy syntax and it has reduced IDE support.
-            For the best experience, including enhanced syntax, autocompletion, documentation lookup and debugging, it's recommended to use Kotlin DSL.
-        """.trimIndent()
-        documentation = "https://stonecutter.codeberg.page/wiki/faq#groovy-support"
-    }
+    private fun reportGroovyComplaint() = Unit
+//        reporter.reporting(SCProblems.GROOVY_BUILD_USED) {
+//        label = "NOTICE: Limited Groovy DSL support for Stonecutter"
+//        details = """
+//            While functional, the plugin's features are limited by the Groovy syntax and it has reduced IDE support.
+//            For the best experience, including enhanced syntax, autocompletion, documentation lookup and debugging, it's recommended to use Kotlin DSL.
+//        """.trimIndent()
+//        documentation = "https://stonecutter.codeberg.page/wiki/faq#groovy-support"
+//    }
 }

@@ -2,10 +2,9 @@ import tasks.HallOfFameTask
 import tasks.UpdateVersionTask
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.dokka)
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.node)
+    alias(libs.plugins.extra.node)
 }
 
 group = property("group").toString()

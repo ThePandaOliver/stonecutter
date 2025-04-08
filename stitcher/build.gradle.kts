@@ -1,13 +1,15 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     java
-    `maven-publish`
-    kotlin("jvm")
-    kotlin("plugin.serialization")
+    alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.dokka)
+    alias(libs.plugins.kotlin.serialization)
 }
+
+version = "SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -15,10 +17,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("reflect"))
-    implementation(libs.kotlin.serialization)
-
-    testImplementation(libs.kaml)
-    testImplementation(libs.bundles.test)
+    implementation(libs.bundles.stitcher)
 }
 
 dokka {
@@ -33,7 +32,7 @@ dokka {
         footerMessage = "(c) 2025 KikuGie"
     }
 
-    dokkaSourceSets.main {
+    dokkaSourceSets.register("main") {
         reportUndocumented = false
         skipEmptyPackages = true
 
@@ -53,42 +52,24 @@ dokka {
     }
 }
 
-tasks.withType<Test>().configureEach {
-    useJUnitPlatform()
+tasks {
+    withType<Test> {
+        useJUnitPlatform()
+    }
+
+    withType<KotlinCompile> {
+        compilerOptions {
+            languageVersion = KotlinVersion.KOTLIN_2_1
+            apiVersion = KotlinVersion.KOTLIN_2_1
+            jvmTarget = JvmTarget.JVM_17
+        }
+    }
 }
 
 java {
     withSourcesJar()
     withJavadocJar()
 
-    sourceCompatibility = JavaVersion.VERSION_16
-    targetCompatibility = JavaVersion.VERSION_16
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
-
-tasks.withType<KotlinCompile> {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_16)
-    }
-}
-//
-//publishing {
-//    repositories {
-//        maven {
-//            name = "kikugieMaven"
-//            url = uri("https://maven.kikugie.dev/snapshots")
-//            credentials(PasswordCredentials::class)
-//            authentication {
-//                create("basic", BasicAuthentication::class)
-//            }
-//        }
-//    }
-//
-//    publications {
-//        register("mavenJava", MavenPublication::class) {
-//            groupId = project.group.toString()
-//            artifactId = "stitcher"
-//            version = project.version.toString()
-//            artifact(tasks.getByName("jar"))
-//        }
-//    }
-//}
