@@ -75,7 +75,7 @@ dokka {
         suppressObviousFunctions = true
     }
 
-    dokkaSourceSets.register("main") {
+    dokkaSourceSets.named("main") {
         reportUndocumented = true
         skipEmptyPackages = true
 

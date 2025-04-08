@@ -32,7 +32,7 @@ dokka {
         footerMessage = "(c) 2025 KikuGie"
     }
 
-    dokkaSourceSets.register("main") {
+    dokkaSourceSets.named("main") {
         reportUndocumented = false
         skipEmptyPackages = true
 
