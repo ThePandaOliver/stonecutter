@@ -1,5 +1,6 @@
 package dev.kikugie.stonecutter.process
 
+import dev.kikugie.stonecutter.StonecutterInternalAPI
 import dev.kikugie.stonecutter.controller.StonecutterControllerManager
 import dev.kikugie.stonecutter.util.invoke
 import org.gradle.api.DefaultTask
@@ -27,6 +28,7 @@ public abstract class ControllerExternalUpdateTask : DefaultTask(), StonecutterU
     }
 }
 
+@OptIn(StonecutterInternalAPI::class)
 public abstract class ControllerScriptUpdateTask : DefaultTask(), StonecutterUpdateTask {
     @get:InputFile
     public abstract val script: RegularFileProperty

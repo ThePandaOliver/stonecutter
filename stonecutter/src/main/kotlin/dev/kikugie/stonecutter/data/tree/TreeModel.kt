@@ -16,29 +16,30 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.notExists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
-private val YAML = Yaml(
-    configuration = YamlConfiguration(
-        encodeDefaults = false,
-        strictMode = false
-    )
-)
+//private val YAML = Yaml(
+//    configuration = YamlConfiguration(
+//        encodeDefaults = false,
+//        strictMode = false
+//    )
+//)
 
 private fun <T> save(location: Path, model: T, serializer: KSerializer<T>): Result<Unit> = location.runCatching {
-    val yaml = YAML.encodeToString(serializer, model)
-    parent.createDirectories()
-    writeText(
-        yaml,
-        Charsets.UTF_8,
-        StandardOpenOption.WRITE,
-        StandardOpenOption.CREATE,
-        StandardOpenOption.TRUNCATE_EXISTING
-    )
+//    val yaml = YAML.encodeToString(serializer, model)
+//    parent.createDirectories()
+//    writeText(
+//        yaml,
+//        Charsets.UTF_8,
+//        StandardOpenOption.WRITE,
+//        StandardOpenOption.CREATE,
+//        StandardOpenOption.TRUNCATE_EXISTING
+//    )
 }
 
 private fun <T> load(location: Path, serializer: KSerializer<T>): Result<T> = location.runCatching {
-    if (location.notExists()) throw NoSuchFileException(location.toFile())
-    val text = readText(Charsets.UTF_8)
-    YAML.decodeFromString(serializer, text)
+//    if (location.notExists()) throw NoSuchFileException(location.toFile())
+//    val text = readText(Charsets.UTF_8)
+//    YAML.decodeFromString(serializer, text)
+    error("Not yet implemented")
 }
 
 @Serializable

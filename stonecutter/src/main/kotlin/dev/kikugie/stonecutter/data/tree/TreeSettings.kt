@@ -1,6 +1,7 @@
 package dev.kikugie.stonecutter.data.tree
 
 import dev.kikugie.stonecutter.Identifier
+import dev.kikugie.stonecutter.StonecutterInternalAPI
 import dev.kikugie.stonecutter.data.StonecutterProject
 import dev.kikugie.stonecutter.util.isIdentifier
 import kotlinx.serialization.KSerializer
@@ -167,6 +168,7 @@ public sealed interface ExpandedProject {
     public val entry: StonecutterProject
     public val buildscript: String?
 
+    @OptIn(StonecutterInternalAPI::class)
     @JvmInline @Serializable
     private value class StringProject(val string: String) : ExpandedProject {
         override val entry: StonecutterProject
@@ -175,12 +177,14 @@ public sealed interface ExpandedProject {
             get() = null
     }
 
+    @OptIn(StonecutterInternalAPI::class)
     @Serializable
     private data class MixedProject(val node: String, override val buildscript: String? = null) : ExpandedProject {
         override val entry: StonecutterProject
             get() = parseVersion(node.split(':', limit = 2))
     }
 
+    @OptIn(StonecutterInternalAPI::class)
     @Serializable
     private data class CompositeProject(val project: String, val version: String = project, override val buildscript: String? = null) : ExpandedProject {
         override val entry: StonecutterProject
@@ -188,7 +192,7 @@ public sealed interface ExpandedProject {
     }
 
     private companion object {
-        fun parseVersion(it: List<String>) = when (it.size) {
+        @StonecutterInternalAPI fun parseVersion(it: List<String>) = when (it.size) {
             0 -> error("Empty strings are not allowed")
             1 -> StonecutterProject.create(it.first(), it.first())
             2 -> StonecutterProject.create(it.first(), it[1])

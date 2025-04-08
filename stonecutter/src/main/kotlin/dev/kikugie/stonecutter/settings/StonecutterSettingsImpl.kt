@@ -127,13 +127,12 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
         if (groovy || file.endsWith(".gradle")) groovy = true
     }
 
-    private fun reportGroovyComplaint() = Unit
-//        reporter.reporting(SCProblems.GROOVY_BUILD_USED) {
-//        label = "NOTICE: Limited Groovy DSL support for Stonecutter"
-//        details = """
-//            While functional, the plugin's features are limited by the Groovy syntax and it has reduced IDE support.
-//            For the best experience, including enhanced syntax, autocompletion, documentation lookup and debugging, it's recommended to use Kotlin DSL.
-//        """.trimIndent()
-//        documentation = "https://stonecutter.codeberg.page/wiki/faq#groovy-support"
-//    }
+    private fun reportGroovyComplaint() = reporter.print(SCProblems.GROOVY_BUILD_USED) {
+        label = "NOTICE: Limited Groovy DSL support for Stonecutter"
+        details = """
+            While functional, the plugin's features are limited by the Groovy syntax and it has reduced IDE support.
+            For the best experience, including enhanced syntax, autocompletion, documentation lookup and debugging, it's recommended to use Kotlin DSL.
+        """.trimIndent()
+        documentation = "https://stonecutter.codeberg.page/wiki/faq#groovy-support"
+    }
 }

@@ -1,6 +1,7 @@
 package dev.kikugie.stonecutter.controller.tasks
 
 import dev.kikugie.stonecutter.Identifier
+import dev.kikugie.stonecutter.StonecutterInternalAPI
 import dev.kikugie.stonecutter.controller.StonecutterControllerManager
 import dev.kikugie.stonecutter.data.tree.ProjectTree
 import dev.kikugie.stonecutter.process.ControllerExternalUpdateTask
@@ -8,11 +9,10 @@ import dev.kikugie.stonecutter.process.ControllerScriptUpdateTask
 import dev.kikugie.stonecutter.process.StonecutterUpdateTask
 import dev.kikugie.stonecutter.util.MutableTaskProviderMap
 import dev.kikugie.stonecutter.util.invoke
-import org.gradle.api.DefaultTask
-import org.gradle.api.Task
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.register
 
+@OptIn(StonecutterInternalAPI::class)
 internal class StonecutterControllerTasksImpl : StonecutterControllerTasks {
     override val switch: MutableTaskProviderMap<out StonecutterUpdateTask> = mutableMapOf()
 

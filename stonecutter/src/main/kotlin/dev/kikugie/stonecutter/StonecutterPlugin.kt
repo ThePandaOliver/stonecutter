@@ -32,6 +32,7 @@ public open class StonecutterPlugin @Inject constructor(problems: Problems) : Pl
     @StonecutterDevAPI
     override fun apply(target: ExtensionAware): Unit = target.applyPlugin()
 
+    @OptIn(StonecutterInternalAPI::class)
     private fun ExtensionAware.applyPlugin() = when (this) {
         is Settings ->
             stonecutter<StonecutterSettingsExtension, StonecutterSettingsImpl>()

@@ -3,12 +3,14 @@ package dev.kikugie.stonecutter.data.tree
 import dev.kikugie.stonecutter.Version
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterAPI
+import dev.kikugie.stonecutter.StonecutterInternalAPI
 import dev.kikugie.stonecutter.data.StonecutterProject
 
 /**
  * Methods available in [dev.kikugie.stonecutter.settings.SettingsAbstraction.shared], [dev.kikugie.stonecutter.settings.SettingsAbstraction.create] and [dev.kikugie.stonecutter.data.tree.TreeBuilder.branch].
  * Extracted to an interface to ease configuration.
  */
+@OptIn(StonecutterInternalAPI::class)
 public abstract class ProjectProvider {
     /**
      * Registers a [dev.kikugie.stonecutter.data.StonecutterProject] with separate project directory and version.

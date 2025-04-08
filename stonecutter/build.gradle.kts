@@ -31,7 +31,7 @@ idea {
 }
 
 dependencies {
-    api(project(":stitcher"))
+    api(project(path = ":stitcher"))
     implementation(libs.bundles.stonecutter)
 }
 
@@ -111,10 +111,6 @@ tasks {
         archiveClassifier = ""
         archiveBaseName = "stonecutter"
         archiveVersion = project.version as String
-
-        dependencies {
-            include(project(":stitcher"))
-        }
     }
 
     compileKotlin {

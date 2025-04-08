@@ -22,6 +22,13 @@ dependencies {
     dokka(project(":stitcher"))
 }
 
+configurations.configureEach {
+    if (isCanBeConsumed) attributes.attribute(
+        GradlePluginApiVersion.GRADLE_PLUGIN_API_VERSION_ATTRIBUTE,
+        objects.named(GradleVersion.current().version)
+    )
+}
+
 dokka {
     moduleName = "Stonecutter KDoc"
 
