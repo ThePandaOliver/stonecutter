@@ -1,7 +1,5 @@
 package dev.kikugie.stonecutter
 
-import dev.kikugie.semver.VersionParser
-import dev.kikugie.semver.VersionParsingException
 import org.jetbrains.annotations.Contract
 
 /**

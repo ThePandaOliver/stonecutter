@@ -16,13 +16,11 @@ repositories {
 }
 
 dependencies {
-    api(project(path = ":semver"))
-    implementation(kotlin("reflect"))
     implementation(libs.bundles.stitcher)
 }
 
 dokka {
-    moduleName = "Stitcher Processor"
+    moduleName = "Semver Parser"
     dokkaPublications.html {
         suppressInheritedMembers = true
         suppressObviousFunctions = true
@@ -40,7 +38,7 @@ dokka {
         sourceLink {
             localDirectory = file("src/main/kotlin")
             remoteLineSuffix = "#L"
-            remoteUrl("https://codeberg.org/stonecutter/stonecutter/src/branch/0.7/stitcher/")
+            remoteUrl("https://codeberg.org/stonecutter/stonecutter/src/branch/0.7/semver/")
         }
 
         externalDocumentationLinks.register("kotlin-stdlib") {
