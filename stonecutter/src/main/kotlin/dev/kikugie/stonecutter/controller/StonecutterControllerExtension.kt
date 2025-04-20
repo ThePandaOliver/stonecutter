@@ -4,6 +4,7 @@ import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.StonecutterDevAPI
 import dev.kikugie.stonecutter.StonecutterUtility
+import dev.kikugie.stonecutter.build.dsl.VersionProvider
 import dev.kikugie.stonecutter.data.StonecutterProject
 import dev.kikugie.stonecutter.data.tree.ProjectTree
 import dev.kikugie.stonecutter.controller.flag.MutableFlagContainer
@@ -39,6 +40,9 @@ public interface StonecutterControllerExtension : StonecutterUtility {
      * @see StonecutterFlag.Companion
      */
     @StonecutterDevAPI public val flags: MutableFlagContainer
+
+    public val checks: VersionProvider.Companion
+        get() = VersionProvider
 
     /**Assigns provided flag the given [value].*/
     @StonecutterDevAPI

@@ -1,7 +1,7 @@
 package dev.kikugie.stitcher.transformer
 
-import dev.kikugie.semver.VersionParser
-import dev.kikugie.semver.VersionPredicate
+import dev.kikugie.semver.LenientVersionOperations
+import dev.kikugie.semver.data.VersionPredicate
 import dev.kikugie.stitcher.data.component.*
 import dev.kikugie.stitcher.data.token.StitcherTokenType
 import dev.kikugie.stitcher.data.token.Token
@@ -42,8 +42,8 @@ class ConditionChecker(private val params: TransformParameters) : Component.Visi
         val target = params.dependencies[it.target.value]
             ?: throw IllegalArgumentException("Invalid dependency ${it.target.value}")
         return it.predicates.all {
-            val info = it[VersionPredicate::class] ?: VersionParser.parsePredicate(it.value).value
-            info.eval(target)
+            val info = it[VersionPredicate::class] ?: LenientVersionOperations.parsePredicate(it.value).getOrThrow()
+            info(target)
         }
     }
 }

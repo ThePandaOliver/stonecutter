@@ -20,8 +20,8 @@ plugins {
     alias(libs.plugins.kotlin.dokka)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlin.validator)
-    alias(libs.plugins.kotlin.ksp)
-    alias(libs.plugins.extra.kdoclink)
+//    alias(libs.plugins.kotlin.ksp)
+//    alias(libs.plugins.extra.kdoclink)
 }
 
 idea {
@@ -31,32 +31,37 @@ idea {
     }
 }
 
+repositories {
+    mavenCentral()
+}
+
 dependencies {
+    api(project(path = ":semver"))
     api(project(path = ":stitcher"))
     implementation(libs.bundles.stonecutter)
 }
 
-kdoclink {
-    fun wiki(page: String) = "https://stonecutter.kikugie.dev/wiki/$page"
-
-    annotation = "dev.kikugie.stonecutter.SCDocumentation"
-    this["settings"] = wiki("start/settings")
-    this["settings.vcs"] = wiki("start/settings#version-reset-point")
-    this["settings.create"] = wiki("start/settings#specifying-versions")
-    this["settings.json"] = wiki("config/params")
-
-    this["swaps"] = wiki("config/params#string-swaps")
-    this["swaps.spec"] = wiki("config/params#swap-specification")
-
-    this["consts"] = wiki("config/params#condition-constants")
-    this["consts.spec"] = wiki("config/params#constant-specification")
-    this["consts.choice"] = wiki("config/params#choice-selector")
-
-    this["deps"] = wiki("config/params#condition-dependencies")
-    this["deps.spec"] = wiki("config/params#dependency-specification")
-
-    this["utility"] = wiki("guide/setup#checking-versions")
-}
+//kdoclink {
+//    fun wiki(page: String) = "https://stonecutter.kikugie.dev/wiki/$page"
+//
+//    annotation = "dev.kikugie.stonecutter.SCDocumentation"
+//    this["settings"] = wiki("start/settings")
+//    this["settings.vcs"] = wiki("start/settings#version-reset-point")
+//    this["settings.create"] = wiki("start/settings#specifying-versions")
+//    this["settings.json"] = wiki("config/params")
+//
+//    this["swaps"] = wiki("config/params#string-swaps")
+//    this["swaps.spec"] = wiki("config/params#swap-specification")
+//
+//    this["consts"] = wiki("config/params#condition-constants")
+//    this["consts.spec"] = wiki("config/params#constant-specification")
+//    this["consts.choice"] = wiki("config/params#choice-selector")
+//
+//    this["deps"] = wiki("config/params#condition-dependencies")
+//    this["deps.spec"] = wiki("config/params#dependency-specification")
+//
+//    this["utility"] = wiki("guide/setup#checking-versions")
+//}
 
 apiValidation {
     ignoredPackages += "stonecutter_samples"
@@ -115,6 +120,7 @@ tasks {
 
         from(sourceSets.main.map(SourceSet::getOutput))
         dependencies {
+            include(project(":semver"))
             include(project(":stitcher"))
         }
     }

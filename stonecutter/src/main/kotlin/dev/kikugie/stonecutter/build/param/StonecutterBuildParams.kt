@@ -2,6 +2,7 @@ package dev.kikugie.stonecutter.build.param
 
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterAPI
+import dev.kikugie.stonecutter.StonecutterUtility
 import dev.kikugie.stonecutter.Version
 import dev.kikugie.stonecutter.build.dsl.ConstantContainer
 import dev.kikugie.stonecutter.build.dsl.DependencyContainer
@@ -12,7 +13,6 @@ import dev.kikugie.stonecutter.build.dsl.ReplacementContainer.StringReplacementB
 import dev.kikugie.stonecutter.build.dsl.SwapContainer
 import dev.kikugie.stonecutter.build.dsl.VersionProvider
 import org.gradle.api.Action
-import org.intellij.lang.annotations.Language
 
 /**
  * Represents context, in which file processing parameters can be configured.
@@ -79,7 +79,7 @@ public interface StonecutterBuildParams : DeprecatedBuildParams {
 }
 
 @Suppress("DEPRECATION")
-public interface DeprecatedBuildParams {
+public interface DeprecatedBuildParams : StonecutterUtility {
     @Deprecated("Use DSL block instead")
     public fun swap(id: Identifier, replacement: String)
 
@@ -196,8 +196,8 @@ public interface DeprecatedBuildParams {
     @Deprecated("Use DSL block instead")
     public fun replacement(
         direction: Boolean,
-        @Language("RegExp") fromPattern: String, toValue: String,
-        @Language("RegExp") reversePattern: String, reverseValue: String,
+        fromPattern: String, toValue: String,
+        reversePattern: String, reverseValue: String,
         phase: String = "LAST", id: Identifier? = null,
     ): Unit = regexReplacement {
         this.direction.set(direction)

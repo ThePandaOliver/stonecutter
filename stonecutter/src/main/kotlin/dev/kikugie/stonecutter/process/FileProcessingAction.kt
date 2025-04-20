@@ -1,6 +1,6 @@
 package dev.kikugie.stonecutter.process
 
-import dev.kikugie.semver.VersionParser
+import dev.kikugie.semver.LenientVersionOperations
 import dev.kikugie.stitcher.data.replacement.*
 import dev.kikugie.stitcher.data.replacement.ReplacementExecutor.Companion.replaceWithScannedTokens
 import dev.kikugie.stitcher.data.token.ContentType
@@ -104,7 +104,7 @@ internal abstract class FileProcessingAction : WorkAction<FileProcessingAction.P
     private fun FileProcessingData.toActualParameters(): TransformParameters = TransformParameters(
         swaps(),
         constants(),
-        dependencies().mapValues { (_, it) -> VersionParser.parseLenient(it, full = true).value },
+        dependencies().mapValues { (_, it) -> LenientVersionOperations.parseVersion(it).getOrThrow() },
         replacements().map { it.toActualReplacement() }.run { ReplacementList(toMutableList()) }
     )
 

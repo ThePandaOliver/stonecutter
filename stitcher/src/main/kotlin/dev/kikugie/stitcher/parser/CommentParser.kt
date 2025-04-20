@@ -1,5 +1,6 @@
 package dev.kikugie.stitcher.parser
 
+import dev.kikugie.semver.LenientVersionOperations
 import dev.kikugie.stitcher.data.component.*
 import dev.kikugie.stitcher.data.scope.ScopeType
 import dev.kikugie.stitcher.data.token.*
@@ -175,7 +176,12 @@ class CommentParser(
 
     private fun matchPredicates(): List<Token> = buildList {
         while (true) when (nextType) {
-            PREDICATE -> consume { add(it.token) }
+            PREDICATE -> consume {
+                add(it.token)
+                LenientVersionOperations.parseVersion(it.token.value).onFailure { err ->
+                    it.report { err.message ?: "Invalid predicate" }
+                }
+            }
             else -> break
         }
     }

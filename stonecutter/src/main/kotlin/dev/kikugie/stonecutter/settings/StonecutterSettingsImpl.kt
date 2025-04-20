@@ -33,7 +33,6 @@ import kotlin.io.path.exists
 import kotlin.io.path.notExists
 
 @OptIn(StonecutterInternalAPI::class)
-@Suppress("UnstableApiUsage")
 internal open class StonecutterSettingsImpl @Inject constructor(private val settings: Settings, objects: ObjectFactory) :
     StonecutterSettingsExtension(objects) {
     final override val kotlinController: Property<Boolean> = objects.property()
@@ -41,7 +40,6 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
     internal val providers: ProviderFactory get() = settings.providers
     private var groovy = false
     private val container: TreeBuilderContainer = settings.gradle.createContainer()
-    private val reporter: ProblemReporter get() = settings.problemReporter
     private val logger: Logger by logger("StonecutterSettings")
 
     init {
@@ -100,9 +98,9 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
     private fun getDescriptor(ref: ProjectReference): ProjectDescriptor = when (ref) {
         is ProjectDescriptor -> ref
         is Provider<*> -> (ref.orNull as? String)?.let(::createDescriptor)
-            ?: report("Project descriptor not found for $ref")
+            ?: error("Project descriptor not found for $ref")
         is CharSequence -> createDescriptor(ref.toString())
-        else -> report("Unsupported type ${ref::class.qualifiedName}")
+        else -> error("Unsupported type ${ref::class.qualifiedName}")
     }
 
     private fun createDescriptor(path: String): ProjectDescriptor {
@@ -127,12 +125,16 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
         if (groovy || file.endsWith(".gradle")) groovy = true
     }
 
-    private fun reportGroovyComplaint() = reporter.print(SCProblems.GROOVY_BUILD_USED) {
-        label = "NOTICE: Limited Groovy DSL support for Stonecutter"
-        details = """
-            While functional, the plugin's features are limited by the Groovy syntax and it has reduced IDE support.
-            For the best experience, including enhanced syntax, autocompletion, documentation lookup and debugging, it's recommended to use Kotlin DSL.
-        """.trimIndent()
-        documentation = "https://stonecutter.codeberg.page/wiki/faq#groovy-support"
-    }
+    @Suppress("ReplacePrintlnWithLogging")
+    private fun reportGroovyComplaint() = println("""
+        NOTICE: Limited Groovy DSL support for Stonecutter
+        
+        While functional, the plugin's features are limited 
+        by the Groovy syntax and it has reduced IDE support.
+        For the best experience, including enhanced syntax, autocompletion, 
+        documentation lookup and debugging, it's recommended to use Kotlin DSL.
+        
+        For more information see: 
+          - https://stonecutter.codeberg.page/wiki/faq#groovy-support
+    """.trimIndent())
 }
