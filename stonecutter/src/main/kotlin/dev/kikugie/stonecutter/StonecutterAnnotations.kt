@@ -42,3 +42,23 @@ public annotation class StonecutterInternalAPI
 @Retention(AnnotationRetention.SOURCE)
 @Target(CLASS, FUNCTION, PROPERTY, TYPEALIAS)
 internal annotation class SCDocumentation(vararg val ids: String)
+
+@DslMarker
+@Retention(AnnotationRetention.BINARY) @Target(CLASS)
+internal annotation class SCConfiguration
+
+@DslMarker
+@Retention(AnnotationRetention.BINARY) @Target(CLASS)
+internal annotation class SCUtility
+
+@DslMarker
+@Retention(AnnotationRetention.BINARY) @Target(CLASS)
+internal annotation class SCFilterSpec
+
+@DslMarker
+@Retention(AnnotationRetention.BINARY) @Target(CLASS)
+internal annotation class SCReplacementSpec
+
+@DslMarker
+@Retention(AnnotationRetention.BINARY) @Target(CLASS)
+internal annotation class SCFlagSpec

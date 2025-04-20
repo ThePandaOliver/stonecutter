@@ -1,52 +1,99 @@
 package dev.kikugie.semver
 
-import dev.kikugie.semver.data.ImplicitEqualOperator
-import dev.kikugie.semver.data.PlainVersion
-import dev.kikugie.semver.data.SemanticVersion
-import dev.kikugie.semver.data.Version
-import dev.kikugie.semver.data.VersionOperator
-import dev.kikugie.semver.match.CommonOperatorMatcher
-import dev.kikugie.semver.match.CompositeOperatorMatcher
-import dev.kikugie.semver.match.PlainVersionMatcher
-import dev.kikugie.semver.match.SemanticOperatorMatcher
-import dev.kikugie.semver.match.SemanticVersionMatcher
+import dev.kikugie.semver.data.*
+import dev.kikugie.semver.match.*
 import dev.kikugie.semver.parsing.PlainVersionParser
 import dev.kikugie.semver.parsing.SemanticVersionParser
+import dev.kikugie.semver.parsing.VersionParsingException
+import dev.kikugie.semver.util.countIn
+import dev.kikugie.semver.util.getOrDefault
 
 interface VersionOperations {
-    fun getVersionBoundaries(source: CharSequence, start: Int = 0, end: Int = source.length): IntRange
-    fun getPredicateOperator(source: CharSequence, start: Int = 0, end: Int = source.length): VersionOperator
-    fun parseFullVersion(input: CharSequence): Result<Version>
+    fun getVersionBoundary(source: CharSequence, start: Int = 0, end: Int = source.length): Int
+    fun getPredicateBoundary(source: CharSequence, start: Int = 0, end: Int = source.length): Int =
+        defaultGetPredicateBoundary(source, start, end)
+
+    fun parseOperator(source: CharSequence, offset: Int = 0): VersionOperator?
+    fun parseVersion(source: CharSequence): Result<Version>
+    fun parsePredicate(source: CharSequence): Result<VersionPredicate> =
+        defaultParsePredicate(source)
+
+    private fun defaultGetPredicateBoundary(source: CharSequence, start: Int, end: Int): Int {
+        var operator = parseOperator(source, start)
+        if (operator == null && source.getOrDefault(start).isWhitespace()) return start
+        else operator = operator ?: ImplicitEqualOperator
+        var offset = operator.literal.length
+        offset += source.countIn(offset, predicate = Char::isWhitespace)
+        return getVersionBoundary(source, offset).let { if (it == offset) start else it }
+    }
+
+    private fun defaultParsePredicate(source: CharSequence): Result<VersionPredicate> {
+        if (getPredicateBoundary(source) != source.length) return Result.failure(VersionParsingException("Invalid predicate", source.indices))
+        val operator = parseOperator(source) ?: ImplicitEqualOperator
+        return parseVersion(source).map { VersionPredicate(operator, it) }
+    }
 }
 
 object SemanticVersionOperations : VersionOperations {
-    override fun getVersionBoundaries(source: CharSequence, start: Int, end: Int): IntRange =
-        start..<SemanticVersionMatcher.match(source, start, end)
+    override fun getVersionBoundary(source: CharSequence, start: Int, end: Int): Int =
+        SemanticVersionMatcher.match(source, start, end)
 
-    override fun getPredicateOperator(source: CharSequence, start: Int, end: Int): VersionOperator =
-        CompositeOperatorMatcher(SemanticOperatorMatcher, CommonOperatorMatcher).match(source, start, end) ?: ImplicitEqualOperator
+    override fun getPredicateBoundary(source: CharSequence, start: Int, end: Int): Int = super.getPredicateBoundary(source, start, end)
+        .let { if (parseOperator(source, start) is SemanticOperator) start else it }
 
-    override fun parseFullVersion(input: CharSequence): Result<SemanticVersion> =
-        SemanticVersionParser.parseFullVersion(input)
+    override fun parseOperator(source: CharSequence, offset: Int): VersionOperator? =
+        CompositeOperatorMatcher(SemanticOperatorMatcher, CommonOperatorMatcher).match(source, offset, source.length)
+
+    override fun parseVersion(source: CharSequence): Result<SemanticVersion> =
+        SemanticVersionParser.parseFullVersion(source)
+
+    override fun parsePredicate(source: CharSequence): Result<VersionPredicate> = super.parsePredicate(source).mapCatching {
+        if (it.operator is SemanticOperator) throw VersionParsingException(
+            "Plain version doesn't support semantic operators",
+            it.operator.literal.indices
+        )
+        it
+    }
 }
 
 object PlainVersionOperations : VersionOperations {
-    override fun getVersionBoundaries(source: CharSequence, start: Int, end: Int): IntRange =
-        start..PlainVersionMatcher.match(source, start, end)
+    override fun getVersionBoundary(source: CharSequence, start: Int, end: Int): Int =
+        PlainVersionMatcher.match(source, start, end)
 
-    override fun getPredicateOperator(source: CharSequence, start: Int, end: Int): VersionOperator =
-        CommonOperatorMatcher.match(source, start, end) ?: ImplicitEqualOperator
+    override fun parseOperator(source: CharSequence, offset: Int): VersionOperator? =
+        CommonOperatorMatcher.match(source, offset, source.length)
 
-    override fun parseFullVersion(input: CharSequence): Result<PlainVersion> =
-        PlainVersionParser.parseFullVersion(input)
+    override fun parseVersion(source: CharSequence): Result<PlainVersion> =
+        PlainVersionParser.parseFullVersion(source)
 }
 
-object LenientVersionOperations : VersionOperations by SemanticVersionOperations {
-    override fun getVersionBoundaries(source: CharSequence, start: Int, end: Int): IntRange =
-        SemanticVersionOperations.getVersionBoundaries(source, start, end)
-            .let { if (it.isEmpty()) PlainVersionOperations.getVersionBoundaries(source, start, end) else it }
+object LenientVersionOperations : VersionOperations  {
+    private val DELEGATES = listOf(SemanticVersionOperations, PlainVersionOperations)
 
-    override fun parseFullVersion(input: CharSequence): Result<Version> =
-        SemanticVersionOperations.parseFullVersion(input)
-            .let { if (it.isFailure) PlainVersionOperations.parseFullVersion(input) else it }
+    override fun getVersionBoundary(source: CharSequence, start: Int, end: Int): Int =
+        DELEGATES.firstNotNullOfOrNull { it.getVersionBoundary(source, start, end).takeIf { it != start } } ?: start
+
+    override fun getPredicateBoundary(source: CharSequence, start: Int, end: Int): Int =
+        DELEGATES.firstNotNullOfOrNull { it.getPredicateBoundary(source, start, end).takeIf { it != start } } ?: start
+
+    override fun parseOperator(source: CharSequence, offset: Int): VersionOperator? =
+        DELEGATES.firstNotNullOfOrNull { it.parseOperator(source, offset) }
+
+    override fun parseVersion(source: CharSequence): Result<Version> {
+        var last: Result<Version>? = null
+        for (delegate in DELEGATES) {
+            last = delegate.parseVersion(source)
+            if (last.isSuccess) return last
+        }
+        return last!!
+    }
+
+    override fun parsePredicate(source: CharSequence): Result<VersionPredicate> {
+        var last: Result<VersionPredicate>? = null
+        for (delegate in DELEGATES) {
+            last = delegate.parsePredicate(source)
+            if (last.isSuccess) return last
+        }
+        return last!!
+    }
 }

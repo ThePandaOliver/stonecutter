@@ -1,5 +1,6 @@
 package dev.kikugie.stonecutter.build
 
+import dev.kikugie.stonecutter.build.dsl.FilterContainerImpl
 import dev.kikugie.stonecutter.build.param.StonecutterBuildData
 import dev.kikugie.stonecutter.build.param.StonecutterBuildParams
 import dev.kikugie.stonecutter.build.task.StonecutterBuildTasksImpl
@@ -56,7 +57,7 @@ internal open class StonecutterBuildImpl @JvmOverloads constructor(
             dependsOn(this@StonecutterBuildImpl.tasks.merge)
         }
 
-        with(filter) {
+        with(filters as FilterContainerImpl) {
             for (it in this@StonecutterBuildImpl.tasks.prepare.values) it.configure {
                 sources.from(files(sources.files).asFileTree.filter { filter(it.toPath()) })
             }

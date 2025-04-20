@@ -4,9 +4,10 @@ import dev.kikugie.stonecutter.then
 import kotlin.collections.MutableMap.MutableEntry
 
 internal inline fun <K : Any, V : Any> newParameterMap(
+    delegate: MutableMap<K, V> = mutableMapOf(),
     crossinline keyCheck: (K) -> Unit = {},
     crossinline valueCheck: (V) -> Unit = {},
-) = object : ParameterMap<K, V>() {
+) = object : ParameterMap<K, V>(delegate) {
     override fun checkKey(key: K) = keyCheck(key)
     override fun checkValue(value: V) = valueCheck(value)
 }
