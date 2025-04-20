@@ -14,26 +14,26 @@ import org.gradle.api.Action
 /**Stonecutter plugin available in `build.gradle[.kts]`.*/
 @StonecutterAPI
 public interface StonecutterBuildExtension : StonecutterBuildParams {
-    public val tree: ProjectTree
-    public val branch: ProjectBranch
-    public val node: ProjectNode
+    @StonecutterAPI public val tree: ProjectTree
+    @StonecutterAPI public val branch: ProjectBranch
+    @StonecutterAPI public val node: ProjectNode
     /**
      * Read-only configuration flags container passed from `stonecutter.gradle[.kts]`.
      * Can be used to retrieve default and custom configuration values.
      */
-    public val flags: FlagContainer
+    @StonecutterDevAPI public val flags: FlagContainer
 
     /**
      * Structured task container for each stage of file processing.
      * This can be used to programmatically configure task dependencies
      * when the automatic method doesn't work correctly.
      */
-    public val tasks: StonecutterBuildTasks
+    @StonecutterDevAPI public val tasks: StonecutterBuildTasks
 
     /**
      * Metadata of the active subproject, which has root `src/` sources assigned to it.
      */
-    public val active: StonecutterProject
+    @StonecutterAPI public val active: StonecutterProject
         get() = tree.current
 
     /**
@@ -41,7 +41,7 @@ public interface StonecutterBuildExtension : StonecutterBuildParams {
      * Can be active, which can be checked with `stonecutter.current.isActive`
      * or `stonecutter.current == stonecutter.active`.
      */
-    public val current: StonecutterProject
+    @StonecutterAPI public val current: StonecutterProject
         get() = node.metadata
 
     /**
@@ -51,8 +51,8 @@ public interface StonecutterBuildExtension : StonecutterBuildParams {
      * assert(stonecutter.versions.first { it.isActive } === stonecutter.active)
      * ```
      */
-    public val versions: Collection<StonecutterProject>
+    @StonecutterAPI public val versions: Collection<StonecutterProject>
         get() = branch.versions
 
-    public fun flags(block: Action<FlagContainer>): Unit = block.execute(flags)
+    @StonecutterDevAPI public fun flags(block: Action<FlagContainer>): Unit = block.execute(flags)
 }

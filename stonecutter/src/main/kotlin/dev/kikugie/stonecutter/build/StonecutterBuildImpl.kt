@@ -1,5 +1,10 @@
 package dev.kikugie.stonecutter.build
 
+import dev.kikugie.stonecutter.build.dsl.ConstantContainer
+import dev.kikugie.stonecutter.build.dsl.DependencyContainer
+import dev.kikugie.stonecutter.build.dsl.FilterContainer
+import dev.kikugie.stonecutter.build.dsl.ReplacementContainer
+import dev.kikugie.stonecutter.build.dsl.SwapContainer
 import dev.kikugie.stonecutter.build.param.FilterContainerImpl
 import dev.kikugie.stonecutter.build.param.StonecutterBuildData
 import dev.kikugie.stonecutter.build.param.StonecutterBuildParams
@@ -19,21 +24,22 @@ import org.gradle.api.Project
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
 
-internal open class StonecutterBuildImpl @JvmOverloads constructor(
-    val project: Project,
-    final override val tree: ProjectTree = project.findProjectTree(),
-    val controller: StonecutterControllerImpl = tree.getControllerImpl(),
-    val data: StonecutterBuildData = controller.getOrCreateParameters(project.hierarchy),
-) : StonecutterBuildExtension, StonecutterBuildParams by data {
-    final override val branch: ProjectBranch = tree.getChecked(project.parent!!.hierarchy) {
-        "Branch for '$it' not found in ${tree.hierarchy}: ${keysToString()}"
-    }
-    final override val node: ProjectNode = branch.getChecked(project.hierarchy) {
-        "Node for '$it' not found in ${branch.hierarchy}: ${keysToString()}"
-    }
+internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuildExtension {
     override val tasks: StonecutterBuildTasksImpl = StonecutterBuildTasksImpl(this)
+    override val tree: ProjectTree by lazy { project.findProjectTree() }
+    override val branch: ProjectBranch get() = tree.getChecked(parent.hierarchy) { "Branch for '$it' not found in ${tree.hierarchy}: ${keysToString()}" }
+    override val node: ProjectNode get() = branch.getChecked(project.hierarchy) { "Node for '$it' not found in ${branch.hierarchy}: ${keysToString()}" }
     override val flags: FlagContainer get() = controller.flags
+
+    override val constants: ConstantContainer get() = data.constants
+    override val dependencies: DependencyContainer get() = data.dependencies
+    override val swaps: SwapContainer get() = data.swaps
+    override val replacements: ReplacementContainer get() = data.replacements
+    override val filters: FilterContainer get() = data.filters
+
     internal val parent: Project get() = project.parent!!
+    internal val controller: StonecutterControllerImpl get() = tree.getControllerImpl()
+    internal val data: StonecutterBuildData get() = controller.getOrCreateParameters(project.hierarchy)
 
     init {
         configureProject()
