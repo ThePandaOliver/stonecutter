@@ -17,6 +17,7 @@ repositories {
 
 dependencies {
     implementation(libs.bundles.stitcher)
+    testImplementation(libs.bundles.test)
 }
 
 dokka {

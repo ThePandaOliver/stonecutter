@@ -1,12 +1,17 @@
-package dev.kikugie.stonecutter.build.dsl
+package dev.kikugie.stonecutter.build.param
 
 import dev.kikugie.semver.LenientVersionOperations
 import dev.kikugie.stitcher.data.replacement.ReplacementList
 import dev.kikugie.stitcher.data.replacement.ReplacementPhase
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.Version
+import dev.kikugie.stonecutter.build.dsl.ConstantContainer
+import dev.kikugie.stonecutter.build.dsl.DependencyContainer
+import dev.kikugie.stonecutter.build.dsl.FilterContainer
+import dev.kikugie.stonecutter.build.dsl.ReplacementContainer
 import dev.kikugie.stonecutter.build.dsl.ReplacementContainer.RegexReplacementBuilder
 import dev.kikugie.stonecutter.build.dsl.ReplacementContainer.StringReplacementBuilder
+import dev.kikugie.stonecutter.build.dsl.SwapContainer
 import dev.kikugie.stonecutter.data.build.newParameterMap
 import dev.kikugie.stonecutter.then
 import dev.kikugie.stonecutter.util.invoke
@@ -44,7 +49,10 @@ internal class DependencyContainerImpl(val delegate: MutableMap<Identifier, Vers
             keyCheck = { checkKey(it, "Dependency") },
             valueCheck = {
                 require(it.isNotBlank()) { "Dependency value '$it' must not be blank." }
-                require(LenientVersionOperations.parseVersion(it).isSuccess) { "Dependency value '$it' must be a valid identifier or semver." }
+                LenientVersionOperations.parseVersion(it).onFailure { err ->
+                    throw IllegalArgumentException("Dependency value '$it' is invalid")
+                        .apply { initCause(err) }
+                }
             }
         ))
 }

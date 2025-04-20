@@ -9,6 +9,7 @@ import dev.kikugie.semver.data.SemanticVersion
 import dev.kikugie.semver.data.Version
 import dev.kikugie.semver.data.VersionPredicate
 import dev.kikugie.semver.parsing.VersionParsingException
+import dev.kikugie.stonecutter.SCUtility
 
 private fun unpackPredicates(value: CharSequence, matcher: VersionOperations): List<VersionPredicate> = buildList {
     var offset = 0
@@ -23,6 +24,7 @@ private fun unpackPredicates(value: CharSequence, matcher: VersionOperations): L
     }
 }
 
+@SCUtility
 public interface VersionProvider<T : Version> {
     public fun parseVersion(value: CharSequence): Result<T>
     public fun parsePredicate(value: CharSequence): Result<VersionPredicate>

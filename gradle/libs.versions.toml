@@ -86,3 +86,9 @@ stonecutter = [
 stitcher = [
     "kotlin-serialization"
 ]
+
+test = [
+    "kotest-runner",
+    "kotest-assertions",
+    "kotest-datatest"
+]

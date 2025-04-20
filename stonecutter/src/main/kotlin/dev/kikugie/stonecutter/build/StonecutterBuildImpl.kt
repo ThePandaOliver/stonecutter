@@ -1,6 +1,6 @@
 package dev.kikugie.stonecutter.build
 
-import dev.kikugie.stonecutter.build.dsl.FilterContainerImpl
+import dev.kikugie.stonecutter.build.param.FilterContainerImpl
 import dev.kikugie.stonecutter.build.param.StonecutterBuildData
 import dev.kikugie.stonecutter.build.param.StonecutterBuildParams
 import dev.kikugie.stonecutter.build.task.StonecutterBuildTasksImpl
