@@ -67,9 +67,9 @@ internal open class StonecutterControllerImpl(private val root: Project) : Stone
 
     internal fun getOrCreateParameters(hierarchy: ProjectHierarchy): StonecutterBuildData = data.getOrPut(hierarchy) {
         root.objects.newInstance(root.projectDir.toPath()) {
-            if (hierarchy !in configurations) return@newInstance
-            val delegate = StonecutterDelegatedBuildParams(tree.nodes.first { it.hierarchy == hierarchy }, this)
-            for (config in configurations.remove(hierarchy) ?: emptyList()) config(delegate)
+            if (hierarchy !in this@StonecutterControllerImpl.configurations) return@newInstance
+            val delegate = StonecutterDelegatedBuildParams(this@StonecutterControllerImpl.tree.nodes.first { it.hierarchy == hierarchy }, this)
+            for (config in this@StonecutterControllerImpl.configurations.remove(hierarchy) ?: emptyList()) config(delegate)
         }
     }
 

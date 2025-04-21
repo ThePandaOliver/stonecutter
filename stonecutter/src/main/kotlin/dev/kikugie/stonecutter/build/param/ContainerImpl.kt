@@ -1,17 +1,13 @@
 package dev.kikugie.stonecutter.build.param
 
-import dev.kikugie.semver.LenientVersionOperations
+import dev.kikugie.semver.VersionParser
 import dev.kikugie.stitcher.data.replacement.ReplacementList
 import dev.kikugie.stitcher.data.replacement.ReplacementPhase
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.Version
-import dev.kikugie.stonecutter.build.dsl.ConstantContainer
-import dev.kikugie.stonecutter.build.dsl.DependencyContainer
-import dev.kikugie.stonecutter.build.dsl.FilterContainer
-import dev.kikugie.stonecutter.build.dsl.ReplacementContainer
+import dev.kikugie.stonecutter.build.dsl.*
 import dev.kikugie.stonecutter.build.dsl.ReplacementContainer.RegexReplacementBuilder
 import dev.kikugie.stonecutter.build.dsl.ReplacementContainer.StringReplacementBuilder
-import dev.kikugie.stonecutter.build.dsl.SwapContainer
 import dev.kikugie.stonecutter.data.build.newParameterMap
 import dev.kikugie.stonecutter.then
 import dev.kikugie.stonecutter.util.invoke
@@ -27,6 +23,20 @@ private inline fun checkKey(key: String, type: String) {
     require(key.isNotBlank()) { "$type key '$key' must not be blank." }
     require(isIdentifier(key)) { "$type key '$key' must be a valid identifier." }
 }
+
+//private fun unpackPredicates(value: CharSequence, matcher: VersionOperations): List<VersionPredicate> = buildList {
+//    var offset = 0
+//    while (offset < value.length) when {
+//        value[offset].isWhitespace() -> offset++
+//        else -> {
+//            val boundary = matcher.getPredicateBoundary(value, offset)
+//            if (boundary == offset) throw VersionParsingException("Invalid predicate", offset..boundary)
+//            this += matcher.parsePredicate(value.subSequence(offset, boundary))
+//                .formatParsingException(value, offset).getOrThrow()
+//            offset = boundary
+//        }
+//    }
+//}
 
 internal class ConstantContainerImpl(val delegate: MutableMap<Identifier, Boolean>) : ConstantContainer, MutableMap<Identifier, Boolean> by delegate {
     constructor() : this(
@@ -49,10 +59,7 @@ internal class DependencyContainerImpl(val delegate: MutableMap<Identifier, Vers
             keyCheck = { checkKey(it, "Dependency") },
             valueCheck = {
                 require(it.isNotBlank()) { "Dependency value '$it' must not be blank." }
-                LenientVersionOperations.parseVersion(it).onFailure { err ->
-                    throw IllegalArgumentException("Dependency value '$it' is invalid")
-                        .apply { initCause(err) }
-                }
+                require(isIdentifier(it) || kotlin.runCatching { VersionParser.parseLenient(it, full = true) }.isSuccess)
             }
         ))
 }
@@ -105,3 +112,17 @@ internal class ReplacementContainerImpl(val objects: ObjectFactory, val delegate
         else delegate.addRegex(reversePattern().toRegex(), reverseValue(), realPhase, id.orNull)
     }
 }
+
+//internal object SemanticVersionProvider : VersionProvider<SemanticVersion> {
+//    override fun parseVersion(value: CharSequence): Result<SemanticVersion> = SemanticVersionOperations.parseVersion(value).formatParsingException(value)
+//    override fun parsePredicate(value: CharSequence): Result<VersionPredicate> = SemanticVersionOperations.parsePredicate(value).formatParsingException(value)
+//    override fun eval(target: LenientVersion, vararg predicates: CharSequence): Boolean =
+//        predicates.flatMap { unpackPredicates(it, SemanticVersionOperations) }.all { it(target) }
+//}
+//
+//internal object LenientVersionProvider : VersionProvider<LenientVersion> {
+//    override fun parseVersion(value: CharSequence): Result<LenientVersion> = LenientVersionOperations.parseVersion(value).formatParsingException(value)
+//    override fun parsePredicate(value: CharSequence): Result<VersionPredicate> = LenientVersionOperations.parsePredicate(value).formatParsingException(value)
+//    override fun eval(target: LenientVersion, vararg predicates: CharSequence): Boolean =
+//        predicates.flatMap { unpackPredicates(it, LenientVersionOperations) }.all { it(target) }
+//}

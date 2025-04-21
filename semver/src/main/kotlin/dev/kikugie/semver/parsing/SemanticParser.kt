@@ -8,12 +8,12 @@ import dev.kikugie.semver.util.isEnglishLetter
 internal fun parseImpl(input: CharSequence): Result<SemanticVersion> =
     SemanticParser(input).parse()
 
-private data class SemanticToken(val type: Type, val value: String, val index: Int) {
+internal data class SemanticToken(val type: Type, val value: String, val index: Int) {
     enum class Type { LITERAL, NUMERIC, DOT, DASH, PLUS, INVALID }
     val range: IntRange get() = index until (index + value.length)
 }
 
-private class SemanticLexer(val input: CharSequence) : Iterator<SemanticToken> {
+internal class SemanticLexer(val input: CharSequence) : Iterator<SemanticToken> {
     private var index = 0
 
     override fun hasNext(): Boolean = index < input.length
@@ -58,7 +58,7 @@ private class SemanticParser(val input: CharSequence) {
             Type.INVALID -> throw VersionParsingException("Invalid character ${it.value}", it.range)
         }
 
-        if (isEmpty()) throw VersionParsingException("Version components must not be empty", 0..0)
+        if (isEmpty()) throw VersionParsingException("Version components must not be empty", IntRange.EMPTY)
     }
 
     private fun parsePreRelease(tokens: ArrayDeque<SemanticToken>): String = buildString {
@@ -73,7 +73,7 @@ private class SemanticParser(val input: CharSequence) {
             Type.INVALID -> throw VersionParsingException("Invalid character ${it.value}", it.range)
         }
 
-        if (isEmpty()) throw VersionParsingException("Pre-release must not be empty", start..start)
+        if (isEmpty()) throw VersionParsingException("Pre-release must not be empty", start..<start)
     }
 
     private fun parseBuildMetadata(tokens: ArrayDeque<SemanticToken>): String = buildString {
@@ -85,7 +85,7 @@ private class SemanticParser(val input: CharSequence) {
             Type.PLUS, Type.INVALID -> throw VersionParsingException("Invalid character ${it.value}", it.range)
         }
 
-        if (isNotEmpty()) throw VersionParsingException("Build metadata must be empty", start..start)
+        if (isNotEmpty()) throw VersionParsingException("Build metadata must be empty", start..<start)
     }
 
     private fun <T> ArrayDeque<T>.consuming(): Iterator<T> = object : Iterator<T> {

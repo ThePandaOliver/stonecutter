@@ -4,7 +4,7 @@ import dev.kikugie.stonecutter.LENIENT_JSON
 import dev.kikugie.stonecutter.ProjectReference
 import dev.kikugie.stonecutter.SCDocumentation
 import dev.kikugie.stonecutter.StonecutterAPI
-import dev.kikugie.stonecutter.build.dsl.VersionProvider
+import dev.kikugie.stonecutter.StonecutterUtility
 import dev.kikugie.stonecutter.data.tree.TreeBuilder
 import dev.kikugie.stonecutter.data.tree.TreeSettings
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -24,10 +24,8 @@ private fun readTreeSettings(file: File): Action<TreeBuilder> {
 }
 
 @SCDocumentation("settings")
-public abstract class StonecutterSettingsExtension(internal val objects: ObjectFactory) {
+public abstract class StonecutterSettingsExtension(internal val objects: ObjectFactory) : StonecutterUtility {
     private lateinit var shared: Action<TreeBuilder>
-    public val checks: VersionProvider.Companion
-        get() = VersionProvider
 
     /**
      * Enables Kotlin buildscripts for the controller.

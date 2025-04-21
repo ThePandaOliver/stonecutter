@@ -19,7 +19,7 @@ fun interface VersionMatcher {
 
 object SemanticVersionMatcher : VersionMatcher {
     override fun match(source: CharSequence, start: Int, end: Int): Int =
-        bind(start, end, source) then source.countIn(start, end, ::canBeSemver)
+        bind(start, end, source) then source.countIn(start, end, ::canBeSemver) + start
 
     private fun canBeSemver(char: Char) = when (char) {
         in 'a'..'z', in 'A'..'Z', in '0'..'9', '+', '-', '.' -> true
@@ -29,7 +29,7 @@ object SemanticVersionMatcher : VersionMatcher {
 
 object PlainVersionMatcher : VersionMatcher {
     override fun match(source: CharSequence, start: Int, end: Int): Int =
-        bind(start, end, source) then if (!canBeFirst(source[start])) 0 else source.countIn(start + 1, end, ::canBePart) + 1
+        bind(start, end, source) then if (!canBeFirst(source[start])) start else source.countIn(start + 1, end, ::canBePart) + start + 1
 
     private fun canBeFirst(char: Char) = when (char) {
         in 'a'..'z', in 'A'..'Z', in '0'..'9', '_' -> true

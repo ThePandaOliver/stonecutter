@@ -24,13 +24,20 @@ interface VersionOperations {
         else operator = operator ?: ImplicitEqualOperator
         var offset = operator.literal.length
         offset += source.countIn(offset, predicate = Char::isWhitespace)
-        return getVersionBoundary(source, offset).let { if (it == offset) start else it }
+        return getVersionBoundary(source, offset).let {
+            if (it == offset) start else it
+        }
     }
 
     private fun defaultParsePredicate(source: CharSequence): Result<VersionPredicate> {
-        if (getPredicateBoundary(source) != source.length) return Result.failure(VersionParsingException("Invalid predicate", source.indices))
+        val boundary = getPredicateBoundary(source)
+        if (boundary != source.length) return Result.failure(
+            VersionParsingException("Expected predicate in ${source.indices}, got ${0..boundary}", source.indices)
+        )
         val operator = parseOperator(source) ?: ImplicitEqualOperator
-        return parseVersion(source).map { VersionPredicate(operator, it) }
+        var offset = operator.literal.length
+        offset += source.countIn(offset, predicate = Char::isWhitespace)
+        return parseVersion(source.substring(offset)).map { VersionPredicate(operator, it) }
     }
 }
 

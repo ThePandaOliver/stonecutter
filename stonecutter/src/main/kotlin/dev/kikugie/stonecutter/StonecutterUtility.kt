@@ -1,6 +1,7 @@
 package dev.kikugie.stonecutter
 
-import dev.kikugie.stonecutter.build.dsl.VersionProvider
+import dev.kikugie.semver.VersionParser
+import dev.kikugie.semver.VersionParsingException
 import org.jetbrains.annotations.Contract
 
 /**
@@ -18,35 +19,47 @@ public interface StonecutterUtility {
      * @throws VersionParsingException
      * @see VersionParser.parsePredicate
      */
-    @StonecutterAPI @SCDocumentation("utility") @Contract(pure = true) @Deprecated("Use checks DSL")
-    public fun eval(version: Version, predicate: String): Boolean =
-        VersionProvider.semantic.eval(version, predicate)
+    @SCDocumentation("utility")
+    @Contract(pure = true) @StonecutterAPI
+    public fun eval(version: Version, predicate: String): Boolean {
+        val target = VersionParser.parse(version).value
+        return predicate.split(' ').all {
+            VersionParser.parsePredicateLenient(it).value.eval(target)
+        }
+    }
 
     /**
-     * Evaluates the passed version as [SemanticVersion] or [Version] and compares to the given predicate(s).
+     * Evaluates the passed version as [SemanticVersion] or [AnyVersion] and compares to the given predicate(s).
      *
      * @sample stonecutter_samples.eval.lenient
      * @see VersionParser.parsePredicateLenient
      */
-    @StonecutterAPI @SCDocumentation("utility") @Contract(pure = true) @Deprecated("Use checks DSL")
-    public fun evalLenient(version: Version, predicate: String): Boolean =
-        VersionProvider.eval(version, predicate)
+    @SCDocumentation("utility")
+    @Contract(pure = true) @StonecutterAPI
+    public fun evalLenient(version: Version, predicate: String): Boolean {
+        val target = VersionParser.parseLenient(version).value
+        return predicate.split(' ').all {
+            VersionParser.parsePredicateLenient(it).value.eval(target)
+        }
+    }
 
     /**
      * Parses both parameters as [SemanticVersion] and compares them.
      *
      * @return 1 if the [left] is greater, -1 if the [right] is greater, 0 if they are equal
      */
-    @StonecutterAPI @SCDocumentation("utility") @Contract(pure = true) @Deprecated("Use checks DSL")
+    @SCDocumentation("utility")
+    @Contract(pure = true) @StonecutterAPI
     public fun compare(left: Version, right: Version): Int =
-        VersionProvider.semantic.compare(left, right)
+        VersionParser.parse(left).value.compareTo(VersionParser.parse(right).value)
 
     /**
-     * Parses both parameters as [SemanticVersion] or [Version] and compares them.
+     * Parses both parameters as [SemanticVersion] or [AnyVersion] and compares them.
      *
      * @return 1 if the [left] is greater, -1 if the [right] is greater, 0 if they are equal
      */
-    @StonecutterAPI @SCDocumentation("utility") @Contract(pure = true) @Deprecated("Use checks DSL")
+    @SCDocumentation("utility")
+    @Contract(pure = true) @StonecutterAPI
     public fun compareLenient(left: Version, right: Version): Int =
-        VersionProvider.compare(left, right)
+        VersionParser.parseLenient(left).value.compareTo(VersionParser.parse(right).value)
 }

@@ -76,7 +76,7 @@ public abstract class TreeBuilder @Inject internal constructor(
      */
     @StonecutterAPI
     public fun branch(name: Identifier, action: BranchBuilder.() -> Unit) {
-        require(isIdentifier(name)) { "Invalid branch identifier: '$name'" }
+        require(name.isEmpty() || isIdentifier(name)) { "Invalid branch identifier: '$name'" }
         getOrCreateBranch(name).apply(action)
     }
 

@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    api(project(path = ":semver"))
+//    api(project(path = ":semver"))
     implementation(kotlin("reflect"))
     implementation(libs.bundles.stitcher)
 }

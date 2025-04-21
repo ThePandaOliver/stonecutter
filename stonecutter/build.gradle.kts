@@ -36,7 +36,7 @@ repositories {
 }
 
 dependencies {
-    api(project(path = ":semver"))
+//    api(project(path = ":semver"))
     api(project(path = ":stitcher"))
     implementation(libs.bundles.stonecutter)
 }

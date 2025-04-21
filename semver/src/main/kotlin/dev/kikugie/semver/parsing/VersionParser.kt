@@ -17,6 +17,6 @@ object SemanticVersionParser : VersionParser<SemanticVersion> {
 object PlainVersionParser : VersionParser<PlainVersion> {
     override fun parseFullVersion(input: CharSequence): Result<PlainVersion> = when(val end = PlainVersionMatcher.match(input, 0, input.length)) {
         input.length -> Result.success(PlainVersion(input.toString()))
-        else -> Result.failure(VersionParsingException("Invalid character '${input[end]}' $input at $end", end..end))
+        else -> Result.failure(VersionParsingException("Invalid character", end..end))
     }
 }

@@ -11,7 +11,6 @@ import dev.kikugie.stonecutter.build.dsl.ReplacementContainer
 import dev.kikugie.stonecutter.build.dsl.ReplacementContainer.RegexReplacementBuilder
 import dev.kikugie.stonecutter.build.dsl.ReplacementContainer.StringReplacementBuilder
 import dev.kikugie.stonecutter.build.dsl.SwapContainer
-import dev.kikugie.stonecutter.build.dsl.VersionProvider
 import org.gradle.api.Action
 
 /**
@@ -26,15 +25,12 @@ public interface StonecutterBuildParams : DeprecatedBuildParams {
     public val swaps: SwapContainer
     public val replacements: ReplacementContainer
     public val filters: FilterContainer
-    public val checks: VersionProvider.Companion
-        get() = VersionProvider
 
     public fun constants(block: Action<ConstantContainer>): Unit = block.execute(constants)
     public fun dependencies(block: Action<DependencyContainer>): Unit = block.execute(dependencies)
     public fun swaps(block: Action<SwapContainer>): Unit = block.execute(swaps)
     public fun replacements(block: Action<ReplacementContainer>): Unit = block.execute(replacements)
     public fun filters(block: Action<FilterContainer>): Unit = block.execute(filters)
-    public fun checks(block: Action<VersionProvider.Companion>): Unit = block.execute(checks)
 
     @Deprecated("Use DSL block instead")
     override fun const(id: Identifier, value: Boolean) {
@@ -266,3 +262,13 @@ public interface DeprecatedBuildParams : StonecutterUtility {
     private fun Map<String, *>.containsAny(vararg keys: String): Boolean =
         keys.any { it in this }
 }
+
+//public interface StonecutterVersionProvider : VersionProvider<LenientVersion>{
+//    public val semantics: VersionProvider<SemanticVersion>
+//        get() = SemanticVersionProvider
+//
+//    public fun semantics(block: Action<VersionProvider<SemanticVersion>>): Unit = block.execute(semantics)
+//    override fun parseVersion(value: CharSequence): Result<LenientVersion> = LenientVersionProvider.parseVersion(value)
+//    override fun parsePredicate(value: CharSequence): Result<VersionPredicate> = LenientVersionProvider.parsePredicate(value)
+//    override fun eval(target: LenientVersion, vararg predicates: CharSequence): Boolean = LenientVersionProvider.eval(target, *predicates)
+//}

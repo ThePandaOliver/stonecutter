@@ -1,5 +1,6 @@
 package dev.kikugie.semver.util
 
+import dev.kikugie.semver.parsing.VersionParsingException
 import kotlin.math.max
 import kotlin.math.min
 
@@ -21,5 +22,12 @@ internal inline fun CharSequence.countIn(start: Int = 0, end: Int = length, pred
     while (offset < end)
         if (predicate(this[offset])) offset++
         else break
-    return offset
+    return offset - start
 }
+
+fun <T> Result<T>.formatParsingException(source: CharSequence, offset: Int = 0): Result<T> = mapException {
+    if (it is VersionParsingException) it.formatted(source, offset) else it
+}
+
+inline fun <T> Result<T>.mapException(mapping: (Throwable) -> Throwable): Result<T> =
+    if (isFailure) Result.failure(mapping(exceptionOrNull()!!)) else this
