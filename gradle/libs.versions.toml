@@ -1,6 +1,6 @@
 [versions]
 # Kotlin
-kotlin-jvm = { prefer = "2.1.20", strictly = "[2.1,)" }
+kotlin-jvm = { strictly = "2.1.20" }
 kotlin-ksp = { strictly = "2.1.20-1.0.32" }
 kotlin-dokka = { strictly = "2.0.+" }
 kotlin-validator = { strictly = "0.17.+" }

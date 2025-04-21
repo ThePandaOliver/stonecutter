@@ -79,7 +79,7 @@ internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuil
                 .let<Provider<FileProcessingData>, Unit>(parameters::set)
         }
 
-        tasks.registerGenerateTask(src) {
+        val generateTask = tasks.registerGenerateTask(src) {
             root.set(parent.projectDirectory.resolve("src/${src.name}"))
             source.set(project.projectDirectory.resolve("src/${src.name}"))
             cache.set(tasks.processedCacheDir.resolve(src.name))
@@ -94,7 +94,7 @@ internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuil
         tasks.registerMergeTask(src) {
             from(tasks.processedCacheDir.resolve(src.name))
             into(parent.projectDirectory.resolve("src/${src.name}"))
-            dependsOn(prepareTask)
+            dependsOn(generateTask)
         }
     }
 }

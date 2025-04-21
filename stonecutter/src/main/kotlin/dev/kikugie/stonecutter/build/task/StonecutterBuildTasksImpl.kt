@@ -38,24 +38,26 @@ internal class StonecutterBuildTasksImpl(private val ext: StonecutterBuildImpl) 
     override fun configureSource(src: SourceSet) {
         val branchSrc: File = ext.parent.projectDirectory.resolve("src")
         val versionSrc: File = ext.project.projectDirectory.resolve("src")
-        val prepareTask = "${ext.project.path}:${prepareTaskName(src)}"
         for (set in src.allSources()) {
             val matchingDirs = set.sourceDirectories
                 .map { it.relativeTo(versionSrc) }
                 .filterNot { it.startsWith("..") }
 
-            val sourceDirs = matchingDirs.mapNotNull { branchSrc.resolve(it).takeUnless(registeredSources::contains) }
-            if (ext.current.isActive) {
-                if (sourceDirs.isEmpty()) continue
-                registeredSources += sourceDirs
-                ext.project.files(sourceDirs).let(set::srcDir)
-                logger.debug { "Adding active sources to ${sourceID(src)}:\n${sourceDirs.joinToString("\n") { "\t- $it" }}" }
-            } else matchingDirs.mapNotNull { generatedSourcesDir.resolve(it).takeUnless(registeredSources::contains) }.let {
-                if (it.isEmpty()) return@let
-                registeredSources += it
-                ext.project.files(it).builtBy(prepareTask).let(set::srcDir)
-                logger.debug { "Adding generated sources to ${sourceID(src)}:\n${it.joinToString("\n") { "\t- $it" }}" }
-            }
+            if (ext.current.isActive) matchingDirs.mapNotNull { branchSrc.resolve(it).takeUnless(registeredSources::contains) }
+                .takeUnless(List<File>::isEmpty)
+                ?.let {
+                    registeredSources += it
+                    ext.project.files(it).builtBy("${ext.project.path}:${mergeTaskName(src)}").let(set::srcDir)
+                    logger.debug { "Adding active sources to ${sourceID(src)}:\n${it.joinToString("\n") { "\t- $it" }}" }
+                }
+
+            matchingDirs.mapNotNull { generatedSourcesDir.resolve(it).takeUnless(registeredSources::contains) }
+                .takeUnless(List<File>::isEmpty)
+                ?.let {
+                    registeredSources += it
+                    ext.project.files(it).builtBy("${ext.project.path}:${generateTaskName(src)}").let(set::srcDir)
+                    logger.debug { "Adding generated sources to ${sourceID(src)}:\n${it.joinToString("\n") { "\t- $it" }}" }
+                }
         }
     }
 
