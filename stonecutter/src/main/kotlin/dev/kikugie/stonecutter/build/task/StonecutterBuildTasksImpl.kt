@@ -5,6 +5,7 @@ import dev.kikugie.stonecutter.process.FileGeneratingTask
 import dev.kikugie.stonecutter.process.FileProcessingTask
 import dev.kikugie.stonecutter.util.*
 import org.gradle.api.Task
+import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskProvider
@@ -43,23 +44,16 @@ internal class StonecutterBuildTasksImpl(private val ext: StonecutterBuildImpl) 
                 .map { it.relativeTo(versionSrc) }
                 .filterNot { it.startsWith("..") }
 
-            if (ext.current.isActive) matchingDirs.mapNotNull { branchSrc.resolve(it).takeUnless(registeredSources::contains) }
-                .takeUnless(List<File>::isEmpty)
-                ?.let {
-                    registeredSources += it
-                    ext.project.files(it).builtBy("${ext.project.path}:${mergeTaskName(src)}").let(set::srcDir)
-                    logger.debug { "Adding active sources to ${sourceID(src)}:\n${it.joinToString("\n") { "\t- $it" }}" }
-                }
-
-            matchingDirs.mapNotNull { generatedSourcesDir.resolve(it).takeUnless(registeredSources::contains) }
-                .takeUnless(List<File>::isEmpty)
-                ?.let {
-                    registeredSources += it
-                    ext.project.files(it).builtBy("${ext.project.path}:${generateTaskName(src)}").let(set::srcDir)
-                    logger.debug { "Adding generated sources to ${sourceID(src)}:\n${it.joinToString("\n") { "\t- $it" }}" }
-                }
+            if (ext.current.isActive) applyDirectories(set, matchingDirs, branchSrc, mergeTaskName(src), true)
+            applyDirectories(set, matchingDirs, generatedSourcesDir, generateTaskName(src), !ext.current.isActive)
         }
     }
 
-    private fun sourceID(src: SourceSet): String = "${ext.project.path} ${src.name}"
+    private fun applyDirectories(set: SourceDirectorySet, matching: Iterable<File>, root: File, task: String, apply: Boolean): List<File> {
+        val dirs = matching.map(root::resolve).filterNot(registeredSources::contains).ifEmpty { return emptyList() }
+        val group = ext.project.files(dirs).builtBy("${ext.project.path}:$task")
+        if (apply) set.srcDir(group)
+        registeredSources += dirs
+        return dirs
+    }
 }
