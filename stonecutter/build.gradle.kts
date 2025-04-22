@@ -196,7 +196,7 @@ publishing {
                 licenses {
                     license {
                         name = "GNU Lesser Public License 3.0"
-                        url = "https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text"
+                        url = "https://www.gnu.org/licenses/lgpl-3.0.en.html"
                     }
                 }
 

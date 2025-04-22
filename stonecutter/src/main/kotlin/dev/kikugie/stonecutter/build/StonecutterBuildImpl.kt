@@ -7,7 +7,6 @@ import dev.kikugie.stonecutter.build.dsl.ReplacementContainer
 import dev.kikugie.stonecutter.build.dsl.SwapContainer
 import dev.kikugie.stonecutter.build.param.FilterContainerImpl
 import dev.kikugie.stonecutter.build.param.StonecutterBuildData
-import dev.kikugie.stonecutter.build.param.StonecutterBuildParams
 import dev.kikugie.stonecutter.build.task.StonecutterBuildTasksImpl
 import dev.kikugie.stonecutter.controller.StonecutterControllerImpl
 import dev.kikugie.stonecutter.controller.flag.FlagContainer
@@ -79,7 +78,7 @@ internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuil
                 .let<Provider<FileProcessingData>, Unit>(parameters::set)
         }
 
-        val generateTask = tasks.registerGenerateTask(src) {
+        tasks.registerGenerateTask(src) {
             root.set(parent.projectDirectory.resolve("src/${src.name}"))
             source.set(project.projectDirectory.resolve("src/${src.name}"))
             cache.set(tasks.processedCacheDir.resolve(src.name))
@@ -94,7 +93,7 @@ internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuil
         tasks.registerMergeTask(src) {
             from(tasks.processedCacheDir.resolve(src.name))
             into(parent.projectDirectory.resolve("src/${src.name}"))
-            dependsOn(generateTask)
+            dependsOn(prepareTask)
         }
     }
 }

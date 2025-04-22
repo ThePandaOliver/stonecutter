@@ -44,15 +44,14 @@ internal class StonecutterBuildTasksImpl(private val ext: StonecutterBuildImpl) 
                 .map { it.relativeTo(versionSrc) }
                 .filterNot { it.startsWith("..") }
 
-            if (ext.current.isActive) applyDirectories(set, matchingDirs, branchSrc, mergeTaskName(src), true)
+            if (ext.current.isActive) applyDirectories(set, matchingDirs, branchSrc, null, true)
             applyDirectories(set, matchingDirs, generatedSourcesDir, generateTaskName(src), !ext.current.isActive)
         }
     }
 
-    private fun applyDirectories(set: SourceDirectorySet, matching: Iterable<File>, root: File, task: String, apply: Boolean): List<File> {
+    private fun applyDirectories(set: SourceDirectorySet, matching: Iterable<File>, root: File, task: String?, apply: Boolean): List<File> {
         val dirs = matching.map(root::resolve).filterNot(registeredSources::contains).ifEmpty { return emptyList() }
-        val group = ext.project.files(dirs).builtBy("${ext.project.path}:$task")
-        if (apply) set.srcDir(group)
+        if (apply) set.srcDir(ext.project.files(dirs).apply { if (task != null) builtBy("${ext.project.path}:$task") })
         registeredSources += dirs
         return dirs
     }
