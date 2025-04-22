@@ -6,22 +6,21 @@ import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.gradle.jvm.tasks.Jar
-import org.jetbrains.dokka.gradle.DokkaTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import kotlin.io.path.ExperimentalPathApi
 
 plugins {
     idea
     java
+    signing
     `kotlin-dsl`
+    `maven-publish`
     alias(libs.plugins.gradle.shadow)
     alias(libs.plugins.gradle.publish)
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.dokka)
+    alias(libs.plugins.kotlin.dokka.javadoc)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlin.validator)
-//    alias(libs.plugins.kotlin.ksp)
-//    alias(libs.plugins.extra.kdoclink)
 }
 
 idea {
@@ -35,33 +34,17 @@ repositories {
     mavenCentral()
 }
 
+sourceSets {
+    main {
+        files("src/main/entrypoint").builtBy(":updateVersion").let(kotlin::srcDir)
+    }
+}
+
 dependencies {
 //    api(project(path = ":semver"))
     api(project(path = ":stitcher"))
     implementation(libs.bundles.stonecutter)
 }
-
-//kdoclink {
-//    fun wiki(page: String) = "https://stonecutter.kikugie.dev/wiki/$page"
-//
-//    annotation = "dev.kikugie.stonecutter.SCDocumentation"
-//    this["settings"] = wiki("start/settings")
-//    this["settings.vcs"] = wiki("start/settings#version-reset-point")
-//    this["settings.create"] = wiki("start/settings#specifying-versions")
-//    this["settings.json"] = wiki("config/params")
-//
-//    this["swaps"] = wiki("config/params#string-swaps")
-//    this["swaps.spec"] = wiki("config/params#swap-specification")
-//
-//    this["consts"] = wiki("config/params#condition-constants")
-//    this["consts.spec"] = wiki("config/params#constant-specification")
-//    this["consts.choice"] = wiki("config/params#choice-selector")
-//
-//    this["deps"] = wiki("config/params#condition-dependencies")
-//    this["deps.spec"] = wiki("config/params#dependency-specification")
-//
-//    this["utility"] = wiki("guide/setup#checking-versions")
-//}
 
 apiValidation {
     ignoredPackages += "stonecutter_samples"
@@ -76,7 +59,7 @@ dokka {
         footerMessage = "(c) 2025 KikuGie"
     }
 
-    dokkaPublications.html {
+    dokkaPublications.all {
         suppressInheritedMembers = true
         suppressObviousFunctions = true
     }
@@ -110,6 +93,7 @@ java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
     withSourcesJar()
+    withJavadocJar()
 }
 
 tasks {
@@ -120,9 +104,18 @@ tasks {
 
         from(sourceSets.main.map(SourceSet::getOutput))
         dependencies {
-            include(project(":semver"))
+//            include(project(":semver"))
             include(project(":stitcher"))
         }
+    }
+
+    register("publishSnapshotLocal") {
+        group = "publishing"
+        dependsOn("publishToMavenLocal")
+    }
+
+    named<Jar>("javadocJar") {
+        from(named("dokkaGeneratePublicationJavadoc"))
     }
 
     shadowJar {
@@ -135,45 +128,6 @@ tasks {
             languageVersion = KotlinVersion.KOTLIN_2_1
             apiVersion = KotlinVersion.KOTLIN_2_1
             jvmTarget.set(JvmTarget.JVM_17)
-        }
-    }
-
-    withType<Test> {
-        useJUnitPlatform()
-    }
-
-    withType<Jar> {
-        dependsOn(":updateVersion")
-    }
-
-    withType<DokkaTask> {
-        dependsOn(":updateVersion")
-    }
-
-    withType<KotlinCompile> {
-        dependsOn(":updateVersion")
-    }
-}
-
-publishing {
-    repositories {
-        maven {
-            name = "kikugieMaven"
-            url = uri("https://maven.kikugie.dev/snapshots")
-            credentials(PasswordCredentials::class)
-            authentication {
-                create("basic", BasicAuthentication::class)
-            }
-        }
-    }
-
-    publications {
-        register<MavenPublication>("mavenJava") {
-            groupId = project.group.toString()
-            artifactId = "stonecutter"
-            version = project.version.toString()
-            from(components["java"])
-            artifact(tasks.named("slimJar"))
         }
     }
 }
@@ -190,4 +144,72 @@ gradlePlugin {
             description = "Modern Gradle plugin for multi-version management"
         }
     }
+}
+
+publishing {
+    repositories {
+        fun register(type: String, build: MavenArtifactRepository.() -> Unit) {
+            val username = findProperty("mvn.$type.username") as String?
+            val password = findProperty("mvn.$type.password") as String?
+            if (username == null || password == null)
+                return println("Missing credentials for $type maven repository")
+
+            maven {
+                build()
+                credentials {
+                    this.username = username
+                    this.password = password
+                }
+            }
+        }
+
+        register("kikugie") {
+            name = "KikuGieMaven"
+            url = when {
+                '-' in project.version.toString() -> uri("https://maven.kikugie.dev/snapshots")
+                else -> uri("https://maven.kikugie.dev/releases")
+            }
+        }
+    }
+
+    publications {
+        register<MavenPublication>("maven") {
+            groupId = "dev.kikugie"
+            artifactId = "stonecutter"
+            version = project.version.toString()
+            from(components["java"])
+            artifact(tasks.named("slimJar"))
+
+            pom {
+                name = "Stonecutter"
+                description = "Modern Gradle plugin for multi-version management"
+                url = "https://stonecutter.kikugie.dev/"
+
+                developers {
+                    developer {
+                        id = "kikugie"
+                        name = "KikuGie"
+                        email = "kikugie@duck.com"
+                    }
+                }
+
+                licenses {
+                    license {
+                        name = "GNU Lesser Public License 3.0"
+                        url = "https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text"
+                    }
+                }
+
+                scm {
+                    connection = "scm:git:git:https://codeberg.org/stonecutter/stonecutter.git"
+                    developerConnection = "scm:git:ssh://codeberg.org:stonecutter/stonecutter.git"
+                    url = "https://codeberg.org/stonecutter/stonecutter"
+                }
+            }
+        }
+    }
+}
+
+signing {
+    sign(configurations.runtimeElements.get())
 }

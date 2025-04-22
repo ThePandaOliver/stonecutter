@@ -30,6 +30,7 @@ extra-okhttp = { prefer = "4.12.+", strictly = "[4,)" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-jvm" }
 kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "kotlin-ksp"}
 kotlin-dokka = { id = "org.jetbrains.dokka", version.ref = "kotlin-dokka" }
+kotlin-dokka-javadoc = { id = "org.jetbrains.dokka-javadoc" }
 kotlin-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "kotlin-validator" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-jvm" }
 

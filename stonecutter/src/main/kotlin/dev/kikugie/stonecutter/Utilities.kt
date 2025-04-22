@@ -11,7 +11,7 @@ import kotlin.reflect.KClass
 
 @StonecutterInternalAPI
 @Deprecated("Use StonecutterPlugin.VERSION instead", replaceWith = ReplaceWith("StonecutterPlugin.VERSION"))
-public const val STONECUTTER: String = "0.7-alpha.9"
+public const val STONECUTTER: String = StonecutterPlugin.VERSION
 
 internal val LENIENT_JSON = Json {
     ignoreUnknownKeys = true

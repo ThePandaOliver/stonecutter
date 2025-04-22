@@ -6,6 +6,20 @@ public data class StonecutterFlag<T>(
 ) {
     public companion object {
         /**
+         * Configures the automatic plugin application behaviour.
+         * When disabled, the Stonecutter plugin will not be automatically applied
+         * to versioned `build.gradle[.kts]` files, and will have to be added explicitly with
+         * ```kotlin
+         * plugins {
+         *     id("dev.kikugie.stonecutter")
+         * }
+         * ```
+         * **This only has effect if configured before the `stonecutter.active(...)` call.**
+         *
+         * **Default**: `true`
+         */
+        @JvmField public val APPLY_PLUGIN_TO_NODES: StonecutterFlag<Boolean> = StonecutterFlag("applyPluginToNodes", true)
+        /**
          * Configures versioned source generation on IntelliJ sync.
          * When disabled, sourced will only be updated when the project is built.
          *

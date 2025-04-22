@@ -22,13 +22,6 @@ dependencies {
     dokka(project(":stitcher"))
 }
 
-configurations.configureEach {
-    if (isCanBeConsumed) attributes.attribute(
-        GradlePluginApiVersion.GRADLE_PLUGIN_API_VERSION_ATTRIBUTE,
-        objects.named(GradleVersion.current().version)
-    )
-}
-
 dokka {
     moduleName = "Stonecutter KDoc"
 
@@ -43,15 +36,21 @@ node {
     version = "23.11.0"
 }
 
+configurations.configureEach {
+    if (isCanBeConsumed) attributes.attribute(
+        GradlePluginApiVersion.GRADLE_PLUGIN_API_VERSION_ATTRIBUTE,
+        objects.named(GradleVersion.current().version)
+    )
+}
+
 tasks {
     register<UpdateVersionTask>("updateVersion") {
         group = "documentation"
 
-        val ver = project.version.toString()
+        val ver = project.version.toString().removeSuffix("-SNAPSHOT")
         version = ver
         replacements {
-            file("stonecutter/src/main/kotlin/dev/kikugie/stonecutter/Utilities.kt") replace "val STONECUTTER: String = .+\"" with "val STONECUTTER: String = \"$ver\""
-            file("stonecutter/src/main/kotlin/dev/kikugie/stonecutter/StonecutterPlugin.kt") replace "VERSION: String = \".+\"" with "VERSION: String = \"$ver\""
+            file("stonecutter/src/main/entrypoint/dev/kikugie/stonecutter/StonecutterPlugin.kt") replace "VERSION: String = \".+\"" with "VERSION: String = \"$ver\""
             file("docs/.vitepress/config.mts") replace "latestVersion: \".+\"" with "latestVersion: \"$ver\""
             file("docs/wiki/start/settings.md") replace listOf(
                 "stonecutter\"\\ version \".+\"" to "stonecutter\" version \"$ver\"",
@@ -78,8 +77,7 @@ tasks {
         group = "documentation"
         from(fileTree("build/dokka/html"))
         into(file("docs/public/dokka"))
-
-        dependsOn("dokkaGenerate")
+        dependsOn("dokkaGeneratePublicationHtml")
     }
 
     register<NpmTask>("buildDocPages") {

@@ -19,6 +19,10 @@ dependencies {
 //    api(project(path = ":semver"))
     implementation(kotlin("reflect"))
     implementation(libs.bundles.stitcher)
+
+    testImplementation(libs.junit.api)
+    testImplementation(libs.extra.mordant)
+    testImplementation(libs.kotlin.serialization.yaml)
 }
 
 dokka {
@@ -54,9 +58,9 @@ dokka {
 }
 
 tasks {
-    withType<Test> {
-        useJUnitPlatform()
-    }
+//    withType<Test> {
+//        useJUnitPlatform()
+//    }
 
     withType<KotlinCompile> {
         compilerOptions {

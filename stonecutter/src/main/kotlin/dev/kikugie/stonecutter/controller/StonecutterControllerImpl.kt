@@ -2,6 +2,7 @@ package dev.kikugie.stonecutter.controller
 
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterInternalAPI
+import dev.kikugie.stonecutter.StonecutterPlugin
 import dev.kikugie.stonecutter.build.param.StonecutterBuildData
 import dev.kikugie.stonecutter.controller.StonecutterControllerManager.Companion.getController
 import dev.kikugie.stonecutter.controller.flag.FlagContainerImpl
@@ -24,6 +25,7 @@ import dev.kikugie.stonecutter.onEach
 import dev.kikugie.stonecutter.util.newInstance
 import dev.kikugie.stonecutter.util.set
 import org.gradle.api.Project
+import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.named
 import java.io.File
 
@@ -35,7 +37,7 @@ internal open class StonecutterControllerImpl(private val root: Project) : Stone
     override val flags: MutableFlagContainer = FlagContainerImpl()
     override val tasks: StonecutterControllerTasksImpl = StonecutterControllerTasksImpl()
     /**Resettable callback to switch task init used to verify it's only called once.*/
-    private var initilizer: (() -> Unit)? = ::initializeSwitchTasks
+    private var initilizer: (() -> Unit)? = ::initializePluginConfiguration
     /**Stores configured build data instances.*/
     private val data: MutableMap<ProjectHierarchy, StonecutterBuildData> = mutableMapOf()
     /**
@@ -76,6 +78,7 @@ internal open class StonecutterControllerImpl(private val root: Project) : Stone
     private fun configureProject() = with(root) {
         afterEvaluate {
             if (plugins.hasPlugin("java")) logger.warn("Stonecutter branch root $hierarchy should not be a buildable project.")
+            if (initilizer != null) logger.error("Active version has not been set for $hierarchy! This can result in incomplete configuration and errors.")
         }
 
         tasks.register("Reset active project") {
@@ -97,9 +100,12 @@ internal open class StonecutterControllerImpl(private val root: Project) : Stone
         }
     }
 
-    private fun initializeSwitchTasks() {
+    private fun initializePluginConfiguration() {
         val controller = root.getController()!!
         for (it in tree.versions) tasks.registerSwitchTask(it.project, tree, controller)
+        if (flags[StonecutterFlag.APPLY_PLUGIN_TO_NODES]) for (it in tree.nodes)
+            it.project.plugins.apply(StonecutterPlugin::class)
+
     }
 
     private fun configureSyncTask() = root.rootProject.afterEvaluate {

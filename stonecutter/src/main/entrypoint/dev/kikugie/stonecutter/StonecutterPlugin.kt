@@ -11,13 +11,10 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.initialization.Settings
 import org.gradle.api.plugins.ExtensionAware
-import org.gradle.api.problems.ProblemReporter
-import org.gradle.api.problems.Problems
-import javax.inject.Inject
 
 public open class StonecutterPlugin : Plugin<ExtensionAware> {
     public companion object {
-        /**Current Stonecutter version.*/
+        /**Current Stonecutter version.*/ // Updated by ':updateVersion' task during build
         @StonecutterAPI
         public const val VERSION: String = "0.7-alpha.9"
     }
