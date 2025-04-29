@@ -20,7 +20,6 @@ internal class StonecutterBuildTasksImpl(private val ext: StonecutterBuildImpl) 
     override val processedCacheDir: File get() = ext.project.buildDirectory.resolve("stonecutter-cache/sources")
     override val generatedSourcesDir: File get() = ext.project.buildDirectory.resolve("generated/stonecutter")
     private val registeredSources: MutableSet<File> = mutableSetOf()
-    private val logger by logger("StonecutterBuildTasks")
 
     fun registerPrepareTask(src: SourceSet, config: FileProcessingTask.() -> Unit) : TaskProvider<FileProcessingTask> =
         registerDefaultTask(prepareTaskName(src), FileProcessingTask::class).apply { configure(config); prepare[name] = this }

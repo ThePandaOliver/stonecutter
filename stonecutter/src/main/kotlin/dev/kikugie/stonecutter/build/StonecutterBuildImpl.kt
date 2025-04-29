@@ -75,7 +75,7 @@ internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuil
             root.set(parent.projectDirectory.resolve("src/${src.name}"))
             caches.set(tasks.processedCacheDir.resolve(src.name))
             project.provider { data.asProcessingData(flags[StonecutterFlag.IMPLICIT_RECEIVER], current.version) }
-                .let<Provider<FileProcessingData>, Unit>(parameters::set)
+                .let(parameters::set)
         }
 
         tasks.registerGenerateTask(src) {
