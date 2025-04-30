@@ -1,17 +1,17 @@
 package dev.kikugie.stonecutter.build
 
-import dev.kikugie.stonecutter.build.dsl.ConstantContainer
-import dev.kikugie.stonecutter.build.dsl.DependencyContainer
-import dev.kikugie.stonecutter.build.dsl.FilterContainer
-import dev.kikugie.stonecutter.build.dsl.ReplacementContainer
-import dev.kikugie.stonecutter.build.dsl.SwapContainer
-import dev.kikugie.stonecutter.build.param.FilterContainerImpl
+import dev.kikugie.stonecutter.data.dsl.ConstantContainer
 import dev.kikugie.stonecutter.build.param.StonecutterBuildData
 import dev.kikugie.stonecutter.build.task.StonecutterBuildTasksImpl
 import dev.kikugie.stonecutter.controller.StonecutterControllerImpl
 import dev.kikugie.stonecutter.controller.flag.FlagContainer
 import dev.kikugie.stonecutter.controller.flag.StonecutterFlag
 import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
+import dev.kikugie.stonecutter.data.dsl.DependencyContainer
+import dev.kikugie.stonecutter.data.dsl.FilterContainer
+import dev.kikugie.stonecutter.data.dsl.ReplacementContainer
+import dev.kikugie.stonecutter.data.dsl.SwapContainer
+import dev.kikugie.stonecutter.data.dsl.impl.FilterContainerImpl
 import dev.kikugie.stonecutter.data.tree.ProjectBranch
 import dev.kikugie.stonecutter.data.tree.ProjectNode
 import dev.kikugie.stonecutter.data.tree.ProjectTree

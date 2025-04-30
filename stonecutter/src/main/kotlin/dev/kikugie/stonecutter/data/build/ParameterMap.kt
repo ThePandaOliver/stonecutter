@@ -12,7 +12,7 @@ internal inline fun <K : Any, V : Any> newParameterMap(
     override fun checkValue(value: V) = valueCheck(value)
 }
 
-internal abstract class ParameterMap<K : Any, V : Any>(private val delegate: MutableMap<K, V> = mutableMapOf()) : MutableMap<K, V> by delegate {
+internal abstract class ParameterMap<K : Any, V : Any>(val delegate: MutableMap<K, V> = mutableMapOf()) : MutableMap<K, V> by delegate {
     protected abstract fun checkKey(key: K)
     protected abstract fun checkValue(value: V)
 

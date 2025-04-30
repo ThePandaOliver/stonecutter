@@ -74,7 +74,7 @@ public data class NodeModel(
         public const val FILENAME: String = "node.yml"
 
         /**Loads the `node.yml` file as [NodeModel] from the given [directory].*/
-        @JvmStatic @StonecutterAPI
+        @JvmStatic
         public fun load(directory: Path): Result<NodeModel> =
             load(directory.resolve(FILENAME), serializer())
     }
@@ -94,7 +94,7 @@ public data class BranchModel(
         public const val FILENAME: String = "branch.yml"
 
         /**Loads the `branch.yml` file as [BranchModel] from the given [directory].*/
-        @JvmStatic @StonecutterAPI
+        @JvmStatic
         public fun load(directory: Path): Result<BranchModel> =
             load(directory.resolve(FILENAME), serializer())
     }
@@ -117,7 +117,7 @@ public data class TreeModel(
         public const val FILENAME: String = "tree.yml"
 
         /**Loads the `tree.yml` file as [TreeModel] from the given [directory].*/
-        @JvmStatic @StonecutterAPI
+        @JvmStatic
         public fun load(directory: Path): Result<TreeModel> =
             load(directory.resolve(FILENAME), serializer())
     }

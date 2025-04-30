@@ -9,7 +9,6 @@ import org.gradle.api.provider.MapProperty
 import java.nio.file.Path
 import kotlin.reflect.KClass
 
-@StonecutterInternalAPI
 @Deprecated("Use StonecutterPlugin.VERSION instead", replaceWith = ReplaceWith("StonecutterPlugin.VERSION"))
 public const val STONECUTTER: String = StonecutterPlugin.VERSION
 

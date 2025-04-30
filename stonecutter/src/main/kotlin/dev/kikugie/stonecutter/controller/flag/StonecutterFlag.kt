@@ -1,5 +1,7 @@
 package dev.kikugie.stonecutter.controller.flag
 
+import dev.kikugie.stonecutter.StonecutterDevAPI
+
 public data class StonecutterFlag<T>(
     public val key: String,
     public val default: T,
@@ -18,14 +20,17 @@ public data class StonecutterFlag<T>(
          *
          * **Default**: `true`
          */
-        @JvmField public val APPLY_PLUGIN_TO_NODES: StonecutterFlag<Boolean> = StonecutterFlag("applyPluginToNodes", true)
+        @JvmField
+        public val APPLY_PLUGIN_TO_NODES: StonecutterFlag<Boolean> = StonecutterFlag("applyPluginToNodes", true)
+
         /**
          * Configures versioned source generation on IntelliJ sync.
          * When disabled, sourced will only be updated when the project is built.
          *
          * **Default**: `true`
          */
-        @JvmField public val GENERATE_SOURCES_ON_SYNC: StonecutterFlag<Boolean> = StonecutterFlag("generateSourcesOnSync", true)
+        @JvmField
+        public val GENERATE_SOURCES_ON_SYNC: StonecutterFlag<Boolean> = StonecutterFlag("generateSourcesOnSync", true)
 
         /**
          * Configures run configuration generation in IntelliJ.
@@ -34,7 +39,8 @@ public data class StonecutterFlag<T>(
          *
          * **Default**: `true`
          */
-        @JvmField public val GENERATE_SWITCH_ACTIONS: StonecutterFlag<Boolean> = StonecutterFlag("generateSwitchActions", true)
+        @JvmField
+        public val GENERATE_SWITCH_ACTIONS: StonecutterFlag<Boolean> = StonecutterFlag("generateSwitchActions", true)
 
         /**
          * Configures the source generation mode for [dev.kikugie.stonecutter.build.StonecutterBuildExtension].
@@ -44,7 +50,8 @@ public data class StonecutterFlag<T>(
          *
          * **Default**: `true`
          */
-        @JvmField public val APPEND_SOURCES_AFTER_EVAL: StonecutterFlag<Boolean> = StonecutterFlag("appendSourcesAfterEval", true)
+        @JvmField
+        public val APPEND_SOURCES_AFTER_EVAL: StonecutterFlag<Boolean> = StonecutterFlag("appendSourcesAfterEval", true)
 
         /**
          * Configures the implicit receiver target used in file processing.
@@ -52,6 +59,7 @@ public data class StonecutterFlag<T>(
          *
          * **Default**: `"minecraft"`
          */
-        @JvmField public val IMPLICIT_RECEIVER: StonecutterFlag<String> = StonecutterFlag("implicitReceiver", "minecraft")
+        @JvmField
+        public val IMPLICIT_RECEIVER: StonecutterFlag<String> = StonecutterFlag("implicitReceiver", "minecraft")
     }
 }

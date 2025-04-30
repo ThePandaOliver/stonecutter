@@ -15,33 +15,35 @@ import java.io.File
 /**Stonecutter plugin available in `stonecutter.gradle[.kts]`.*/
 @StonecutterAPI
 public interface StonecutterControllerExtension : StonecutterUtility {
-    @StonecutterAPI public val tree: ProjectTree
+    public val tree: ProjectTree
+
     /**Active version assigned by [active] function.*/
-    @StonecutterAPI public val current: StonecutterProject get() = tree.current
+    public val current: StonecutterProject get() = tree.current
+
     /**VCS project assigned during tree construction.*/
-    @StonecutterAPI public val vcsVersion: StonecutterProject get() = tree.vcs
+    public val vcsVersion: StonecutterProject get() = tree.vcs
+
     /**
      * All unique versions in the tree. Unlike versions in branches,
      * these may contain duplicate [StonecutterProject.project] entries.
      */
-    @StonecutterAPI public val versions: Collection<StonecutterProject> get() = tree.versions
+    public val versions: Collection<StonecutterProject> get() = tree.versions
 
     /**
      * Structured task container for version switches,
      * which can be used to programmatically add hooks to
      * corresponding tasks.
      */
-    @StonecutterDevAPI public val tasks: StonecutterControllerTasks
+    public val tasks: StonecutterControllerTasks
 
     /**
      * Mutable container for Stonecutter configuration flags.
      * Its values can be accessed in [StonecutterBuild][dev.kikugie.stonecutter.build.StonecutterBuildExtension].
      * @see StonecutterFlag.Companion
      */
-    @StonecutterDevAPI public val flags: MutableFlagContainer
+    public val flags: MutableFlagContainer
 
     /**Assigns provided flag the given [value].*/
-    @StonecutterDevAPI
     public infix fun <T : Any> StonecutterFlag<T>.assign(value: T): Unit =
         flags.set(this, value)
 
@@ -51,7 +53,7 @@ public interface StonecutterControllerExtension : StonecutterUtility {
      * - **The function call should be given a literal string, or the active version won't be updated.**
      * - **This function must be called exactly once, otherwise an exception will be thrown.**
      */
-    @StonecutterAPI public infix fun active(name: Identifier)
+    public infix fun active(name: Identifier)
 
     /**
      * Assigns the given [file] content as the tree's active entry.
@@ -59,7 +61,7 @@ public interface StonecutterControllerExtension : StonecutterUtility {
      * - **The provided file must contain the name of the active project on the first line in UTF-8 encoding.**
      * - **This function must be called exactly once, otherwise an exception will be thrown.**
      */
-    @StonecutterAPI public infix fun active(file: File)
+    public infix fun active(file: File)
 
     /**
      * Configures [stonecutter parameters][dev.kikugie.stonecutter.build.param.StonecutterBuildParams] for each subproject in the tree.
@@ -68,7 +70,7 @@ public interface StonecutterControllerExtension : StonecutterUtility {
      * as it's lazily evaluated when the build plugin is applied to the subproject,
      * instead of resolving it immediately.
      */
-    @StonecutterAPI public infix fun parameters(config: StonecutterDelegatedBuildParams.() -> Unit)
+    public infix fun parameters(config: StonecutterDelegatedBuildParams.() -> Unit)
 
     /**
      * Configures [stonecutter parameters][dev.kikugie.stonecutter.build.param.StonecutterBuildParams] for each subproject in the tree.
@@ -77,6 +79,6 @@ public interface StonecutterControllerExtension : StonecutterUtility {
      * as it's lazily evaluated when the build plugin is applied to the subproject,
      * instead of resolving it immediately.
      */
-    @StonecutterAPI public fun parameters(config: Closure<StonecutterDelegatedBuildParams>): Unit =
+    public fun parameters(config: Closure<StonecutterDelegatedBuildParams>): Unit =
         parameters(config::call)
 }

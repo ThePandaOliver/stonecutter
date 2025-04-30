@@ -19,11 +19,11 @@ import kotlinx.serialization.encoding.Encoder
 @Serializable(with = StonecutterProject.StonecutterProjectSerializer::class)
 public sealed interface StonecutterProject {
     /**The name of this project's directory, as in `versions/${project}`.*/
-    @StonecutterAPI public val project: Identifier
+    public val project: Identifier
     /**The assigned version of this project, used in comment evaluation.*/
-    @StonecutterAPI public val version: Version
+    public val version: Version
     /**The active status of this version, transient in the serialization process.*/
-    @StonecutterAPI public val isActive: Boolean
+    public val isActive: Boolean
 
     /**Returns the [project] component.*/
     public operator fun component1(): Identifier = project
@@ -102,7 +102,6 @@ public sealed interface StonecutterProject {
          * Returns the matching [DataStonecutterProject],
          * which may not have the instance identity to the original one.
          */
-        @StonecutterDevAPI
         public fun unlink(project: StonecutterProject): StonecutterProject = when(project) {
             is DataStonecutterProject -> project
             is LinkedStonecutterProject -> DataStonecutterProject(project.version, project.project)

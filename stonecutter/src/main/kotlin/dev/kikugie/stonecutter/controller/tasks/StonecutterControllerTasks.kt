@@ -19,14 +19,12 @@ public interface StonecutterControllerTasks {
      * `Set active project to ...`, `Reset active project` and `Refresh active project` tasks delegate to these.
      * You can add additional dependencies to these tasks to run when switching versions.
      */
-    @StonecutterDevAPI public val switch: TaskProviderMap<out StonecutterUpdateTask>
+    public val switch: TaskProviderMap<out StonecutterUpdateTask>
 
     /**Provides a switch task name for the given [StonecutterProject.project][dev.kikugie.stonecutter.data.StonecutterProject.project] name.*/
-    @StonecutterDevAPI
     public fun switchTaskName(project: Identifier): String = "stonecutterSwitchTo$project"
 
     /**Provides a switch task provider for the given [StonecutterProject.project][dev.kikugie.stonecutter.data.StonecutterProject.project] name.*/
-    @StonecutterDevAPI
     public fun switchTaskProvider(project: Identifier): TaskProvider<out StonecutterUpdateTask>? =
         switch[switchTaskName(project)]
 }

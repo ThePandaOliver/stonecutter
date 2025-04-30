@@ -25,6 +25,10 @@ public abstract interface class dev/kikugie/stonecutter/StonecutterUtility {
 	public fun evalLenient (Ljava/lang/String;Ljava/lang/String;)Z
 }
 
+public final class dev/kikugie/stonecutter/UtilitiesKt {
+	public static final field STONECUTTER Ljava/lang/String;
+}
+
 public abstract interface class dev/kikugie/stonecutter/build/StonecutterBuildExtension : dev/kikugie/stonecutter/build/param/StonecutterBuildParams {
 	public fun flags (Lorg/gradle/api/Action;)V
 	public fun getActive ()Ldev/kikugie/stonecutter/data/StonecutterProject;
@@ -35,73 +39,6 @@ public abstract interface class dev/kikugie/stonecutter/build/StonecutterBuildEx
 	public abstract fun getTasks ()Ldev/kikugie/stonecutter/build/task/StonecutterBuildTasks;
 	public abstract fun getTree ()Ldev/kikugie/stonecutter/data/tree/ProjectTree;
 	public fun getVersions ()Ljava/util/Collection;
-}
-
-public abstract interface class dev/kikugie/stonecutter/build/dsl/ConstantContainer : java/util/Map, kotlin/jvm/internal/markers/KMutableMap {
-	public fun match (Ljava/lang/String;Ljava/lang/Iterable;)V
-	public fun match (Ljava/lang/String;[Ljava/lang/String;)V
-	public fun put (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ljava/lang/Boolean;
-}
-
-public abstract interface class dev/kikugie/stonecutter/build/dsl/DependencyContainer : java/util/Map, kotlin/jvm/internal/markers/KMutableMap {
-	public fun put (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ljava/lang/String;
-}
-
-public abstract interface class dev/kikugie/stonecutter/build/dsl/FilterContainer {
-	public fun excludes (Lorg/gradle/api/Action;)V
-	public fun extensions (Lorg/gradle/api/Action;)V
-	public abstract fun getExcludes ()Ldev/kikugie/stonecutter/build/dsl/FilterContainer$ExcludedFiles;
-	public abstract fun getExtensions ()Ldev/kikugie/stonecutter/build/dsl/FilterContainer$AllowedExtensions;
-	public abstract fun setExcludes (Ldev/kikugie/stonecutter/build/dsl/FilterContainer$ExcludedFiles;)V
-	public abstract fun setExtensions (Ldev/kikugie/stonecutter/build/dsl/FilterContainer$AllowedExtensions;)V
-}
-
-public abstract interface class dev/kikugie/stonecutter/build/dsl/FilterContainer$AllowedExtensions : java/util/Set, kotlin/jvm/internal/markers/KMutableSet {
-	public fun allow (Ljava/lang/Iterable;)Z
-	public fun allow ([Ljava/lang/String;)Z
-	public fun disallow (Ljava/lang/Iterable;)Z
-	public fun disallow ([Ljava/lang/String;)Z
-	public fun replace (Ljava/lang/Iterable;)Z
-	public fun replace ([Ljava/lang/String;)Z
-}
-
-public abstract interface class dev/kikugie/stonecutter/build/dsl/FilterContainer$ExcludedFiles : java/util/Set, kotlin/jvm/internal/markers/KMutableSet {
-	public fun exclude (Ljava/lang/Iterable;)Z
-	public fun exclude ([Ljava/lang/String;)Z
-	public fun replace (Ljava/lang/Iterable;)Z
-	public fun replace ([Ljava/lang/String;)Z
-}
-
-public abstract interface class dev/kikugie/stonecutter/build/dsl/ReplacementContainer {
-	public fun regex (Ljava/lang/String;Lorg/gradle/api/Action;)V
-	public abstract fun regex (Lorg/gradle/api/Action;)V
-	public fun string (Ljava/lang/String;Lorg/gradle/api/Action;)V
-	public abstract fun string (Lorg/gradle/api/Action;)V
-}
-
-public abstract interface class dev/kikugie/stonecutter/build/dsl/ReplacementContainer$RegexReplacementBuilder {
-	public abstract fun getDirection ()Lorg/gradle/api/provider/Property;
-	public abstract fun getFromPattern ()Lorg/gradle/api/provider/Property;
-	public abstract fun getId ()Lorg/gradle/api/provider/Property;
-	public abstract fun getPhase ()Lorg/gradle/api/provider/Property;
-	public abstract fun getReversePattern ()Lorg/gradle/api/provider/Property;
-	public abstract fun getReverseValue ()Lorg/gradle/api/provider/Property;
-	public abstract fun getToValue ()Lorg/gradle/api/provider/Property;
-	public fun replace (Ljava/lang/String;Ljava/lang/String;)V
-	public fun reverse (Ljava/lang/String;Ljava/lang/String;)V
-}
-
-public abstract interface class dev/kikugie/stonecutter/build/dsl/ReplacementContainer$StringReplacementBuilder {
-	public abstract fun getDirection ()Lorg/gradle/api/provider/Property;
-	public abstract fun getFrom ()Lorg/gradle/api/provider/Property;
-	public abstract fun getId ()Lorg/gradle/api/provider/Property;
-	public abstract fun getPhase ()Lorg/gradle/api/provider/Property;
-	public abstract fun getTo ()Lorg/gradle/api/provider/Property;
-	public fun replace (Ljava/lang/String;Ljava/lang/String;)V
-}
-
-public abstract interface class dev/kikugie/stonecutter/build/dsl/SwapContainer : java/util/Map, kotlin/jvm/internal/markers/KMutableMap {
-	public fun put (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ljava/lang/String;
 }
 
 public abstract interface class dev/kikugie/stonecutter/build/param/DeprecatedBuildParams : dev/kikugie/stonecutter/StonecutterUtility {
@@ -137,24 +74,16 @@ public abstract interface class dev/kikugie/stonecutter/build/param/DeprecatedBu
 	public fun swaps ([Lkotlin/Pair;)V
 }
 
-public abstract interface class dev/kikugie/stonecutter/build/param/StonecutterBuildParams : dev/kikugie/stonecutter/build/param/DeprecatedBuildParams {
-	public fun allowExtensions (Ljava/lang/Iterable;)V
-	public fun const (Ljava/lang/String;Z)V
+public abstract interface class dev/kikugie/stonecutter/build/param/StonecutterBuildParams : dev/kikugie/stonecutter/StonecutterUtility {
 	public fun constants (Lorg/gradle/api/Action;)V
 	public fun dependencies (Lorg/gradle/api/Action;)V
-	public fun dependency (Ljava/lang/String;Ljava/lang/String;)V
-	public fun excludeFiles (Ljava/lang/Iterable;)V
 	public fun filters (Lorg/gradle/api/Action;)V
-	public abstract fun getConstants ()Ldev/kikugie/stonecutter/build/dsl/ConstantContainer;
-	public abstract fun getDependencies ()Ldev/kikugie/stonecutter/build/dsl/DependencyContainer;
-	public abstract fun getFilters ()Ldev/kikugie/stonecutter/build/dsl/FilterContainer;
-	public abstract fun getReplacements ()Ldev/kikugie/stonecutter/build/dsl/ReplacementContainer;
-	public abstract fun getSwaps ()Ldev/kikugie/stonecutter/build/dsl/SwapContainer;
-	public fun overrideExtensions (Ljava/lang/Iterable;)V
-	public fun regexReplacement (Lorg/gradle/api/Action;)V
+	public abstract fun getConstants ()Ldev/kikugie/stonecutter/data/dsl/ConstantContainer;
+	public abstract fun getDependencies ()Ldev/kikugie/stonecutter/data/dsl/DependencyContainer;
+	public abstract fun getFilters ()Ldev/kikugie/stonecutter/data/dsl/FilterContainer;
+	public abstract fun getReplacements ()Ldev/kikugie/stonecutter/data/dsl/ReplacementContainer;
+	public abstract fun getSwaps ()Ldev/kikugie/stonecutter/data/dsl/SwapContainer;
 	public fun replacements (Lorg/gradle/api/Action;)V
-	public fun stringReplacement (Lorg/gradle/api/Action;)V
-	public fun swap (Ljava/lang/String;Ljava/lang/String;)V
 	public fun swaps (Lorg/gradle/api/Action;)V
 }
 
@@ -207,51 +136,23 @@ public final class dev/kikugie/stonecutter/controller/StonecutterControllerManag
 }
 
 public final class dev/kikugie/stonecutter/controller/StonecutterDelegatedBuildParams : dev/kikugie/stonecutter/build/param/StonecutterBuildParams {
-	public fun allowExtensions (Ljava/lang/Iterable;)V
-	public fun allowExtensions ([Ljava/lang/String;)V
 	public fun compare (Ljava/lang/String;Ljava/lang/String;)I
 	public fun compareLenient (Ljava/lang/String;Ljava/lang/String;)I
-	public fun const (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
-	public fun const (Ljava/lang/String;Z)V
 	public fun constants (Lorg/gradle/api/Action;)V
-	public fun consts (Ljava/lang/Iterable;)V
-	public fun consts (Ljava/lang/String;Ljava/lang/Iterable;)V
-	public fun consts (Ljava/lang/String;[Ljava/lang/String;)V
-	public fun consts (Ljava/util/Map;)V
-	public fun consts ([Lkotlin/Pair;)V
-	public fun dependencies (Ljava/lang/Iterable;)V
-	public fun dependencies (Ljava/util/Map;)V
 	public fun dependencies (Lorg/gradle/api/Action;)V
-	public fun dependencies ([Lkotlin/Pair;)V
-	public fun dependency (Ljava/lang/String;Ljava/lang/String;)V
-	public fun dependency (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
 	public fun eval (Ljava/lang/String;Ljava/lang/String;)Z
 	public fun evalLenient (Ljava/lang/String;Ljava/lang/String;)Z
-	public fun excludeFiles (Ljava/lang/Iterable;)V
-	public fun excludeFiles ([Ljava/lang/String;)V
 	public fun filters (Lorg/gradle/api/Action;)V
 	public final fun getBranch ()Ldev/kikugie/stonecutter/data/tree/ProjectBranch;
-	public fun getConstants ()Ldev/kikugie/stonecutter/build/dsl/ConstantContainer;
-	public fun getDependencies ()Ldev/kikugie/stonecutter/build/dsl/DependencyContainer;
-	public fun getFilters ()Ldev/kikugie/stonecutter/build/dsl/FilterContainer;
+	public fun getConstants ()Ldev/kikugie/stonecutter/data/dsl/ConstantContainer;
+	public fun getDependencies ()Ldev/kikugie/stonecutter/data/dsl/DependencyContainer;
+	public fun getFilters ()Ldev/kikugie/stonecutter/data/dsl/FilterContainer;
 	public final fun getMetadata ()Ldev/kikugie/stonecutter/data/StonecutterProject;
 	public final fun getNode ()Ldev/kikugie/stonecutter/data/tree/ProjectNode;
-	public fun getReplacements ()Ldev/kikugie/stonecutter/build/dsl/ReplacementContainer;
-	public fun getSwaps ()Ldev/kikugie/stonecutter/build/dsl/SwapContainer;
-	public fun overrideExtensions (Ljava/lang/Iterable;)V
-	public fun overrideExtensions ([Ljava/lang/String;)V
-	public fun regexReplacement (Lorg/gradle/api/Action;)V
-	public fun replacement (Ljava/util/Map;)V
-	public fun replacement (ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public fun replacement (ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public fun getReplacements ()Ldev/kikugie/stonecutter/data/dsl/ReplacementContainer;
+	public fun getSwaps ()Ldev/kikugie/stonecutter/data/dsl/SwapContainer;
 	public fun replacements (Lorg/gradle/api/Action;)V
-	public fun stringReplacement (Lorg/gradle/api/Action;)V
-	public fun swap (Ljava/lang/String;Ljava/lang/String;)V
-	public fun swap (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
-	public fun swaps (Ljava/lang/Iterable;)V
-	public fun swaps (Ljava/util/Map;)V
 	public fun swaps (Lorg/gradle/api/Action;)V
-	public fun swaps ([Lkotlin/Pair;)V
 }
 
 public abstract interface class dev/kikugie/stonecutter/controller/flag/FlagContainer {
@@ -266,6 +167,7 @@ public abstract interface class dev/kikugie/stonecutter/controller/flag/MutableF
 
 public final class dev/kikugie/stonecutter/controller/flag/StonecutterFlag {
 	public static final field APPEND_SOURCES_AFTER_EVAL Ldev/kikugie/stonecutter/controller/flag/StonecutterFlag;
+	public static final field APPLY_PLUGIN_TO_NODES Ldev/kikugie/stonecutter/controller/flag/StonecutterFlag;
 	public static final field Companion Ldev/kikugie/stonecutter/controller/flag/StonecutterFlag$Companion;
 	public static final field GENERATE_SOURCES_ON_SYNC Ldev/kikugie/stonecutter/controller/flag/StonecutterFlag;
 	public static final field GENERATE_SWITCH_ACTIONS Ldev/kikugie/stonecutter/controller/flag/StonecutterFlag;
@@ -366,6 +268,71 @@ public final class dev/kikugie/stonecutter/data/StonecutterProject$DataStonecutt
 
 public final class dev/kikugie/stonecutter/data/StonecutterProject$LinkedStonecutterProject$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public abstract interface class dev/kikugie/stonecutter/data/dsl/ConstantContainer : java/util/Map, kotlin/jvm/internal/markers/KMutableMap {
+	public fun match (Ljava/lang/String;Ljava/lang/Iterable;)V
+	public fun match (Ljava/lang/String;[Ljava/lang/String;)V
+	public fun put (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ljava/lang/Boolean;
+}
+
+public abstract interface class dev/kikugie/stonecutter/data/dsl/DependencyContainer : java/util/Map, kotlin/jvm/internal/markers/KMutableMap {
+	public fun put (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ljava/lang/String;
+}
+
+public abstract interface class dev/kikugie/stonecutter/data/dsl/FilterContainer {
+	public fun excludes (Lorg/gradle/api/Action;)V
+	public fun extensions (Lorg/gradle/api/Action;)V
+	public abstract fun getExcludes ()Ldev/kikugie/stonecutter/data/dsl/FilterContainer$ExcludedFiles;
+	public abstract fun getExtensions ()Ldev/kikugie/stonecutter/data/dsl/FilterContainer$AllowedExtensions;
+}
+
+public abstract interface class dev/kikugie/stonecutter/data/dsl/FilterContainer$AllowedExtensions : java/util/Set, kotlin/jvm/internal/markers/KMutableSet {
+	public fun allow (Ljava/lang/Iterable;)Z
+	public fun allow ([Ljava/lang/String;)Z
+	public fun disallow (Ljava/lang/Iterable;)Z
+	public fun disallow ([Ljava/lang/String;)Z
+	public fun replace (Ljava/lang/Iterable;)Z
+	public fun replace ([Ljava/lang/String;)Z
+}
+
+public abstract interface class dev/kikugie/stonecutter/data/dsl/FilterContainer$ExcludedFiles : java/util/Set, kotlin/jvm/internal/markers/KMutableSet {
+	public fun exclude (Ljava/lang/Iterable;)Z
+	public fun exclude ([Ljava/lang/String;)Z
+	public fun replace (Ljava/lang/Iterable;)Z
+	public fun replace ([Ljava/lang/String;)Z
+}
+
+public abstract interface class dev/kikugie/stonecutter/data/dsl/ReplacementContainer {
+	public fun regex (Ljava/lang/String;Lorg/gradle/api/Action;)V
+	public abstract fun regex (Lorg/gradle/api/Action;)V
+	public fun string (Ljava/lang/String;Lorg/gradle/api/Action;)V
+	public abstract fun string (Lorg/gradle/api/Action;)V
+}
+
+public abstract interface class dev/kikugie/stonecutter/data/dsl/ReplacementContainer$RegexReplacementBuilder {
+	public abstract fun getDirection ()Lorg/gradle/api/provider/Property;
+	public abstract fun getFromPattern ()Lorg/gradle/api/provider/Property;
+	public abstract fun getId ()Lorg/gradle/api/provider/Property;
+	public abstract fun getPhase ()Lorg/gradle/api/provider/Property;
+	public abstract fun getReversePattern ()Lorg/gradle/api/provider/Property;
+	public abstract fun getReverseValue ()Lorg/gradle/api/provider/Property;
+	public abstract fun getToValue ()Lorg/gradle/api/provider/Property;
+	public fun replace (Ljava/lang/String;Ljava/lang/String;)V
+	public fun reverse (Ljava/lang/String;Ljava/lang/String;)V
+}
+
+public abstract interface class dev/kikugie/stonecutter/data/dsl/ReplacementContainer$StringReplacementBuilder {
+	public abstract fun getDirection ()Lorg/gradle/api/provider/Property;
+	public abstract fun getFrom ()Lorg/gradle/api/provider/Property;
+	public abstract fun getId ()Lorg/gradle/api/provider/Property;
+	public abstract fun getPhase ()Lorg/gradle/api/provider/Property;
+	public abstract fun getTo ()Lorg/gradle/api/provider/Property;
+	public fun replace (Ljava/lang/String;Ljava/lang/String;)V
+}
+
+public abstract interface class dev/kikugie/stonecutter/data/dsl/SwapContainer : java/util/Map, kotlin/jvm/internal/markers/KMutableMap {
+	public fun put (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ljava/lang/String;
 }
 
 public abstract class dev/kikugie/stonecutter/data/tree/BranchBuilder : dev/kikugie/stonecutter/data/tree/ProjectProvider {

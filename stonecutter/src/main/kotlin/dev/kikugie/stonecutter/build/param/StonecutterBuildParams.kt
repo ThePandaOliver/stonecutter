@@ -4,22 +4,11 @@ import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.StonecutterUtility
 import dev.kikugie.stonecutter.Version
-import dev.kikugie.stonecutter.build.dsl.ConstantContainer
-import dev.kikugie.stonecutter.build.dsl.DependencyContainer
-import dev.kikugie.stonecutter.build.dsl.FilterContainer
-import dev.kikugie.stonecutter.build.dsl.ReplacementContainer
-import dev.kikugie.stonecutter.build.dsl.ReplacementContainer.RegexReplacementBuilder
-import dev.kikugie.stonecutter.build.dsl.ReplacementContainer.StringReplacementBuilder
-import dev.kikugie.stonecutter.build.dsl.SwapContainer
+import dev.kikugie.stonecutter.data.dsl.*
 import org.gradle.api.Action
 
-/**
- * Represents context, in which file processing parameters can be configured.
- *
- * *It is made solely to combine other interfaces.*
- */
 @StonecutterAPI
-public interface StonecutterBuildParams : DeprecatedBuildParams {
+public interface StonecutterBuildParams : StonecutterUtility {
     public val constants: ConstantContainer
     public val dependencies: DependencyContainer
     public val swaps: SwapContainer
@@ -31,47 +20,6 @@ public interface StonecutterBuildParams : DeprecatedBuildParams {
     public fun swaps(block: Action<SwapContainer>): Unit = block.execute(swaps)
     public fun replacements(block: Action<ReplacementContainer>): Unit = block.execute(replacements)
     public fun filters(block: Action<FilterContainer>): Unit = block.execute(filters)
-
-    @Deprecated("Use DSL block instead")
-    override fun const(id: Identifier, value: Boolean) {
-        constants[id] = value
-    }
-
-    @Deprecated("Use DSL block instead")
-    override fun dependency(id: Identifier, version: Version) {
-        dependencies[id] = version
-    }
-
-    @Deprecated("Use DSL block instead")
-    override fun swap(id: Identifier, replacement: String) {
-        swaps[id] = replacement
-    }
-
-    @Deprecated("Use DSL block instead")
-    override fun stringReplacement(build: Action<StringReplacementBuilder>) {
-        replacements.string(build)
-    }
-
-    @Deprecated("Use DSL block instead")
-    override fun regexReplacement(build: Action<RegexReplacementBuilder>) {
-        replacements.regex(build)
-    }
-
-    @Deprecated("Use DSL block instead")
-    override fun allowExtensions(extensions: Iterable<String>) {
-        filters.extensions.addAll(extensions)
-    }
-
-    @Deprecated("Use DSL block instead")
-    override fun overrideExtensions(extensions: Iterable<String>) {
-        filters.extensions.clear()
-        filters.extensions.addAll(extensions)
-    }
-
-    @Deprecated("Use DSL block instead")
-    override fun excludeFiles(files: Iterable<String>) {
-        filters.excludes.addAll(files)
-    }
 }
 
 @Suppress("DEPRECATION")
@@ -209,10 +157,10 @@ public interface DeprecatedBuildParams : StonecutterUtility {
         replacementMap(properties)
 
     @Deprecated("Use DSL block instead")
-    public fun stringReplacement(build: Action<StringReplacementBuilder>)
+    public fun stringReplacement(build: Action<ReplacementContainer.StringReplacementBuilder>)
 
     @Deprecated("Use DSL block instead")
-    public fun regexReplacement(build: Action<RegexReplacementBuilder>)
+    public fun regexReplacement(build: Action<ReplacementContainer.RegexReplacementBuilder>)
 
     private fun replacementMap(properties: Map<String, Any>) = when {
         properties.containsAny("source", "from", "target", "to") -> stringReplacement(properties)
@@ -220,6 +168,7 @@ public interface DeprecatedBuildParams : StonecutterUtility {
             "sourcePattern", "targetValue", "targetPattern", "sourceValue",
             "fromPattern", "toValue", "reversePattern", "reverseValue"
         ) -> regexReplacement(properties)
+
         else -> throw IllegalArgumentException("Invalid replacement properties: $properties")
     }
 
@@ -262,13 +211,3 @@ public interface DeprecatedBuildParams : StonecutterUtility {
     private fun Map<String, *>.containsAny(vararg keys: String): Boolean =
         keys.any { it in this }
 }
-
-//public interface StonecutterVersionProvider : VersionProvider<LenientVersion>{
-//    public val semantics: VersionProvider<SemanticVersion>
-//        get() = SemanticVersionProvider
-//
-//    public fun semantics(block: Action<VersionProvider<SemanticVersion>>): Unit = block.execute(semantics)
-//    override fun parseVersion(value: CharSequence): Result<LenientVersion> = LenientVersionProvider.parseVersion(value)
-//    override fun parsePredicate(value: CharSequence): Result<VersionPredicate> = LenientVersionProvider.parsePredicate(value)
-//    override fun eval(target: LenientVersion, vararg predicates: CharSequence): Boolean = LenientVersionProvider.eval(target, *predicates)
-//}

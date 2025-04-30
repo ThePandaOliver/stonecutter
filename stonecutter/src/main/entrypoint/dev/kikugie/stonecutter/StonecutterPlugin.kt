@@ -15,15 +15,13 @@ import org.gradle.api.plugins.ExtensionAware
 public open class StonecutterPlugin : Plugin<ExtensionAware> {
     public companion object {
         /**Current Stonecutter version.*/ // Updated by ':updateVersion' task during build
-        @StonecutterAPI
-        public const val VERSION: String = "0.7-alpha.10"
+        public const val VERSION: String = "0.7-alpha.11"
     }
 
     /**
      * Applies the plugin either to [Settings] or [Project].
      * Applying the plugin to an incorrect target will throw an exception.
      */
-    @StonecutterDevAPI
     override fun apply(target: ExtensionAware): Unit = target.applyPlugin()
 
     @OptIn(StonecutterInternalAPI::class)

@@ -1,8 +1,7 @@
 package dev.kikugie.stonecutter.data.tree
 
 import dev.kikugie.stonecutter.Identifier
-import dev.kikugie.stonecutter.SCDocumentation
-import dev.kikugie.stonecutter.StonecutterAPI
+import dev.kikugie.stonecutter.StonecutterInternalAPI
 import dev.kikugie.stonecutter.controller.StonecutterControllerManager
 import dev.kikugie.stonecutter.data.StonecutterProject
 import dev.kikugie.stonecutter.settings.StonecutterSettingsImpl
@@ -14,7 +13,6 @@ import org.gradle.kotlin.dsl.newInstance
 import javax.inject.Inject
 
 @Suppress("LeakingThis")
-@SCDocumentation("settings.create")
 public abstract class TreeBuilder @Inject internal constructor(
     internal val settings: StonecutterSettingsImpl,
 ) : ProjectProvider() {
@@ -25,16 +23,12 @@ public abstract class TreeBuilder @Inject internal constructor(
     }
 
     /**Configures the Version Control Reset project, which is used by the `Reset active project` task.*/
-    @SCDocumentation("settings.vcs")
-    @StonecutterAPI
-    public abstract val vcsVersion: Property<Identifier>
+   public abstract val vcsVersion: Property<Identifier>
 
     /**
      * Configures, which format branch controllers uses. Default is `stonecutter.gradle.kts`.
      * Setting it to `false` enables `stonecutter.gradle` with Groovy DSL.
      */
-    @SCDocumentation("settings.create")
-    @StonecutterAPI
     public abstract val kotlinController: Property<Boolean>
 
     /**
@@ -42,8 +36,6 @@ public abstract class TreeBuilder @Inject internal constructor(
      * Can be overridden, in order of priority, by:
      * 1. [NodeProvider.buildscript]
      */
-    @SCDocumentation("settings.create")
-    @StonecutterAPI
     public abstract val centralScript: Property<String>
 
     internal val branches: MutableMap<Identifier, BranchBuilder> = mutableMapOf()
@@ -58,7 +50,6 @@ public abstract class TreeBuilder @Inject internal constructor(
      * @throws IllegalArgumentException If the branch name is not a valid identifier
      * @throws IllegalStateException If the main branch is not initialized
      */
-    @StonecutterAPI
     public fun branch(name: Identifier): Unit =
         branch(name) { inherit() }
 
@@ -66,7 +57,6 @@ public abstract class TreeBuilder @Inject internal constructor(
      * Creates a retrieves a branch with the provided Groovy configuration.
      * @throws IllegalArgumentException If the branch name is not a valid identifier
      */
-    @StonecutterAPI
     public fun branch(name: Identifier, closure: Closure<BranchBuilder>): Unit =
         branch(name) { closure.call(this) }
 
@@ -74,7 +64,6 @@ public abstract class TreeBuilder @Inject internal constructor(
      * Creates or retrieves a branch with the provided Kotlin configuration.
      * @throws IllegalArgumentException If the branch name is not a valid identifier
      */
-    @StonecutterAPI
     public fun branch(name: Identifier, action: BranchBuilder.() -> Unit) {
         require(name.isEmpty() || isIdentifier(name)) { "Invalid branch identifier: '$name'" }
         getOrCreateBranch(name).apply(action)
@@ -84,7 +73,6 @@ public abstract class TreeBuilder @Inject internal constructor(
      * Provides a naming scheme for versioned buildscripts,
      * which should be determined only by the provided [Identifier] and [StonecutterProject].
      */
-    @StonecutterAPI
     public fun mapBuilds(action: (Identifier, StonecutterProject) -> String) {
         localBuildScriptProvider = action
     }
@@ -112,6 +100,7 @@ public abstract class TreeBuilder @Inject internal constructor(
             ?: settings.centralScript.orNull
             ?: settings.getDefaultBuildScript(branch, "build")
 
+    @OptIn(StonecutterInternalAPI::class)
     internal fun controllerTypeFor(branch: Identifier = ""): StonecutterControllerManager =
         if (isKotlinController(branch)) StonecutterControllerManager.Kotlin else StonecutterControllerManager.Groovy
 
@@ -136,7 +125,6 @@ public abstract class BranchBuilder @Inject constructor(
      * Adds versions currently present in the main branch.
      * @throws IllegalStateException If the main branch is not initialized
      */
-    @StonecutterAPI
     public fun inherit(): Unit = checkNotNull(tree.branches[""]) { "Main branch has no registered nodes" }
         .nodes.values.map { it.metadata }.forEach { vers(it.project, it.version) }
 
@@ -144,7 +132,6 @@ public abstract class BranchBuilder @Inject constructor(
      * Provides a naming scheme for versioned buildscripts,
      * which should be determined only by the provided [StonecutterProject].
      */
-    @StonecutterAPI
     public fun mapBuilds(action: (StonecutterProject) -> String) {
         localBuildScriptProvider = action
     }

@@ -2,7 +2,6 @@ package dev.kikugie.stonecutter.settings
 
 import dev.kikugie.stonecutter.LENIENT_JSON
 import dev.kikugie.stonecutter.ProjectReference
-import dev.kikugie.stonecutter.SCDocumentation
 import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.StonecutterUtility
 import dev.kikugie.stonecutter.data.tree.TreeBuilder
@@ -23,7 +22,7 @@ private fun readTreeSettings(file: File): Action<TreeBuilder> {
     return Action { applyData(data) }
 }
 
-@SCDocumentation("settings")
+@StonecutterAPI
 public abstract class StonecutterSettingsExtension(internal val objects: ObjectFactory) : StonecutterUtility {
     private lateinit var shared: Action<TreeBuilder>
 
@@ -31,16 +30,13 @@ public abstract class StonecutterSettingsExtension(internal val objects: ObjectF
      * Enables Kotlin buildscripts for the controller.
      * - `stonecutter.gradle` -> `stonecutter.gradle.kts`
      */
-    @StonecutterAPI
     public abstract val kotlinController: Property<Boolean>
 
     /**Buildscript used by all subprojects. Defaults to `build.gradle`.*/
-    @StonecutterAPI
     public abstract val centralScript: Property<String>
 
     /* Shared configuration */
     /**Stores the provided configuration to be used in [create] methods.*/
-    @StonecutterAPI
     public fun shared(action: Action<TreeBuilder>) {
         shared = action
     }
@@ -50,7 +46,6 @@ public abstract class StonecutterSettingsExtension(internal val objects: ObjectF
      * Configures the specified [project] to be versioned with setup provided by [file].
      * @see ProjectReference
      */
-    @StonecutterAPI @SCDocumentation("settings.json")
     public fun create(project: ProjectReference, file: File): Unit =
         create(listOf(project), file)
 
@@ -58,7 +53,6 @@ public abstract class StonecutterSettingsExtension(internal val objects: ObjectF
      * Configures the specified [projects] to be versioned with setup provided by [file].
      * @see ProjectReference
      */
-    @StonecutterAPI @SCDocumentation("settings.json")
     public fun create(vararg projects: ProjectReference, file: File): Unit =
         create(projects.asIterable(), file)
 
@@ -66,7 +60,6 @@ public abstract class StonecutterSettingsExtension(internal val objects: ObjectF
      * Configures the specified [projects] to be versioned with setup provided by [file].
      * @see ProjectReference
      */
-    @StonecutterAPI @SCDocumentation("settings.json")
     public fun create(projects: Iterable<ProjectReference>, file: File): Unit =
         create(projects, readTreeSettings(file))
 
@@ -75,7 +68,7 @@ public abstract class StonecutterSettingsExtension(internal val objects: ObjectF
      * Configures the specified [project] to be versioned with setup provided by [action] or [shared].
      * @see ProjectReference
      */
-    @StonecutterAPI @JvmOverloads @SCDocumentation("settings.create")
+    @JvmOverloads
     public fun create(project: ProjectReference, action: Action<TreeBuilder> = shared): Unit =
         create(listOf(project), action)
 
@@ -83,7 +76,7 @@ public abstract class StonecutterSettingsExtension(internal val objects: ObjectF
      * Configures the specified [projects] to be versioned with setup provided by [action] or [shared].
      * @see ProjectReference
      */
-    @StonecutterAPI @JvmOverloads @SCDocumentation("settings.create")
+    @JvmOverloads
     public fun create(vararg projects: ProjectReference, action: Action<TreeBuilder> = shared): Unit =
         create(projects.asIterable(), action)
 
@@ -91,7 +84,7 @@ public abstract class StonecutterSettingsExtension(internal val objects: ObjectF
      * Configures the specified [projects] to be versioned with setup provided by [action] or [shared].
      * @see ProjectReference
      */
-    @StonecutterAPI @JvmOverloads @SCDocumentation("settings.create")
+    @JvmOverloads
     public fun create(projects: Iterable<ProjectReference>, action: Action<TreeBuilder> = shared): Unit =
         projects.forEach { create(it, objects.newInstance<TreeBuilder>(this).also(action::execute)) }
 

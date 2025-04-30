@@ -1,14 +1,12 @@
-package dev.kikugie.stonecutter.build.dsl
+package dev.kikugie.stonecutter.data.dsl
 
-import dev.kikugie.stonecutter.SCConfiguration
-import dev.kikugie.stonecutter.SCFilterSpec
 import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.then
 import org.gradle.api.Action
 
-@StonecutterAPI @SCConfiguration
+@StonecutterAPI @StonecutterParametersDSL
 public interface FilterContainer {
-    @SCFilterSpec
+    @StonecutterFilterSpec
     public interface AllowedExtensions : MutableSet<String> {
         public fun allow(vararg extensions: String): Boolean = addAll(extensions)
         public fun allow(extensions: Iterable<String>): Boolean = addAll(extensions)
@@ -20,7 +18,7 @@ public interface FilterContainer {
         public fun replace(extensions: Iterable<String>): Boolean = clear() then allow(extensions)
     }
 
-    @SCFilterSpec
+    @StonecutterFilterSpec
     public interface ExcludedFiles : MutableSet<String> {
         public fun exclude(vararg files: String): Boolean = addAll(files)
         public fun exclude(files: Iterable<String>): Boolean = addAll(files)
@@ -29,8 +27,8 @@ public interface FilterContainer {
         public fun replace(files: Iterable<String>): Boolean = clear() then exclude(files)
     }
 
-    public var extensions: AllowedExtensions
-    public var excludes: ExcludedFiles
+    public val extensions: AllowedExtensions
+    public val excludes: ExcludedFiles
 
     public fun extensions(block: Action<AllowedExtensions>): Unit = block.execute(extensions)
     public fun excludes(block: Action<ExcludedFiles>): Unit = block.execute(excludes)

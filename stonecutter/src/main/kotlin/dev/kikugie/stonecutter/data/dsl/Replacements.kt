@@ -1,15 +1,13 @@
-package dev.kikugie.stonecutter.build.dsl
+package dev.kikugie.stonecutter.data.dsl
 
 import dev.kikugie.stonecutter.Identifier
-import dev.kikugie.stonecutter.SCConfiguration
-import dev.kikugie.stonecutter.SCReplacementSpec
 import dev.kikugie.stonecutter.StonecutterAPI
 import org.gradle.api.Action
 import org.gradle.api.provider.Property
 
-@StonecutterAPI @SCConfiguration
+@StonecutterAPI @StonecutterParametersDSL
 public interface ReplacementContainer {
-    @SCReplacementSpec
+    @StonecutterReplacementSpec
     public interface StringReplacementBuilder {
         public val direction: Property<Boolean>
         public val phase: Property<String>
@@ -23,7 +21,7 @@ public interface ReplacementContainer {
         }
     }
 
-    @SCReplacementSpec
+    @StonecutterReplacementSpec
     public interface RegexReplacementBuilder {
         public val direction: Property<Boolean>
         public val phase: Property<String>

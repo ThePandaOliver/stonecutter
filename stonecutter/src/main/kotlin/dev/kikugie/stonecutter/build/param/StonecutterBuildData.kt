@@ -2,6 +2,11 @@ package dev.kikugie.stonecutter.build.param
 
 import dev.kikugie.stitcher.data.replacement.*
 import dev.kikugie.stonecutter.*
+import dev.kikugie.stonecutter.data.dsl.impl.ConstantContainerImpl
+import dev.kikugie.stonecutter.data.dsl.impl.DependencyContainerImpl
+import dev.kikugie.stonecutter.data.dsl.impl.FilterContainerImpl
+import dev.kikugie.stonecutter.data.dsl.impl.ReplacementContainerImpl
+import dev.kikugie.stonecutter.data.dsl.impl.SwapContainerImpl
 import dev.kikugie.stonecutter.process.FileProcessingData
 import dev.kikugie.stonecutter.process.FileProcessingData.ReplacementData
 import dev.kikugie.stonecutter.util.invoke
@@ -25,7 +30,7 @@ internal open class StonecutterBuildData @Inject constructor(private val dir: Pa
         constants.set(this@StonecutterBuildData.constants.toMap())
         swaps.set(this@StonecutterBuildData.swaps.toMap())
         dependencies.set(this@StonecutterBuildData.dependencies.withDefaultVersion(key, version))
-        replacements.set(this@StonecutterBuildData.replacements.delegate.map { it.asReplacementData() })
+        replacements.set(this@StonecutterBuildData.replacements.replacements.map { it.asReplacementData() })
     }
 
     private fun Replacement.asReplacementData(): ReplacementData = when (this) {
