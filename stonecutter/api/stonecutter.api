@@ -32,12 +32,12 @@ public final class dev/kikugie/stonecutter/UtilitiesKt {
 public abstract interface class dev/kikugie/stonecutter/build/StonecutterBuildExtension : dev/kikugie/stonecutter/build/param/StonecutterBuildParams {
 	public fun flags (Lorg/gradle/api/Action;)V
 	public fun getActive ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public abstract fun getBranch ()Ldev/kikugie/stonecutter/data/tree/ProjectBranch;
+	public abstract fun getBranch ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectBranch;
 	public fun getCurrent ()Ldev/kikugie/stonecutter/data/StonecutterProject;
 	public abstract fun getFlags ()Ldev/kikugie/stonecutter/controller/flag/FlagContainer;
-	public abstract fun getNode ()Ldev/kikugie/stonecutter/data/tree/ProjectNode;
+	public abstract fun getNode ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectNode;
 	public abstract fun getTasks ()Ldev/kikugie/stonecutter/build/task/StonecutterBuildTasks;
-	public abstract fun getTree ()Ldev/kikugie/stonecutter/data/tree/ProjectTree;
+	public abstract fun getTree ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectTree;
 	public fun getVersions ()Ljava/util/Collection;
 }
 
@@ -107,7 +107,7 @@ public abstract interface class dev/kikugie/stonecutter/controller/StonecutterCo
 	public fun getCurrent ()Ldev/kikugie/stonecutter/data/StonecutterProject;
 	public abstract fun getFlags ()Ldev/kikugie/stonecutter/controller/flag/MutableFlagContainer;
 	public abstract fun getTasks ()Ldev/kikugie/stonecutter/controller/tasks/StonecutterControllerTasks;
-	public abstract fun getTree ()Ldev/kikugie/stonecutter/data/tree/ProjectTree;
+	public abstract fun getTree ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectTree;
 	public fun getVcsVersion ()Ldev/kikugie/stonecutter/data/StonecutterProject;
 	public fun getVersions ()Ljava/util/Collection;
 	public fun parameters (Lgroovy/lang/Closure;)V
@@ -143,12 +143,12 @@ public final class dev/kikugie/stonecutter/controller/StonecutterDelegatedBuildP
 	public fun eval (Ljava/lang/String;Ljava/lang/String;)Z
 	public fun evalLenient (Ljava/lang/String;Ljava/lang/String;)Z
 	public fun filters (Lorg/gradle/api/Action;)V
-	public final fun getBranch ()Ldev/kikugie/stonecutter/data/tree/ProjectBranch;
+	public final fun getBranch ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectBranch;
 	public fun getConstants ()Ldev/kikugie/stonecutter/data/dsl/ConstantContainer;
 	public fun getDependencies ()Ldev/kikugie/stonecutter/data/dsl/DependencyContainer;
 	public fun getFilters ()Ldev/kikugie/stonecutter/data/dsl/FilterContainer;
 	public final fun getMetadata ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public final fun getNode ()Ldev/kikugie/stonecutter/data/tree/ProjectNode;
+	public final fun getNode ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectNode;
 	public fun getReplacements ()Ldev/kikugie/stonecutter/data/dsl/ReplacementContainer;
 	public fun getSwaps ()Ldev/kikugie/stonecutter/data/dsl/SwapContainer;
 	public fun replacements (Lorg/gradle/api/Action;)V
@@ -213,6 +213,7 @@ public final class dev/kikugie/stonecutter/data/ProjectHierarchy {
 	public static final fun minus-3NqLo2s (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 	public static final fun orBlank-impl (Ljava/lang/String;)Ljava/lang/String;
 	public static final fun plus-3NqLo2s (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public static final fun relativize-qHRS2DI (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 	public fun toString ()Ljava/lang/String;
 	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
 	public final synthetic fun unbox-impl ()Ljava/lang/String;
@@ -237,36 +238,32 @@ public final class dev/kikugie/stonecutter/data/ProjectHierarchy$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public abstract interface class dev/kikugie/stonecutter/data/StonecutterProject {
+public final class dev/kikugie/stonecutter/data/StonecutterProject {
 	public static final field Companion Ldev/kikugie/stonecutter/data/StonecutterProject$Companion;
-	public fun component1 ()Ljava/lang/String;
-	public fun component2 ()Ljava/lang/String;
-	public fun component3 ()Z
-	public abstract fun getProject ()Ljava/lang/String;
-	public abstract fun getVersion ()Ljava/lang/String;
-	public abstract fun isActive ()Z
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Ldev/kikugie/stonecutter/data/StonecutterProject;
+	public static synthetic fun copy$default (Ldev/kikugie/stonecutter/data/StonecutterProject;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ldev/kikugie/stonecutter/data/StonecutterProject;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getProject ()Ljava/lang/String;
+	public final fun getVersion ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun isActive ()Z
+	public fun toString ()Ljava/lang/String;
 }
 
-public final class dev/kikugie/stonecutter/data/StonecutterProject$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-	public final fun unlink (Ldev/kikugie/stonecutter/data/StonecutterProject;)Ldev/kikugie/stonecutter/data/StonecutterProject;
-}
-
-public synthetic class dev/kikugie/stonecutter/data/StonecutterProject$DataStonecutterProject$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Ldev/kikugie/stonecutter/data/StonecutterProject$DataStonecutterProject$$serializer;
+public synthetic class dev/kikugie/stonecutter/data/StonecutterProject$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Ldev/kikugie/stonecutter/data/StonecutterProject$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/kikugie/stonecutter/data/StonecutterProject$DataStonecutterProject;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/kikugie/stonecutter/data/StonecutterProject;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/kikugie/stonecutter/data/StonecutterProject$DataStonecutterProject;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/kikugie/stonecutter/data/StonecutterProject;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 }
 
-public final class dev/kikugie/stonecutter/data/StonecutterProject$DataStonecutterProject$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class dev/kikugie/stonecutter/data/StonecutterProject$LinkedStonecutterProject$Companion {
+public final class dev/kikugie/stonecutter/data/StonecutterProject$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
@@ -402,14 +399,6 @@ public final class dev/kikugie/stonecutter/data/tree/BranchModel$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public abstract interface class dev/kikugie/stonecutter/data/tree/BranchPrototype : dev/kikugie/stonecutter/data/tree/GradleMember, java/util/Map, kotlin/jvm/internal/markers/KMappedMarker {
-	public fun get-qHRS2DI (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/NodePrototype;
-	public abstract fun getId ()Ljava/lang/String;
-	public abstract fun getNodes ()Ljava/util/Collection;
-	public abstract fun getTree ()Ldev/kikugie/stonecutter/data/tree/TreePrototype;
-	public abstract fun getVersions ()Ljava/util/Collection;
-}
-
 public abstract interface class dev/kikugie/stonecutter/data/tree/ExpandedProject {
 	public abstract fun getBuildscript ()Ljava/lang/String;
 	public abstract fun getEntry ()Ldev/kikugie/stonecutter/data/StonecutterProject;
@@ -418,148 +407,6 @@ public abstract interface class dev/kikugie/stonecutter/data/tree/ExpandedProjec
 public final class dev/kikugie/stonecutter/data/tree/ExpandedProject$JsonSerializer : kotlinx/serialization/json/JsonContentPolymorphicSerializer {
 	public static final field INSTANCE Ldev/kikugie/stonecutter/data/tree/ExpandedProject$JsonSerializer;
 	public synthetic fun selectDeserializer (Lkotlinx/serialization/json/JsonElement;)Lkotlinx/serialization/DeserializationStrategy;
-}
-
-public abstract interface class dev/kikugie/stonecutter/data/tree/GradleMember {
-	public abstract fun getHierarchy-L6On-oY ()Ljava/lang/String;
-	public abstract fun getLocation ()Ljava/nio/file/Path;
-}
-
-public final class dev/kikugie/stonecutter/data/tree/LightBranch : dev/kikugie/stonecutter/data/tree/BranchPrototype, java/util/Map, kotlin/jvm/internal/markers/KMappedMarker {
-	public fun <init> (Ljava/nio/file/Path;Ljava/lang/String;Ljava/util/Map;)V
-	public fun clear ()V
-	public final fun component1 ()Ljava/nio/file/Path;
-	public final fun component2 ()Ljava/lang/String;
-	public synthetic fun compute (Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
-	public fun compute (Ljava/lang/String;Ljava/util/function/BiFunction;)Ldev/kikugie/stonecutter/data/tree/LightNode;
-	public synthetic fun computeIfAbsent (Ljava/lang/Object;Ljava/util/function/Function;)Ljava/lang/Object;
-	public fun computeIfAbsent (Ljava/lang/String;Ljava/util/function/Function;)Ldev/kikugie/stonecutter/data/tree/LightNode;
-	public synthetic fun computeIfPresent (Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
-	public fun computeIfPresent (Ljava/lang/String;Ljava/util/function/BiFunction;)Ldev/kikugie/stonecutter/data/tree/LightNode;
-	public final fun containsKey (Ljava/lang/Object;)Z
-	public fun containsKey (Ljava/lang/String;)Z
-	public fun containsValue (Ldev/kikugie/stonecutter/data/tree/LightNode;)Z
-	public final fun containsValue (Ljava/lang/Object;)Z
-	public final fun copy (Ljava/nio/file/Path;Ljava/lang/String;Ljava/util/Map;)Ldev/kikugie/stonecutter/data/tree/LightBranch;
-	public static synthetic fun copy$default (Ldev/kikugie/stonecutter/data/tree/LightBranch;Ljava/nio/file/Path;Ljava/lang/String;Ljava/util/Map;ILjava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/LightBranch;
-	public final fun entrySet ()Ljava/util/Set;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun get (Ljava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/LightNode;
-	public synthetic fun get (Ljava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/NodePrototype;
-	public final synthetic fun get (Ljava/lang/Object;)Ljava/lang/Object;
-	public fun get (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/LightNode;
-	public fun getEntries ()Ljava/util/Set;
-	public fun getHierarchy-L6On-oY ()Ljava/lang/String;
-	public fun getId ()Ljava/lang/String;
-	public fun getKeys ()Ljava/util/Set;
-	public fun getLocation ()Ljava/nio/file/Path;
-	public fun getNodes ()Ljava/util/Collection;
-	public fun getSize ()I
-	public fun getTree ()Ldev/kikugie/stonecutter/data/tree/LightTree;
-	public synthetic fun getTree ()Ldev/kikugie/stonecutter/data/tree/TreePrototype;
-	public fun getValues ()Ljava/util/Collection;
-	public fun getVersions ()Ljava/util/Collection;
-	public fun hashCode ()I
-	public fun isEmpty ()Z
-	public final fun keySet ()Ljava/util/Set;
-	public synthetic fun merge (Ljava/lang/Object;Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
-	public fun merge (Ljava/lang/String;Ldev/kikugie/stonecutter/data/tree/LightNode;Ljava/util/function/BiFunction;)Ldev/kikugie/stonecutter/data/tree/LightNode;
-	public synthetic fun put (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-	public fun put (Ljava/lang/String;Ldev/kikugie/stonecutter/data/tree/LightNode;)Ldev/kikugie/stonecutter/data/tree/LightNode;
-	public fun putAll (Ljava/util/Map;)V
-	public synthetic fun putIfAbsent (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-	public fun putIfAbsent (Ljava/lang/String;Ldev/kikugie/stonecutter/data/tree/LightNode;)Ldev/kikugie/stonecutter/data/tree/LightNode;
-	public fun remove (Ljava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/LightNode;
-	public synthetic fun remove (Ljava/lang/Object;)Ljava/lang/Object;
-	public fun remove (Ljava/lang/Object;Ljava/lang/Object;)Z
-	public synthetic fun replace (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-	public synthetic fun replace (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z
-	public fun replace (Ljava/lang/String;Ldev/kikugie/stonecutter/data/tree/LightNode;)Ldev/kikugie/stonecutter/data/tree/LightNode;
-	public fun replace (Ljava/lang/String;Ldev/kikugie/stonecutter/data/tree/LightNode;Ldev/kikugie/stonecutter/data/tree/LightNode;)Z
-	public fun replaceAll (Ljava/util/function/BiFunction;)V
-	public final fun size ()I
-	public fun toString ()Ljava/lang/String;
-	public final fun values ()Ljava/util/Collection;
-}
-
-public final class dev/kikugie/stonecutter/data/tree/LightNode : dev/kikugie/stonecutter/data/tree/NodePrototype {
-	public fun <init> (Ljava/nio/file/Path;Ldev/kikugie/stonecutter/data/StonecutterProject;)V
-	public final fun component1 ()Ljava/nio/file/Path;
-	public final fun component2 ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public final fun copy (Ljava/nio/file/Path;Ldev/kikugie/stonecutter/data/StonecutterProject;)Ldev/kikugie/stonecutter/data/tree/LightNode;
-	public static synthetic fun copy$default (Ldev/kikugie/stonecutter/data/tree/LightNode;Ljava/nio/file/Path;Ldev/kikugie/stonecutter/data/StonecutterProject;ILjava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/LightNode;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun find (Ljava/lang/String;Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/LightNode;
-	public synthetic fun find (Ljava/lang/String;Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/NodePrototype;
-	public synthetic fun getBranch ()Ldev/kikugie/stonecutter/data/tree/BranchPrototype;
-	public fun getBranch ()Ldev/kikugie/stonecutter/data/tree/LightBranch;
-	public fun getHierarchy-L6On-oY ()Ljava/lang/String;
-	public fun getLocation ()Ljava/nio/file/Path;
-	public fun getMetadata ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public fun hashCode ()I
-	public fun peer (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/LightNode;
-	public synthetic fun peer (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/NodePrototype;
-	public fun sibling (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/LightNode;
-	public synthetic fun sibling (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/NodePrototype;
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class dev/kikugie/stonecutter/data/tree/LightTree : dev/kikugie/stonecutter/data/tree/TreePrototype, java/util/Map, kotlin/jvm/internal/markers/KMappedMarker {
-	public synthetic fun <init> (Ljava/nio/file/Path;Ljava/lang/String;Ldev/kikugie/stonecutter/data/StonecutterProject;Ljava/util/Map;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun clear ()V
-	public final fun component1 ()Ljava/nio/file/Path;
-	public final fun component2-L6On-oY ()Ljava/lang/String;
-	public final fun component3 ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public synthetic fun compute (Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
-	public fun compute (Ljava/lang/String;Ljava/util/function/BiFunction;)Ldev/kikugie/stonecutter/data/tree/LightBranch;
-	public synthetic fun computeIfAbsent (Ljava/lang/Object;Ljava/util/function/Function;)Ljava/lang/Object;
-	public fun computeIfAbsent (Ljava/lang/String;Ljava/util/function/Function;)Ldev/kikugie/stonecutter/data/tree/LightBranch;
-	public synthetic fun computeIfPresent (Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
-	public fun computeIfPresent (Ljava/lang/String;Ljava/util/function/BiFunction;)Ldev/kikugie/stonecutter/data/tree/LightBranch;
-	public final fun containsKey (Ljava/lang/Object;)Z
-	public fun containsKey (Ljava/lang/String;)Z
-	public fun containsValue (Ldev/kikugie/stonecutter/data/tree/LightBranch;)Z
-	public final fun containsValue (Ljava/lang/Object;)Z
-	public final fun copy-tan2SsY (Ljava/nio/file/Path;Ljava/lang/String;Ldev/kikugie/stonecutter/data/StonecutterProject;Ljava/util/Map;)Ldev/kikugie/stonecutter/data/tree/LightTree;
-	public static synthetic fun copy-tan2SsY$default (Ldev/kikugie/stonecutter/data/tree/LightTree;Ljava/nio/file/Path;Ljava/lang/String;Ldev/kikugie/stonecutter/data/StonecutterProject;Ljava/util/Map;ILjava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/LightTree;
-	public final fun entrySet ()Ljava/util/Set;
-	public fun equals (Ljava/lang/Object;)Z
-	public synthetic fun get (Ljava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/BranchPrototype;
-	public final fun get (Ljava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/LightBranch;
-	public final synthetic fun get (Ljava/lang/Object;)Ljava/lang/Object;
-	public fun get (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/LightBranch;
-	public fun getBranches ()Ljava/util/Collection;
-	public fun getCurrent ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public fun getEntries ()Ljava/util/Set;
-	public fun getHierarchy-L6On-oY ()Ljava/lang/String;
-	public fun getKeys ()Ljava/util/Set;
-	public fun getLocation ()Ljava/nio/file/Path;
-	public fun getNodes ()Ljava/util/Collection;
-	public fun getSize ()I
-	public fun getValues ()Ljava/util/Collection;
-	public fun getVcs ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public fun getVersions ()Ljava/util/Collection;
-	public fun hashCode ()I
-	public fun isEmpty ()Z
-	public final fun keySet ()Ljava/util/Set;
-	public synthetic fun merge (Ljava/lang/Object;Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
-	public fun merge (Ljava/lang/String;Ldev/kikugie/stonecutter/data/tree/LightBranch;Ljava/util/function/BiFunction;)Ldev/kikugie/stonecutter/data/tree/LightBranch;
-	public synthetic fun put (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-	public fun put (Ljava/lang/String;Ldev/kikugie/stonecutter/data/tree/LightBranch;)Ldev/kikugie/stonecutter/data/tree/LightBranch;
-	public fun putAll (Ljava/util/Map;)V
-	public synthetic fun putIfAbsent (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-	public fun putIfAbsent (Ljava/lang/String;Ldev/kikugie/stonecutter/data/tree/LightBranch;)Ldev/kikugie/stonecutter/data/tree/LightBranch;
-	public fun remove (Ljava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/LightBranch;
-	public synthetic fun remove (Ljava/lang/Object;)Ljava/lang/Object;
-	public fun remove (Ljava/lang/Object;Ljava/lang/Object;)Z
-	public synthetic fun replace (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-	public synthetic fun replace (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z
-	public fun replace (Ljava/lang/String;Ldev/kikugie/stonecutter/data/tree/LightBranch;)Ldev/kikugie/stonecutter/data/tree/LightBranch;
-	public fun replace (Ljava/lang/String;Ldev/kikugie/stonecutter/data/tree/LightBranch;Ldev/kikugie/stonecutter/data/tree/LightBranch;)Z
-	public fun replaceAll (Ljava/util/function/BiFunction;)V
-	public final fun size ()I
-	public fun toString ()Ljava/lang/String;
-	public final fun values ()Ljava/util/Collection;
 }
 
 public final class dev/kikugie/stonecutter/data/tree/NodeInfo {
@@ -628,91 +475,10 @@ public final class dev/kikugie/stonecutter/data/tree/NodeModel$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public abstract interface class dev/kikugie/stonecutter/data/tree/NodePrototype : dev/kikugie/stonecutter/data/tree/GradleMember {
-	public abstract fun find (Ljava/lang/String;Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/NodePrototype;
-	public abstract fun getBranch ()Ldev/kikugie/stonecutter/data/tree/BranchPrototype;
-	public abstract fun getMetadata ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public abstract fun peer (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/NodePrototype;
-	public abstract fun sibling (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/NodePrototype;
-}
-
 public final class dev/kikugie/stonecutter/data/tree/NodeProvider {
 	public final fun buildscript (Ljava/lang/String;)V
 	public final synthetic fun getBuildscript ()Ljava/lang/String;
 	public final fun setBuildscript (Ljava/lang/String;)V
-}
-
-public final class dev/kikugie/stonecutter/data/tree/ProjectBranch : dev/kikugie/stonecutter/data/tree/BranchPrototype {
-	public fun <init> (Ldev/kikugie/stonecutter/data/tree/LightBranch;Lorg/gradle/api/Project;)V
-	public fun clear ()V
-	public synthetic fun compute (Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
-	public fun compute (Ljava/lang/String;Ljava/util/function/BiFunction;)Ldev/kikugie/stonecutter/data/tree/ProjectNode;
-	public synthetic fun computeIfAbsent (Ljava/lang/Object;Ljava/util/function/Function;)Ljava/lang/Object;
-	public fun computeIfAbsent (Ljava/lang/String;Ljava/util/function/Function;)Ldev/kikugie/stonecutter/data/tree/ProjectNode;
-	public synthetic fun computeIfPresent (Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
-	public fun computeIfPresent (Ljava/lang/String;Ljava/util/function/BiFunction;)Ldev/kikugie/stonecutter/data/tree/ProjectNode;
-	public final fun containsKey (Ljava/lang/Object;)Z
-	public fun containsKey (Ljava/lang/String;)Z
-	public fun containsValue (Ldev/kikugie/stonecutter/data/tree/ProjectNode;)Z
-	public final fun containsValue (Ljava/lang/Object;)Z
-	public final fun entrySet ()Ljava/util/Set;
-	public synthetic fun get (Ljava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/NodePrototype;
-	public final fun get (Ljava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/ProjectNode;
-	public final synthetic fun get (Ljava/lang/Object;)Ljava/lang/Object;
-	public fun get (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/ProjectNode;
-	public final fun get (Lorg/gradle/api/Project;)Ldev/kikugie/stonecutter/data/tree/ProjectNode;
-	public synthetic fun get-qHRS2DI (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/NodePrototype;
-	public fun get-qHRS2DI (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/ProjectNode;
-	public fun getEntries ()Ljava/util/Set;
-	public fun getHierarchy-L6On-oY ()Ljava/lang/String;
-	public fun getId ()Ljava/lang/String;
-	public fun getKeys ()Ljava/util/Set;
-	public final fun getLight ()Ldev/kikugie/stonecutter/data/tree/LightBranch;
-	public fun getLocation ()Ljava/nio/file/Path;
-	public fun getNodes ()Ljava/util/Collection;
-	public final fun getProject ()Lorg/gradle/api/Project;
-	public fun getSize ()I
-	public fun getTree ()Ldev/kikugie/stonecutter/data/tree/ProjectTree;
-	public synthetic fun getTree ()Ldev/kikugie/stonecutter/data/tree/TreePrototype;
-	public fun getValues ()Ljava/util/Collection;
-	public fun getVersions ()Ljava/util/Collection;
-	public fun isEmpty ()Z
-	public final fun keySet ()Ljava/util/Set;
-	public synthetic fun merge (Ljava/lang/Object;Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
-	public fun merge (Ljava/lang/String;Ldev/kikugie/stonecutter/data/tree/ProjectNode;Ljava/util/function/BiFunction;)Ldev/kikugie/stonecutter/data/tree/ProjectNode;
-	public synthetic fun put (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-	public fun put (Ljava/lang/String;Ldev/kikugie/stonecutter/data/tree/ProjectNode;)Ldev/kikugie/stonecutter/data/tree/ProjectNode;
-	public fun putAll (Ljava/util/Map;)V
-	public synthetic fun putIfAbsent (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-	public fun putIfAbsent (Ljava/lang/String;Ldev/kikugie/stonecutter/data/tree/ProjectNode;)Ldev/kikugie/stonecutter/data/tree/ProjectNode;
-	public fun remove (Ljava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/ProjectNode;
-	public synthetic fun remove (Ljava/lang/Object;)Ljava/lang/Object;
-	public fun remove (Ljava/lang/Object;Ljava/lang/Object;)Z
-	public synthetic fun replace (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-	public synthetic fun replace (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z
-	public fun replace (Ljava/lang/String;Ldev/kikugie/stonecutter/data/tree/ProjectNode;)Ldev/kikugie/stonecutter/data/tree/ProjectNode;
-	public fun replace (Ljava/lang/String;Ldev/kikugie/stonecutter/data/tree/ProjectNode;Ldev/kikugie/stonecutter/data/tree/ProjectNode;)Z
-	public fun replaceAll (Ljava/util/function/BiFunction;)V
-	public final fun size ()I
-	public final fun values ()Ljava/util/Collection;
-}
-
-public final class dev/kikugie/stonecutter/data/tree/ProjectNode : dev/kikugie/stonecutter/data/tree/NodePrototype {
-	public fun <init> (Ldev/kikugie/stonecutter/data/tree/LightNode;Lorg/gradle/api/Project;)V
-	public synthetic fun find (Ljava/lang/String;Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/NodePrototype;
-	public fun find (Ljava/lang/String;Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/ProjectNode;
-	public synthetic fun getBranch ()Ldev/kikugie/stonecutter/data/tree/BranchPrototype;
-	public fun getBranch ()Ldev/kikugie/stonecutter/data/tree/ProjectBranch;
-	public fun getHierarchy-L6On-oY ()Ljava/lang/String;
-	public final fun getLight ()Ldev/kikugie/stonecutter/data/tree/LightNode;
-	public fun getLocation ()Ljava/nio/file/Path;
-	public fun getMetadata ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public final fun getProject ()Lorg/gradle/api/Project;
-	public final fun getStonecutter ()Ldev/kikugie/stonecutter/build/StonecutterBuildExtension;
-	public synthetic fun peer (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/NodePrototype;
-	public fun peer (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/ProjectNode;
-	public synthetic fun sibling (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/NodePrototype;
-	public fun sibling (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/ProjectNode;
 }
 
 public abstract class dev/kikugie/stonecutter/data/tree/ProjectProvider {
@@ -722,61 +488,6 @@ public abstract class dev/kikugie/stonecutter/data/tree/ProjectProvider {
 	public final fun versions ([Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/NodeProvider;
 	public final fun versionsPairs (Ljava/lang/Iterable;)Ldev/kikugie/stonecutter/data/tree/NodeProvider;
 	public final fun versionsPairs ([Lkotlin/Pair;)Ldev/kikugie/stonecutter/data/tree/NodeProvider;
-}
-
-public final class dev/kikugie/stonecutter/data/tree/ProjectTree : dev/kikugie/stonecutter/data/tree/TreePrototype {
-	public fun <init> (Ldev/kikugie/stonecutter/data/tree/LightTree;Lorg/gradle/api/Project;)V
-	public fun clear ()V
-	public synthetic fun compute (Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
-	public fun compute (Ljava/lang/String;Ljava/util/function/BiFunction;)Ldev/kikugie/stonecutter/data/tree/ProjectBranch;
-	public synthetic fun computeIfAbsent (Ljava/lang/Object;Ljava/util/function/Function;)Ljava/lang/Object;
-	public fun computeIfAbsent (Ljava/lang/String;Ljava/util/function/Function;)Ldev/kikugie/stonecutter/data/tree/ProjectBranch;
-	public synthetic fun computeIfPresent (Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
-	public fun computeIfPresent (Ljava/lang/String;Ljava/util/function/BiFunction;)Ldev/kikugie/stonecutter/data/tree/ProjectBranch;
-	public final fun containsKey (Ljava/lang/Object;)Z
-	public fun containsKey (Ljava/lang/String;)Z
-	public fun containsValue (Ldev/kikugie/stonecutter/data/tree/ProjectBranch;)Z
-	public final fun containsValue (Ljava/lang/Object;)Z
-	public final fun entrySet ()Ljava/util/Set;
-	public synthetic fun get (Ljava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/BranchPrototype;
-	public final fun get (Ljava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/ProjectBranch;
-	public final synthetic fun get (Ljava/lang/Object;)Ljava/lang/Object;
-	public fun get (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/ProjectBranch;
-	public final fun get (Lorg/gradle/api/Project;)Ldev/kikugie/stonecutter/data/tree/ProjectBranch;
-	public synthetic fun get-qHRS2DI (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/BranchPrototype;
-	public fun get-qHRS2DI (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/ProjectBranch;
-	public fun getBranches ()Ljava/util/Collection;
-	public fun getCurrent ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public fun getEntries ()Ljava/util/Set;
-	public fun getHierarchy-L6On-oY ()Ljava/lang/String;
-	public fun getKeys ()Ljava/util/Set;
-	public final fun getLight ()Ldev/kikugie/stonecutter/data/tree/LightTree;
-	public fun getLocation ()Ljava/nio/file/Path;
-	public fun getNodes ()Ljava/util/Collection;
-	public final fun getProject ()Lorg/gradle/api/Project;
-	public fun getSize ()I
-	public fun getValues ()Ljava/util/Collection;
-	public fun getVcs ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public fun getVersions ()Ljava/util/Collection;
-	public fun isEmpty ()Z
-	public final fun keySet ()Ljava/util/Set;
-	public synthetic fun merge (Ljava/lang/Object;Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
-	public fun merge (Ljava/lang/String;Ldev/kikugie/stonecutter/data/tree/ProjectBranch;Ljava/util/function/BiFunction;)Ldev/kikugie/stonecutter/data/tree/ProjectBranch;
-	public synthetic fun put (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-	public fun put (Ljava/lang/String;Ldev/kikugie/stonecutter/data/tree/ProjectBranch;)Ldev/kikugie/stonecutter/data/tree/ProjectBranch;
-	public fun putAll (Ljava/util/Map;)V
-	public synthetic fun putIfAbsent (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-	public fun putIfAbsent (Ljava/lang/String;Ldev/kikugie/stonecutter/data/tree/ProjectBranch;)Ldev/kikugie/stonecutter/data/tree/ProjectBranch;
-	public fun remove (Ljava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/ProjectBranch;
-	public synthetic fun remove (Ljava/lang/Object;)Ljava/lang/Object;
-	public fun remove (Ljava/lang/Object;Ljava/lang/Object;)Z
-	public synthetic fun replace (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-	public synthetic fun replace (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z
-	public fun replace (Ljava/lang/String;Ldev/kikugie/stonecutter/data/tree/ProjectBranch;)Ldev/kikugie/stonecutter/data/tree/ProjectBranch;
-	public fun replace (Ljava/lang/String;Ldev/kikugie/stonecutter/data/tree/ProjectBranch;Ldev/kikugie/stonecutter/data/tree/ProjectBranch;)Z
-	public fun replaceAll (Ljava/util/function/BiFunction;)V
-	public final fun size ()I
-	public final fun values ()Ljava/util/Collection;
 }
 
 public abstract class dev/kikugie/stonecutter/data/tree/TreeBuilder : dev/kikugie/stonecutter/data/tree/ProjectProvider {
@@ -826,15 +537,6 @@ public final class dev/kikugie/stonecutter/data/tree/TreeModel$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public abstract interface class dev/kikugie/stonecutter/data/tree/TreePrototype : dev/kikugie/stonecutter/data/tree/GradleMember, java/util/Map, kotlin/jvm/internal/markers/KMappedMarker {
-	public fun get-qHRS2DI (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/BranchPrototype;
-	public abstract fun getBranches ()Ljava/util/Collection;
-	public abstract fun getCurrent ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public abstract fun getNodes ()Ljava/util/Collection;
-	public abstract fun getVcs ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public abstract fun getVersions ()Ljava/util/Collection;
-}
-
 public abstract interface class dev/kikugie/stonecutter/data/tree/TreeSettings {
 	public static final field Companion Ldev/kikugie/stonecutter/data/tree/TreeSettings$Companion;
 	public abstract fun getEntries ()Ljava/util/Map;
@@ -880,6 +582,38 @@ public synthetic class dev/kikugie/stonecutter/data/tree/TreeSettings$Standard$$
 
 public final class dev/kikugie/stonecutter/data/tree/TreeSettings$Standard$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public abstract interface class dev/kikugie/stonecutter/data/tree/struct/GradleMember {
+	public abstract fun getHierarchy-L6On-oY ()Ljava/lang/String;
+	public abstract fun getLocation ()Ljava/nio/file/Path;
+	public abstract fun getProject ()Lorg/gradle/api/Project;
+}
+
+public abstract interface class dev/kikugie/stonecutter/data/tree/struct/ProjectBranch : dev/kikugie/stonecutter/data/tree/struct/GradleMember, java/util/Map, kotlin/jvm/internal/markers/KMappedMarker {
+	public abstract fun get-qHRS2DI (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/struct/ProjectNode;
+	public abstract fun getId ()Ljava/lang/String;
+	public abstract fun getNodes ()Ljava/util/Collection;
+	public abstract fun getTree ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectTree;
+	public abstract fun getVersions ()Ljava/util/Collection;
+}
+
+public abstract interface class dev/kikugie/stonecutter/data/tree/struct/ProjectNode : dev/kikugie/stonecutter/data/tree/struct/GradleMember {
+	public fun find (Ljava/lang/String;Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/struct/ProjectNode;
+	public abstract fun getBranch ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectBranch;
+	public abstract fun getMetadata ()Ldev/kikugie/stonecutter/data/StonecutterProject;
+	public fun peer (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/struct/ProjectNode;
+	public fun sibling (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/struct/ProjectNode;
+}
+
+public abstract interface class dev/kikugie/stonecutter/data/tree/struct/ProjectTree : dev/kikugie/stonecutter/data/tree/struct/GradleMember, java/util/Map, kotlin/jvm/internal/markers/KMappedMarker {
+	public abstract fun get-qHRS2DI (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/struct/ProjectBranch;
+	public abstract fun getBranches ()Ljava/util/Collection;
+	public abstract fun getCurrent ()Ldev/kikugie/stonecutter/data/StonecutterProject;
+	public abstract fun getNodes ()Ljava/util/Collection;
+	public abstract fun getVcs ()Ldev/kikugie/stonecutter/data/StonecutterProject;
+	public abstract fun getVersions ()Ljava/util/Collection;
+	public abstract fun node-qHRS2DI (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/struct/ProjectNode;
 }
 
 public abstract class dev/kikugie/stonecutter/process/ControllerExternalUpdateTask : org/gradle/api/DefaultTask, dev/kikugie/stonecutter/process/StonecutterUpdateTask {

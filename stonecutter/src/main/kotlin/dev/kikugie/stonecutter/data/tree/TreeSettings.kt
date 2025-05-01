@@ -188,14 +188,14 @@ public sealed interface ExpandedProject {
     @Serializable
     private data class CompositeProject(val project: String, val version: String = project, override val buildscript: String? = null) : ExpandedProject {
         override val entry: StonecutterProject
-            get() = StonecutterProject.create(project, version)
+            get() = StonecutterProject(project, version)
     }
 
     private companion object {
         @StonecutterInternalAPI fun parseVersion(it: List<String>) = when (it.size) {
             0 -> error("Empty strings are not allowed")
-            1 -> StonecutterProject.create(it.first(), it.first())
-            2 -> StonecutterProject.create(it.first(), it[1])
+            1 -> StonecutterProject(it.first(), it.first())
+            2 -> StonecutterProject(it.first(), it[1])
             else -> error("Unreachable")
         }
     }

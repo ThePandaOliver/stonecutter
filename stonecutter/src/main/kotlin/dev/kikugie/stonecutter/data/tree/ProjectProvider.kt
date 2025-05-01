@@ -17,34 +17,34 @@ public abstract class ProjectProvider {
      * Registers a [dev.kikugie.stonecutter.data.StonecutterProject] with separate project directory and version.
      */
     public fun vers(name: Identifier, version: Version): NodeProvider =
-        versions(listOf(StonecutterProject.create(name, version)))
+        versions(listOf(StonecutterProject(name, version)))
 
     /**
      * Registers multiple [dev.kikugie.stonecutter.data.StonecutterProject]s with the same directory and target versions.
      */
     public fun versions(vararg versions: Version): NodeProvider =
-        versions(versions.map { StonecutterProject.create(it, it) })
+        versions(versions.map { StonecutterProject(it, it) })
 
 
     /**
      * Registers multiple [dev.kikugie.stonecutter.data.StonecutterProject]s with the same directory and target versions.
      */
     public fun versions(versions: Iterable<Version>): NodeProvider =
-        versions(versions.map { StonecutterProject.create(it, it) })
+        versions(versions.map { StonecutterProject(it, it) })
 
     /**
      * Registers multiple [dev.kikugie.stonecutter.data.StonecutterProject]s with separate directory and target versions.
      */
     @JvmName("versionsPairs")
     public fun versions(vararg versions: Pair<Identifier, Version>): NodeProvider =
-        versions(versions.map { StonecutterProject.create(it.first, it.second) })
+        versions(versions.map { StonecutterProject(it.first, it.second) })
 
     /**
      * Registers multiple [dev.kikugie.stonecutter.data.StonecutterProject]s with separate directory and target versions.
      */
     @JvmName("versionsPairs")
     public fun versions(versions: Iterable<Pair<Identifier, Version>>): NodeProvider =
-        versions(versions.map { StonecutterProject.create(it.first, it.second) })
+        versions(versions.map { StonecutterProject(it.first, it.second) })
 
     internal abstract fun versions(versions: Iterable<StonecutterProject>): NodeProvider
 }

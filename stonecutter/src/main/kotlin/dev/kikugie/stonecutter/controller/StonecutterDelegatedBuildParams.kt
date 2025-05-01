@@ -3,8 +3,8 @@ package dev.kikugie.stonecutter.controller
 import dev.kikugie.stonecutter.build.param.StonecutterBuildData
 import dev.kikugie.stonecutter.build.param.StonecutterBuildParams
 import dev.kikugie.stonecutter.data.StonecutterProject
-import dev.kikugie.stonecutter.data.tree.ProjectBranch
-import dev.kikugie.stonecutter.data.tree.ProjectNode
+import dev.kikugie.stonecutter.data.tree.struct.ProjectBranch
+import dev.kikugie.stonecutter.data.tree.struct.ProjectNode
 
 public class StonecutterDelegatedBuildParams internal constructor (
     public val node: ProjectNode,

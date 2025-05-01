@@ -1,12 +1,10 @@
 package dev.kikugie.stonecutter
 
 import dev.kikugie.stonecutter.data.ProjectHierarchy
-import dev.kikugie.stonecutter.data.tree.BranchPrototype
-import dev.kikugie.stonecutter.data.tree.NodePrototype
-import dev.kikugie.stonecutter.data.tree.TreePrototype
+import dev.kikugie.stonecutter.data.tree.struct.ProjectBranch
+import dev.kikugie.stonecutter.data.tree.struct.ProjectTree
 import kotlinx.serialization.json.Json
 import org.gradle.api.provider.MapProperty
-import java.nio.file.Path
 import kotlin.reflect.KClass
 
 @Deprecated("Use StonecutterPlugin.VERSION instead", replaceWith = ReplaceWith("StonecutterPlugin.VERSION"))
@@ -29,9 +27,6 @@ internal fun String.removeStarting(char: Char): String {
     return substring(index)
 }
 
-internal infix fun Path.cut(other: Path): Path = relativize(other)
-
-internal inline fun <T> Iterable<T>.onEach(action: T.() -> Unit) = forEach(action)
 @Suppress("NOTHING_TO_INLINE")
 internal inline infix fun <T> Any?.then(other: T): T = other
 
@@ -44,9 +39,9 @@ internal fun MapProperty<*, *>.keysToString() = get().keysToString()
 internal fun Map<*, *>.keysToString() = keys.joinToString(prefix = "[", postfix = "]") { "'$it'" }
 internal inline fun <K, V> MapProperty<K, V>.getChecked(key: K, message: Map<K, V>.(K) -> String) =
     get().getChecked(key, message)
-internal inline fun <T> TreePrototype<T>.getChecked(key: ProjectHierarchy, message: TreePrototype<T>.(ProjectHierarchy) -> String) where T : BranchPrototype<out NodePrototype> =
+internal inline fun ProjectTree.getChecked(key: ProjectHierarchy, message: ProjectTree.(ProjectHierarchy) -> String) =
     requireNotNull(get(key)) { message(key) }
-internal inline fun <T> BranchPrototype<T>.getChecked(key: ProjectHierarchy, message: BranchPrototype<T>.(ProjectHierarchy) -> String) where T : NodePrototype =
+internal inline fun ProjectBranch.getChecked(key: ProjectHierarchy, message: ProjectBranch.(ProjectHierarchy) -> String) =
     requireNotNull(get(key)) { message(key) }
 internal inline fun <K, V> Map<K, V>.getChecked(
     key: K,

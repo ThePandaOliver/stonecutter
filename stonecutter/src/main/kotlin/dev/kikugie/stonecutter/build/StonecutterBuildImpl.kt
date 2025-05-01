@@ -12,15 +12,13 @@ import dev.kikugie.stonecutter.data.dsl.FilterContainer
 import dev.kikugie.stonecutter.data.dsl.ReplacementContainer
 import dev.kikugie.stonecutter.data.dsl.SwapContainer
 import dev.kikugie.stonecutter.data.dsl.impl.FilterContainerImpl
-import dev.kikugie.stonecutter.data.tree.ProjectBranch
-import dev.kikugie.stonecutter.data.tree.ProjectNode
-import dev.kikugie.stonecutter.data.tree.ProjectTree
+import dev.kikugie.stonecutter.data.tree.struct.ProjectBranch
+import dev.kikugie.stonecutter.data.tree.struct.ProjectNode
+import dev.kikugie.stonecutter.data.tree.struct.ProjectTree
 import dev.kikugie.stonecutter.getChecked
 import dev.kikugie.stonecutter.keysToString
-import dev.kikugie.stonecutter.process.FileProcessingData
 import dev.kikugie.stonecutter.util.*
 import org.gradle.api.Project
-import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
 
 internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuildExtension {

@@ -2,13 +2,12 @@ package dev.kikugie.stonecutter.controller
 
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterAPI
-import dev.kikugie.stonecutter.StonecutterDevAPI
 import dev.kikugie.stonecutter.StonecutterUtility
 import dev.kikugie.stonecutter.data.StonecutterProject
-import dev.kikugie.stonecutter.data.tree.ProjectTree
 import dev.kikugie.stonecutter.controller.flag.MutableFlagContainer
 import dev.kikugie.stonecutter.controller.flag.StonecutterFlag
 import dev.kikugie.stonecutter.controller.tasks.StonecutterControllerTasks
+import dev.kikugie.stonecutter.data.tree.struct.ProjectTree
 import groovy.lang.Closure
 import java.io.File
 
@@ -18,7 +17,7 @@ public interface StonecutterControllerExtension : StonecutterUtility {
     public val tree: ProjectTree
 
     /**Active version assigned by [active] function.*/
-    public val current: StonecutterProject get() = tree.current
+    public val current: StonecutterProject? get() = tree.current
 
     /**VCS project assigned during tree construction.*/
     public val vcsVersion: StonecutterProject get() = tree.vcs

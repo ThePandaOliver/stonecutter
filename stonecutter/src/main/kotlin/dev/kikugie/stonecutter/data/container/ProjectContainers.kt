@@ -2,8 +2,8 @@ package dev.kikugie.stonecutter.data.container
 
 import dev.kikugie.stonecutter.data.ProjectHierarchy
 import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
-import dev.kikugie.stonecutter.data.tree.ProjectTree
 import dev.kikugie.stonecutter.data.tree.TreeBuilder
+import dev.kikugie.stonecutter.data.tree.struct.ProjectTree
 import org.gradle.kotlin.dsl.create
 import org.gradle.api.Project
 import org.gradle.api.invocation.Gradle

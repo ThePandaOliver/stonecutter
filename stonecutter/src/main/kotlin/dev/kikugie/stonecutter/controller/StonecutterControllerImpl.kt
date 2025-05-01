@@ -12,16 +12,14 @@ import dev.kikugie.stonecutter.controller.tasks.StonecutterControllerTasksImpl
 import dev.kikugie.stonecutter.data.ProjectHierarchy
 import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
 import dev.kikugie.stonecutter.data.StonecutterProject
-import dev.kikugie.stonecutter.data.StonecutterProject.Companion.link
-import dev.kikugie.stonecutter.data.StonecutterProject.Companion.linked
 import dev.kikugie.stonecutter.data.container.ProjectTreeContainer
 import dev.kikugie.stonecutter.data.container.TreeBuilderContainer
 import dev.kikugie.stonecutter.data.container.getContainer
 import dev.kikugie.stonecutter.data.tree.*
-import dev.kikugie.stonecutter.getChecked
+import dev.kikugie.stonecutter.data.tree.struct.ProjectBranchImpl
+import dev.kikugie.stonecutter.data.tree.struct.ProjectNodeImpl
+import dev.kikugie.stonecutter.data.tree.struct.ProjectTreeImpl
 import dev.kikugie.stonecutter.ide.IdeaSetupTask
-import dev.kikugie.stonecutter.keysToString
-import dev.kikugie.stonecutter.onEach
 import dev.kikugie.stonecutter.util.newInstance
 import dev.kikugie.stonecutter.util.set
 import org.gradle.api.Project
@@ -31,13 +29,11 @@ import java.io.File
 
 @OptIn(StonecutterInternalAPI::class)
 internal open class StonecutterControllerImpl(private val root: Project) : StonecutterControllerExtension {
-    override val tree: ProjectTree = constructTree().also {
+    override val tree: ProjectTreeImpl = constructTree().also {
         root.gradle.getContainer<ProjectTreeContainer>().register(root.hierarchy, it)
     }
     override val flags: MutableFlagContainer = FlagContainerImpl()
     override val tasks: StonecutterControllerTasksImpl = StonecutterControllerTasksImpl()
-    /**Resettable callback to switch task init used to verify it's only called once.*/
-    private var initilizer: (() -> Unit)? = ::initializePluginConfiguration
     /**Stores configured build data instances.*/
     private val data: MutableMap<ProjectHierarchy, StonecutterBuildData> = mutableMapOf()
     /**
@@ -53,13 +49,13 @@ internal open class StonecutterControllerImpl(private val root: Project) : Stone
     }
 
     override fun active(name: Identifier) {
-        checkNotNull(initilizer) { "Active version has already been set!" }
-        tree.current = tree.getByName(name); initilizer!!(); initilizer = null
+        check(tree.current == null) { "Active version has already been set!" }
+        initializePluginConfiguration(name)
     }
 
     override fun active(file: File) {
-        checkNotNull(initilizer) { "Active version has already been set!" }
-        tree.provider = file; initilizer!!(); initilizer = null
+        check(tree.current == null) { "Active version has already been set!" }
+        initializePluginConfiguration(file)
     }
 
     override fun parameters(config: StonecutterDelegatedBuildParams.() -> Unit) {
@@ -78,9 +74,9 @@ internal open class StonecutterControllerImpl(private val root: Project) : Stone
     private fun configureProject() = with(root) {
         afterEvaluate {
             if (plugins.hasPlugin("java")) logger.warn("Stonecutter branch root $hierarchy should not be a buildable project.")
-            if (initilizer != null) logger.error("Active version has not been set for $hierarchy! This can result in incomplete configuration and errors.")
         }
 
+        if (tree.current == null) return@with
         tasks.register("Reset active project") {
             group = "stonecutter"
             description = "Sets active version to ${tree.vcs.project}. Run this before making a commit."
@@ -90,7 +86,7 @@ internal open class StonecutterControllerImpl(private val root: Project) : Stone
         tasks.register("Refresh active project") {
             group = "stonecutter"
             description = "Runs the comment processor on the active version. Useful for fixing comments in wrong states."
-            dependsOn("${root.hierarchy.orBlank()}:${this@StonecutterControllerImpl.tasks.switchTaskName(tree.current.project)}")
+            dependsOn("${root.hierarchy.orBlank()}:${this@StonecutterControllerImpl.tasks.switchTaskName(tree.current!!.project)}")
         }
 
         for (it in tree.versions) tasks.register("Set active project to ${it.project}") {
@@ -100,12 +96,26 @@ internal open class StonecutterControllerImpl(private val root: Project) : Stone
         }
     }
 
-    private fun initializePluginConfiguration() {
-        val controller = root.getController()!!
-        for (it in tree.versions) tasks.registerSwitchTask(it.project, tree, controller)
+    private fun initializePluginConfiguration(active: Any) {
+        fun findByName(name: String): StonecutterProject = checkNotNull(tree.versions.find { it.project == name }) {
+            "Version '$name' is not registered. This might've been caused by removing a version that is set to be active."
+        }
+
+        when (active) {
+            is String -> {
+                tree.current = findByName(active)
+                val controller = root.getController()!!
+                for (it in tree.versions) tasks.registerSelfSwitchTask(it.project, tree, controller)
+            }
+
+            is File -> {
+                tree.current = findByName(active.readText())
+                for (it in tree.versions) tasks.registerExternalSwitchTask(it.project, tree, active)
+            }
+        }
+
         if (flags[StonecutterFlag.APPLY_PLUGIN_TO_NODES]) for (it in tree.nodes)
             it.project.plugins.apply(StonecutterPlugin::class)
-
     }
 
     private fun configureSyncTask() = root.rootProject.afterEvaluate {
@@ -114,26 +124,22 @@ internal open class StonecutterControllerImpl(private val root: Project) : Stone
         }
     }
 
-    private fun constructTree(): ProjectTree {
-        val builder: TreeBuilder = checkNotNull(root.gradle.getContainer<TreeBuilderContainer>()[root]) {
+    private fun constructTree(): ProjectTreeImpl {
+        val builder = checkNotNull(root.gradle.getContainer<TreeBuilderContainer>()[root]) {
             "Project ${root.path} is not registered. This might've been caused by removing a project while its active"
         }
-        val mapping: Map<StonecutterProject, StonecutterProject> = builder.versions
-            .mapValues { (_, it) -> it.linked() }
-        val branches: Map<Identifier, LightBranch> = builder.branches.mapValues { (id, br) ->
-            val project: Project = if (id.isEmpty()) root else root.project(id)
-            val nodes: Map<Identifier, LightNode> = br.nodes.mapValues { (_, n) ->
-                val identity = mapping.getChecked(n.metadata) { "Unknown version '$it' in ${keysToString()}" }
-                LightNode(project.project(n.metadata.project).projectDir.toPath(), identity)
-            }
-            LightBranch(project.projectDir.toPath(), id, nodes).also {
-                nodes.values.onEach { branch = it }
-            }
+        val branches = builder.constructBranches(root.hierarchy)
+        return ProjectTreeImpl(root.gradle, root.hierarchy, builder.vcsProject, branches)
+    }
+
+    private fun TreeBuilder.constructBranches(tree: ProjectHierarchy) = branches.values.map {
+        val nodes = it.constructNodes(tree + it.id)
+        ProjectBranchImpl(root.gradle, tree + it.id, it.id, nodes).apply {
+            for (node in nodes) node.branch = this
         }
-        val tree: LightTree = LightTree(root.projectDir.toPath(), ProjectHierarchy(root.path), builder.vcsProject, branches).also {
-            branches.values.onEach { tree = it }
-            mapping.values.onEach { link(it) }
-        }
-        return tree.withProject(root)
+    }
+
+    private fun BranchBuilder.constructNodes(branch: ProjectHierarchy) = nodes.values.map {
+        ProjectNodeImpl(root.gradle, branch + it.metadata.project, it.metadata)
     }
 }

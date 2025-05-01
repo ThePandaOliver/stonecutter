@@ -1,23 +1,18 @@
 package dev.kikugie.stonecutter.build
 
 import dev.kikugie.stonecutter.StonecutterAPI
-import dev.kikugie.stonecutter.StonecutterDevAPI
 import dev.kikugie.stonecutter.build.param.StonecutterBuildParams
 import dev.kikugie.stonecutter.build.task.StonecutterBuildTasks
 import dev.kikugie.stonecutter.controller.flag.FlagContainer
 import dev.kikugie.stonecutter.data.StonecutterProject
-import dev.kikugie.stonecutter.data.tree.ProjectBranch
-import dev.kikugie.stonecutter.data.tree.ProjectNode
-import dev.kikugie.stonecutter.data.tree.ProjectTree
+import dev.kikugie.stonecutter.data.tree.struct.*
 import org.gradle.api.Action
 
 /**Stonecutter plugin available in `build.gradle[.kts]`.*/
 @StonecutterAPI
 public interface StonecutterBuildExtension : StonecutterBuildParams {
     public val tree: ProjectTree
-
     public val branch: ProjectBranch
-
     public val node: ProjectNode
 
     /**
@@ -36,7 +31,7 @@ public interface StonecutterBuildExtension : StonecutterBuildParams {
     /**
      * Metadata of the active subproject, which has root `src/` sources assigned to it.
      */
-    public val active: StonecutterProject
+    public val active: StonecutterProject?
         get() = tree.current
 
     /**

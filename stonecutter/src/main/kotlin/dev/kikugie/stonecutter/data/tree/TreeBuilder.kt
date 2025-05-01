@@ -17,16 +17,15 @@ public abstract class TreeBuilder @Inject internal constructor(
     internal val settings: StonecutterSettingsImpl,
 ) : ProjectProvider() {
     init {
-        vcsVersion.convention(settings.providers.provider {
-            checkNotNull(versions.keys.firstOrNull()?.project) { "No versions registered" }
-        })
+        vcsVersion.convention(settings.providers.provider { checkNotNull(versions.keys.firstOrNull()) { "No versions registered" } })
     }
 
     /**Configures the Version Control Reset project, which is used by the `Reset active project` task.*/
-   public abstract val vcsVersion: Property<Identifier>
+    public abstract val vcsVersion: Property<Identifier>
 
     /**
-     * Configures, which format branch controllers uses. Default is `stonecutter.gradle.kts`.
+     * Configures which format the branch controller uses.
+     * Default is `stonecutter.gradle.kts`.
      * Setting it to `false` enables `stonecutter.gradle` with Groovy DSL.
      */
     public abstract val kotlinController: Property<Boolean>
@@ -38,12 +37,12 @@ public abstract class TreeBuilder @Inject internal constructor(
      */
     public abstract val centralScript: Property<String>
 
+    internal val versions: MutableMap<Identifier, StonecutterProject> = mutableMapOf()
     internal val branches: MutableMap<Identifier, BranchBuilder> = mutableMapOf()
-    internal val versions: MutableMap<StonecutterProject, StonecutterProject> = mutableMapOf()
     private var localBuildScriptProvider: ((Identifier, StonecutterProject) -> String)? = null
 
     internal val vcsProject: StonecutterProject
-        get() = checkNotNull(findVcsProject()) { "Version '${vcsVersion()}' is not registered" }
+        get() = checkNotNull(versions[vcsVersion()]) { "VCS version '${vcsVersion()}' is not registered" }
 
     /**
      * Creates retrieves an inherited branch with the given [name], which copies all versions specified in this block.
@@ -80,9 +79,6 @@ public abstract class TreeBuilder @Inject internal constructor(
     override fun versions(versions: Iterable<StonecutterProject>): NodeProvider =
         getOrCreateBranch("").versions(versions)
 
-    internal fun identity(vers: StonecutterProject): StonecutterProject =
-        versions.getOrPut(vers) { vers }
-
     internal fun applyData(settings: TreeSettings) {
         settings.vcs?.let(vcsVersion::set)
         settings.kotlinController?.let(kotlinController::set)
@@ -110,8 +106,6 @@ public abstract class TreeBuilder @Inject internal constructor(
 
     private fun getOrCreateBranch(name: Identifier): BranchBuilder =
         branches.getOrPut(name) { settings.objects.newInstance(name, this) }
-
-    private fun findVcsProject() = versions.values.find { it.project == vcsVersion() }
 }
 
 public abstract class BranchBuilder @Inject constructor(
@@ -136,14 +130,15 @@ public abstract class BranchBuilder @Inject constructor(
         localBuildScriptProvider = action
     }
 
-    override fun versions(versions: Iterable<StonecutterProject>): NodeProvider = versions.map {
-        require(it.project !in nodes) { "Duplicate project identifier: '${it.project}' in branch '$id'" }
-        NodeBuilder(tree.identity(it), this).apply { nodes[it.project] = this }
-    }.let(::NodeProvider)
+    override fun versions(versions: Iterable<StonecutterProject>): NodeProvider = NodeProvider(versions.map {
+        require(tree.versions.getOrPut(it.project) { it } == it) {
+            "Project '$it' is registered with a different version ${tree.versions[it.project]!!.version}"
+        }
+        NodeBuilder(tree.versions[it.project]!!, this).apply { nodes[it.project] = this }
+    })
 
     internal fun buildScriptFor(project: StonecutterProject) =
-        localBuildScriptProvider?.invoke(project)
-            ?: tree.buildScriptFor(id, project)
+        localBuildScriptProvider?.invoke(project) ?: tree.buildScriptFor(id, project)
 }
 
 internal class NodeBuilder(

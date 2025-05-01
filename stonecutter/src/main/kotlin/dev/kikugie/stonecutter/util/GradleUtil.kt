@@ -7,7 +7,7 @@ import dev.kikugie.stonecutter.controller.StonecutterControllerImpl
 import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
 import dev.kikugie.stonecutter.data.container.ProjectTreeContainer
 import dev.kikugie.stonecutter.data.container.getContainer
-import dev.kikugie.stonecutter.data.tree.ProjectTree
+import dev.kikugie.stonecutter.data.tree.struct.ProjectTree
 import dev.kikugie.stonecutter.keysToString
 import org.gradle.api.Project
 import org.gradle.api.file.SourceDirectorySet
