@@ -28,12 +28,12 @@ import org.gradle.kotlin.dsl.named
 import java.io.File
 
 @OptIn(StonecutterInternalAPI::class)
-internal open class StonecutterControllerImpl(private val root: Project) : StonecutterControllerExtension {
+internal open class StonecutterControllerImpl(val root: Project) : StonecutterControllerExtension {
     override val tree: ProjectTreeImpl = constructTree().also {
         root.gradle.getContainer<ProjectTreeContainer>().register(root.hierarchy, it)
     }
     override val flags: MutableFlagContainer = FlagContainerImpl()
-    override val tasks: StonecutterControllerTasksImpl = StonecutterControllerTasksImpl()
+    override val tasks: StonecutterControllerTasksImpl = StonecutterControllerTasksImpl(this)
     /**Stores configured build data instances.*/
     private val data: MutableMap<ProjectHierarchy, StonecutterBuildData> = mutableMapOf()
     /**

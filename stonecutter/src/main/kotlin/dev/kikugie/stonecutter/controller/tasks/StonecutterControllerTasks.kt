@@ -2,8 +2,12 @@ package dev.kikugie.stonecutter.controller.tasks
 
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterDevAPI
+import dev.kikugie.stonecutter.data.tree.struct.ProjectNode
 import dev.kikugie.stonecutter.process.StonecutterUpdateTask
 import dev.kikugie.stonecutter.util.TaskProviderMap
+import org.gradle.api.Task
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
 
 /**
@@ -27,4 +31,31 @@ public interface StonecutterControllerTasks {
     /**Provides a switch task provider for the given [StonecutterProject.project][dev.kikugie.stonecutter.data.StonecutterProject.project] name.*/
     public fun switchTaskProvider(project: Identifier): TaskProvider<out StonecutterUpdateTask>? =
         switch[switchTaskName(project)]
+
+    /**
+     * Finds tasks in [ProjectTree.nodes][dev.kikugie.stonecutter.data.tree.struct.ProjectTree.nodes] matching the given [name].
+     * The list is live and may be empty if realised before subprojects are evaluated.
+     * It can be used as-is in [Task.dependsOn], where it's final value will be used.
+     */
+    public fun named(name: String): ListProperty<TaskProvider<*>> = named(name) { true }
+    /**
+     * Finds tasks in [ProjectTree.nodes][dev.kikugie.stonecutter.data.tree.struct.ProjectTree.nodes] matching the given [name] and [filter].
+     * The list is live and may be empty if realised before subprojects are evaluated.
+     * It can be used as-is in [Task.dependsOn], where it's final value will be used.
+     */
+    public fun named(name: String, filter: ProjectNode.() -> Boolean): ListProperty<TaskProvider<*>>
+
+    /**
+     * Finds tasks in [ProjectTree.nodes][dev.kikugie.stonecutter.data.tree.struct.ProjectTree.nodes] matching the given [name] and [class][cls].
+     * The list is live and may be empty if realised before subprojects are evaluated.
+     * It can be used as-is in [Task.dependsOn], where it's final value will be used.
+     */
+    public fun <T : Task> named(name: String, cls: Class<T>): ListProperty<TaskProvider<T>> = named(name, cls) { true }
+
+    /**
+     * Finds tasks in [ProjectTree.nodes][dev.kikugie.stonecutter.data.tree.struct.ProjectTree.nodes] matching the given [name], [class][cls] and [filter].
+     * The list is live and may be empty if realised before subprojects are evaluated.
+     * It can be used as-is in [Task.dependsOn], where it's final value will be used.
+     */
+    public fun <T : Task> named(name: String, cls: Class<T>, filter: ProjectNode.() -> Boolean): ListProperty<TaskProvider<T>>
 }
