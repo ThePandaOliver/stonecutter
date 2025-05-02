@@ -1,4 +1,4 @@
-package dev.kikugie.stonecutter.ide
+package dev.kikugie.stonecutter.process
 
 import dev.kikugie.stonecutter.data.ProjectHierarchy
 import dev.kikugie.stonecutter.readResource
@@ -8,7 +8,13 @@ import org.gradle.api.provider.MapProperty
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import java.nio.file.StandardOpenOption
-import kotlin.io.path.*
+import kotlin.collections.iterator
+import kotlin.io.path.createDirectories
+import kotlin.io.path.deleteExisting
+import kotlin.io.path.exists
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.notExists
+import kotlin.io.path.writeText
 
 internal abstract class IdeaSetupTask : DefaultTask() {
     companion object {
@@ -28,13 +34,13 @@ internal abstract class IdeaSetupTask : DefaultTask() {
     fun run() {
         if (TEMPLATE.isFailure) return logger.error("Failed to read template configuration file", TEMPLATE.exceptionOrNull())
         if (folder.parent.notExists()) return logger.debug("No run configurations folder found")
-        kotlin.runCatching { folder.createDirectories() }.onFailure { return logger.error("Failed to create run configurations folder", it) }
+        runCatching { folder.createDirectories() }.onFailure { return logger.error("Failed to create run configurations folder", it) }
 
         val files = mutableSetOf<String>()
         for ((project, versions) in versions()) files.addAll(configureTree(project, versions))
 
         for (file in folder.listDirectoryEntries()) if (file.fileName.toString().let { it.startsWith("Stonecutter") && it !in files })
-            kotlin.runCatching { file.deleteExisting() }.onFailure { logger.error("Failed to delete configuration file $file", it) }
+            runCatching { file.deleteExisting() }.onFailure { logger.error("Failed to delete configuration file $file", it) }
     }
 
     private fun configureTree(project: ProjectHierarchy, versions: Iterable<String>) = buildList {
@@ -57,7 +63,7 @@ internal abstract class IdeaSetupTask : DefaultTask() {
             .replaceChecked("%FOLDER_NAME%", "Stonecutter${project.orBlank()}")
             .replaceChecked("%ENTRY_NAME%", name)
             .replaceChecked("%TASK_NAME%", "${project.orBlank()}:$task")
-        kotlin.runCatching {
+        runCatching {
             file.writeText(xml, Charsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
         }.onSuccess {
             add(filename)

@@ -11,7 +11,7 @@ import dev.kikugie.stonecutter.data.container.createContainer
 import dev.kikugie.stonecutter.data.tree.BranchBuilder
 import dev.kikugie.stonecutter.data.tree.NodeBuilder
 import dev.kikugie.stonecutter.data.tree.TreeBuilder
-import dev.kikugie.stonecutter.ide.IdeaSetupTask
+import dev.kikugie.stonecutter.process.IdeaSetupTask
 import dev.kikugie.stonecutter.util.*
 import org.gradle.api.Project
 import org.gradle.api.initialization.ProjectDescriptor

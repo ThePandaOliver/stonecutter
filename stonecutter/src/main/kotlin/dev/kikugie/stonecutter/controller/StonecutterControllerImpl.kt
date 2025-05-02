@@ -19,7 +19,7 @@ import dev.kikugie.stonecutter.data.tree.*
 import dev.kikugie.stonecutter.data.tree.struct.ProjectBranchImpl
 import dev.kikugie.stonecutter.data.tree.struct.ProjectNodeImpl
 import dev.kikugie.stonecutter.data.tree.struct.ProjectTreeImpl
-import dev.kikugie.stonecutter.ide.IdeaSetupTask
+import dev.kikugie.stonecutter.process.IdeaSetupTask
 import dev.kikugie.stonecutter.util.newInstance
 import dev.kikugie.stonecutter.util.set
 import org.gradle.api.Project
