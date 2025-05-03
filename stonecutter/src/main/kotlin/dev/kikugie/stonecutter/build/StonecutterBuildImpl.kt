@@ -1,7 +1,8 @@
 package dev.kikugie.stonecutter.build
 
+import dev.kikugie.semver.VersionParser
 import dev.kikugie.stonecutter.data.dsl.ConstantContainer
-import dev.kikugie.stonecutter.build.param.StonecutterBuildData
+import dev.kikugie.stonecutter.build.param.StonecutterBuildProperties
 import dev.kikugie.stonecutter.build.task.StonecutterBuildTasksImpl
 import dev.kikugie.stonecutter.controller.StonecutterControllerImpl
 import dev.kikugie.stonecutter.controller.flag.FlagContainer
@@ -18,14 +19,15 @@ import dev.kikugie.stonecutter.data.tree.struct.ProjectTree
 import dev.kikugie.stonecutter.getChecked
 import dev.kikugie.stonecutter.keysToString
 import dev.kikugie.stonecutter.util.*
+import kotlinx.serialization.json.Json
 import org.gradle.api.Project
 import org.gradle.api.tasks.SourceSet
 
 internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuildExtension {
     override val tasks: StonecutterBuildTasksImpl = StonecutterBuildTasksImpl(this)
     override val tree: ProjectTree by lazy { project.findProjectTree() }
-    override val branch: ProjectBranch get() = tree.getChecked(parent.hierarchy) { "Branch for '$it' not found in ${tree.hierarchy}: ${keysToString()}" }
-    override val node: ProjectNode get() = branch.getChecked(project.hierarchy) { "Node for '$it' not found in ${branch.hierarchy}: ${keysToString()}" }
+    override val branch: ProjectBranch by lazy { tree.getChecked(parent.hierarchy) { "Branch for '$it' not found in ${tree.hierarchy}: ${keysToString()}" } }
+    override val node: ProjectNode by lazy { branch.getChecked(project.hierarchy) { "Node for '$it' not found in ${branch.hierarchy}: ${keysToString()}" } }
     override val flags: FlagContainer get() = controller.flags
 
     override val constants: ConstantContainer get() = data.constants
@@ -36,7 +38,7 @@ internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuil
 
     internal val parent: Project get() = project.parent!!
     internal val controller: StonecutterControllerImpl get() = tree.getControllerImpl()
-    internal val data: StonecutterBuildData get() = controller.getOrCreateParameters(project.hierarchy)
+    internal val data: StonecutterBuildProperties get() = controller.getOrCreateParameters(project.hierarchy)
 
     init {
         configureProject()
@@ -48,6 +50,7 @@ internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuil
             createProcessingTasks(this)
             this@StonecutterBuildImpl.tasks.configureSource(this)
         }
+        this@StonecutterBuildImpl.tasks.registerNodeModelTask()
         configureTaskDependencies()
     }
 
@@ -72,7 +75,7 @@ internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuil
             sources.from(parent.projectDirectory.resolve("src/${src.name}"))
             root.set(parent.projectDirectory.resolve("src/${src.name}"))
             caches.set(tasks.processedCacheDir.resolve(src.name))
-            project.provider { data.asProcessingData(flags[StonecutterFlag.IMPLICIT_RECEIVER], current.version) }
+            project.provider { Json.encodeToString(data.apply { putDefaultReceiver() }.data) }
                 .let(parameters::set)
         }
 
@@ -93,5 +96,12 @@ internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuil
             into(parent.projectDirectory.resolve("src/${src.name}"))
             dependsOn(prepareTask)
         }
+    }
+
+    private fun putDefaultReceiver() {
+        val parsed = VersionParser.parseLenient(current.version, full = true).value
+        val version = dependencies.getOrDefault(flags[StonecutterFlag.IMPLICIT_RECEIVER], parsed)
+        dependencies[flags[StonecutterFlag.IMPLICIT_RECEIVER]] = version
+        data.dependencies.delegate[""] = version
     }
 }

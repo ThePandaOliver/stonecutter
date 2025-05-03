@@ -23,9 +23,11 @@ public interface StonecutterBuildParams : StonecutterUtility {
 }
 
 @Suppress("DEPRECATION")
-public interface DeprecatedBuildParams : StonecutterUtility {
+public interface DeprecatedBuildParams : StonecutterBuildParams {
     @Deprecated("Use DSL block instead")
-    public fun swap(id: Identifier, replacement: String)
+    public fun swap(id: Identifier, replacement: String) {
+        swaps.put(id, replacement)
+    }
 
     @Deprecated("Use DSL block instead")
     public fun swap(id: Identifier, replacement: () -> String) {
@@ -48,7 +50,9 @@ public interface DeprecatedBuildParams : StonecutterUtility {
     }
 
     @Deprecated("Use DSL block instead")
-    public fun const(id: Identifier, value: Boolean)
+    public fun const(id: Identifier, value: Boolean) {
+        constants.put(id, value)
+    }
 
     @Deprecated("Use DSL block instead")
     public fun const(id: Identifier, value: () -> Boolean) {
@@ -81,7 +85,9 @@ public interface DeprecatedBuildParams : StonecutterUtility {
     }
 
     @Deprecated("Use DSL block instead")
-    public fun dependency(id: Identifier, version: Version)
+    public fun dependency(id: Identifier, version: Version) {
+        dependencies.put(id, version)
+    }
 
     @Deprecated("Use DSL block instead")
     public fun dependency(id: Identifier, version: () -> Version) {
@@ -104,21 +110,27 @@ public interface DeprecatedBuildParams : StonecutterUtility {
     }
 
     @Deprecated("Use DSL block instead")
-    public fun allowExtensions(extensions: Iterable<String>)
+    public fun allowExtensions(extensions: Iterable<String>) {
+        filters.extensions.allow(extensions)
+    }
 
     @Deprecated("Use DSL block instead")
     public fun allowExtensions(vararg extensions: String): Unit =
         allowExtensions(extensions.asIterable())
 
     @Deprecated("Use DSL block instead")
-    public fun overrideExtensions(extensions: Iterable<String>)
+    public fun overrideExtensions(extensions: Iterable<String>) {
+        filters.extensions.replace(extensions)
+    }
 
     @Deprecated("Use DSL block instead")
     public fun overrideExtensions(vararg extensions: String): Unit =
         overrideExtensions(extensions.asIterable())
 
     @Deprecated("Use DSL block instead")
-    public fun excludeFiles(files: Iterable<String>)
+    public fun excludeFiles(files: Iterable<String>) {
+        filters.excludes.exclude(files)
+    }
 
     @Deprecated("Use DSL block instead")
     public fun excludeFiles(vararg files: String): Unit =
@@ -157,10 +169,14 @@ public interface DeprecatedBuildParams : StonecutterUtility {
         replacementMap(properties)
 
     @Deprecated("Use DSL block instead")
-    public fun stringReplacement(build: Action<ReplacementContainer.StringReplacementBuilder>)
+    public fun stringReplacement(build: Action<ReplacementContainer.StringReplacementBuilder>) {
+        replacements.string(build)
+    }
 
     @Deprecated("Use DSL block instead")
-    public fun regexReplacement(build: Action<ReplacementContainer.RegexReplacementBuilder>)
+    public fun regexReplacement(build: Action<ReplacementContainer.RegexReplacementBuilder>) {
+        replacements.regex(build)
+    }
 
     private fun replacementMap(properties: Map<String, Any>) = when {
         properties.containsAny("source", "from", "target", "to") -> stringReplacement(properties)

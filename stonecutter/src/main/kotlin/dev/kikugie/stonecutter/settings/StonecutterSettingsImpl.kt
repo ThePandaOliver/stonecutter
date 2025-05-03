@@ -57,7 +57,7 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
         val project = getDescriptor(ref)
         require(container.register(project.hierarchy, this)) { "Project ${project.path} is already registered" }
 
-        val controller = controllerTypeFor("")
+        val controller = controllerTypeFor()
         project.buildFileName = controller.filename.also(::checkGroovy)
         with(project.projectDir.resolve(controller.filename).toPath()) {
             if (notExists()) controller.create(this, vcsProject.project)
@@ -79,7 +79,8 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
         require(nodes.isNotEmpty()) { "Registered branch '$id' has no nodes" }
         val project = if (id.isEmpty()) root else createDescriptor("${root.path}:$id")
         project.projectDir.toPath().createDirectories()
-        project.buildFileName = tree.controllerTypeFor(id).filename.also(::checkGroovy)
+        if (id.isNotEmpty()) project.buildFileName = tree.controllerTypeFor(id).filename // TODO: to be tested
+            .replace("stonecutter", "stonecutter_branch").also(::checkGroovy)
 
         for (node in nodes.values) createProject(project, node)
     }

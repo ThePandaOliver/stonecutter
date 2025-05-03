@@ -1,12 +1,24 @@
 package dev.kikugie.stonecutter.controller.flag
 
-import dev.kikugie.stonecutter.StonecutterDevAPI
-
-public data class StonecutterFlag<T>(
+public data class StonecutterFlag<T : Any>(
     public val key: String,
     public val default: T,
 ) {
+
+    init {
+        require(key.isNotBlank()) { "Flag key cannot be blank" }
+        require(default is Boolean || default is Int || default is Long || default is Float || default is Double || default is String) {
+            "Flag value must be a primitive type, got ${default::class.simpleName} instead"
+        }
+        check(REGISTRY.putIfAbsent(key, this) == null) { "Flag '$key' already registered" }
+    }
+
     public companion object {
+        private val REGISTRY: MutableMap<String, StonecutterFlag<*>> = mutableMapOf()
+
+        @JvmStatic public fun named(name: String): StonecutterFlag<*> =
+            checkNotNull(REGISTRY[name]) { "Flag '$name' not registered" }
+
         /**
          * Configures the automatic plugin application behaviour.
          * When disabled, the Stonecutter plugin will not be automatically applied

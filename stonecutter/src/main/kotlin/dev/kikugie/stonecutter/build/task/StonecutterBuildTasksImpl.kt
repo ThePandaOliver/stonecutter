@@ -1,9 +1,13 @@
 package dev.kikugie.stonecutter.build.task
 
 import dev.kikugie.stonecutter.build.StonecutterBuildImpl
+import dev.kikugie.stonecutter.data.tree.model.BranchInfo
+import dev.kikugie.stonecutter.data.tree.model.NodeModel
 import dev.kikugie.stonecutter.process.FileGeneratingTask
 import dev.kikugie.stonecutter.process.FileProcessingTask
+import dev.kikugie.stonecutter.process.ModelSavingTask
 import dev.kikugie.stonecutter.util.*
+import kotlinx.serialization.json.Json
 import org.gradle.api.Task
 import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.tasks.Copy
@@ -20,6 +24,7 @@ internal class StonecutterBuildTasksImpl(private val ext: StonecutterBuildImpl) 
     override val processedCacheDir: File get() = ext.project.buildDirectory.resolve("stonecutter-cache/sources")
     override val generatedSourcesDir: File get() = ext.project.buildDirectory.resolve("generated/stonecutter")
     private val registeredSources: MutableSet<File> = mutableSetOf()
+    private val encoder = Json { prettyPrint = true }
 
     fun registerPrepareTask(src: SourceSet, config: FileProcessingTask.() -> Unit) : TaskProvider<FileProcessingTask> =
         registerDefaultTask(prepareTaskName(src), FileProcessingTask::class).apply { configure(config); prepare[name] = this }
@@ -29,6 +34,17 @@ internal class StonecutterBuildTasksImpl(private val ext: StonecutterBuildImpl) 
 
     fun registerMergeTask(src: SourceSet, config: Copy.() -> Unit) : TaskProvider<Copy> =
         registerDefaultTask(mergeTaskName(src), Copy::class).apply { configure(config); merge[name] = this }
+
+    fun registerNodeModelTask() = registerDefaultTask("stonecutterSaveNodeModel", ModelSavingTask::class).apply {
+        configure {
+            output.set(ext.project.layout.buildDirectory.file("stonecutter-cache/node.json"))
+            json.set(ext.project.provider {
+                val branch = ext.branch.let { BranchInfo(it.id, it.location) }
+                NodeModel(ext.current, branch, ext.tree.location, ext.data.data).let(encoder::encodeToString)
+            })
+        }
+        ext.tree.project.tasks.named("stonecutterSaveModels") { dependsOn(this@apply) }
+    }
 
     private fun <T : Task> registerDefaultTask(name: String, cls: KClass<T>): TaskProvider<T> = ext.project.tasks.register(name, cls) {
         group = "stonecutter-impl"

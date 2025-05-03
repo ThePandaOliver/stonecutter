@@ -38,7 +38,8 @@ public value class ProjectHierarchy(private val path: String) {
         else -> path.substringAfterLast(':')
     }
 
-    public fun relativize(child: ProjectHierarchy): String = path.removePrefix(child.path)
+    public fun relativize(child: ProjectHierarchy): String =
+        child.path.removePrefix(path).removePrefix(":")
 
     /**Creates a new path, with the [child] attached. The [child] property must not start with `:`.*/
     public operator fun plus(child: String): ProjectHierarchy = require(!child.startsWith(":")) then when (path) {

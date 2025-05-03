@@ -4,6 +4,7 @@ import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterInternalAPI
 import dev.kikugie.stonecutter.StonecutterPlugin
 import dev.kikugie.stonecutter.build.param.StonecutterBuildData
+import dev.kikugie.stonecutter.build.param.StonecutterBuildProperties
 import dev.kikugie.stonecutter.controller.StonecutterControllerManager.Companion.getController
 import dev.kikugie.stonecutter.controller.flag.FlagContainerImpl
 import dev.kikugie.stonecutter.controller.flag.MutableFlagContainer
@@ -21,6 +22,7 @@ import dev.kikugie.stonecutter.data.tree.struct.ProjectNodeImpl
 import dev.kikugie.stonecutter.data.tree.struct.ProjectTreeImpl
 import dev.kikugie.stonecutter.process.IdeaSetupTask
 import dev.kikugie.stonecutter.util.newInstance
+import dev.kikugie.stonecutter.util.requestTasks
 import dev.kikugie.stonecutter.util.set
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
@@ -35,7 +37,7 @@ internal open class StonecutterControllerImpl(val root: Project) : StonecutterCo
     override val flags: MutableFlagContainer = FlagContainerImpl()
     override val tasks: StonecutterControllerTasksImpl = StonecutterControllerTasksImpl(this)
     /**Stores configured build data instances.*/
-    private val data: MutableMap<ProjectHierarchy, StonecutterBuildData> = mutableMapOf()
+    private val data: MutableMap<ProjectHierarchy, StonecutterBuildProperties> = mutableMapOf()
     /**
      * Stores lazy functions for build configuration.
      * When a [StonecutterBuildData] instance is created,
@@ -46,6 +48,7 @@ internal open class StonecutterControllerImpl(val root: Project) : StonecutterCo
     init {
         configureProject()
         configureSyncTask()
+        configureModelTasks()
     }
 
     override fun active(name: Identifier) {
@@ -63,8 +66,8 @@ internal open class StonecutterControllerImpl(val root: Project) : StonecutterCo
             .getOrPut(branch.hierarchy + version.project, ::mutableListOf) += config
     }
 
-    internal fun getOrCreateParameters(hierarchy: ProjectHierarchy): StonecutterBuildData = data.getOrPut(hierarchy) {
-        root.objects.newInstance(root.projectDir.toPath()) {
+    internal fun getOrCreateParameters(hierarchy: ProjectHierarchy): StonecutterBuildProperties = data.getOrPut(hierarchy) {
+        root.objects.newInstance {
             if (hierarchy !in this@StonecutterControllerImpl.configurations) return@newInstance
             val delegate = StonecutterDelegatedBuildParams(this@StonecutterControllerImpl.tree.nodes.first { it.hierarchy == hierarchy }, this)
             for (config in this@StonecutterControllerImpl.configurations.remove(hierarchy) ?: emptyList()) config(delegate)
@@ -105,12 +108,12 @@ internal open class StonecutterControllerImpl(val root: Project) : StonecutterCo
             is String -> {
                 tree.current = findByName(active)
                 val controller = root.getController()!!
-                for (it in tree.versions) tasks.registerSelfSwitchTask(it.project, tree, controller)
+                for (it in tree.versions) tasks.registerSelfSwitchTask(it.project, controller)
             }
 
             is File -> {
                 tree.current = findByName(active.readText())
-                for (it in tree.versions) tasks.registerExternalSwitchTask(it.project, tree, active)
+                for (it in tree.versions) tasks.registerExternalSwitchTask(it.project, active)
             }
         }
 
@@ -124,12 +127,21 @@ internal open class StonecutterControllerImpl(val root: Project) : StonecutterCo
         }
     }
 
+    private fun configureModelTasks() = with(tasks) {
+        registerModelGroupingTask()
+        registerTreeModelTask()
+        for (branch in tree.branches) registerBranchModelTask(branch)
+        root.gradle.requestTasks(listOf("stonecutterSaveModels"))
+    }
+
     private fun constructTree(): ProjectTreeImpl {
         val builder = checkNotNull(root.gradle.getContainer<TreeBuilderContainer>()[root]) {
             "Project ${root.path} is not registered. This might've been caused by removing a project while its active"
         }
         val branches = builder.constructBranches(root.hierarchy)
-        return ProjectTreeImpl(root.gradle, root.hierarchy, builder.vcsProject, branches)
+        return ProjectTreeImpl(root.gradle, root.hierarchy, builder.vcsProject, branches).apply {
+            for (it in branches) it.tree = this
+        }
     }
 
     private fun TreeBuilder.constructBranches(tree: ProjectHierarchy) = branches.values.map {

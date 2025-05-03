@@ -1,6 +1,7 @@
 package dev.kikugie.stonecutter.build
 
 import dev.kikugie.stonecutter.StonecutterAPI
+import dev.kikugie.stonecutter.build.param.DeprecatedBuildParams
 import dev.kikugie.stonecutter.build.param.StonecutterBuildParams
 import dev.kikugie.stonecutter.build.task.StonecutterBuildTasks
 import dev.kikugie.stonecutter.controller.flag.FlagContainer
@@ -10,7 +11,7 @@ import org.gradle.api.Action
 
 /**Stonecutter plugin available in `build.gradle[.kts]`.*/
 @StonecutterAPI
-public interface StonecutterBuildExtension : StonecutterBuildParams {
+public interface StonecutterBuildExtension : DeprecatedBuildParams {
     public val tree: ProjectTree
     public val branch: ProjectBranch
     public val node: ProjectNode

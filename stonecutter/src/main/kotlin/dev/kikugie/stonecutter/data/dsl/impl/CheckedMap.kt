@@ -1,10 +1,9 @@
 package dev.kikugie.stonecutter.data.dsl.impl
 
-import java.util.function.IntFunction
-
 @Suppress("JavaDefaultMethodsNotOverriddenByDelegation")
 internal abstract class CheckedMutableSet<E : Any>(val delegate: MutableSet<E> = mutableSetOf()) : MutableSet<E> by delegate {
     @Throws open fun checkElement(element: E) {}
+
     override fun add(element: E): Boolean {
         checkElement(element)
         return delegate.add(element)

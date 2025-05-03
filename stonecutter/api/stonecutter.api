@@ -29,7 +29,7 @@ public final class dev/kikugie/stonecutter/UtilitiesKt {
 	public static final field STONECUTTER Ljava/lang/String;
 }
 
-public abstract interface class dev/kikugie/stonecutter/build/StonecutterBuildExtension : dev/kikugie/stonecutter/build/param/StonecutterBuildParams {
+public abstract interface class dev/kikugie/stonecutter/build/StonecutterBuildExtension : dev/kikugie/stonecutter/build/param/DeprecatedBuildParams {
 	public fun flags (Lorg/gradle/api/Action;)V
 	public fun getActive ()Ldev/kikugie/stonecutter/data/StonecutterProject;
 	public abstract fun getBranch ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectBranch;
@@ -41,11 +41,11 @@ public abstract interface class dev/kikugie/stonecutter/build/StonecutterBuildEx
 	public fun getVersions ()Ljava/util/Collection;
 }
 
-public abstract interface class dev/kikugie/stonecutter/build/param/DeprecatedBuildParams : dev/kikugie/stonecutter/StonecutterUtility {
-	public abstract fun allowExtensions (Ljava/lang/Iterable;)V
+public abstract interface class dev/kikugie/stonecutter/build/param/DeprecatedBuildParams : dev/kikugie/stonecutter/build/param/StonecutterBuildParams {
+	public fun allowExtensions (Ljava/lang/Iterable;)V
 	public fun allowExtensions ([Ljava/lang/String;)V
 	public fun const (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
-	public abstract fun const (Ljava/lang/String;Z)V
+	public fun const (Ljava/lang/String;Z)V
 	public fun consts (Ljava/lang/Iterable;)V
 	public fun consts (Ljava/lang/String;Ljava/lang/Iterable;)V
 	public fun consts (Ljava/lang/String;[Ljava/lang/String;)V
@@ -54,24 +54,61 @@ public abstract interface class dev/kikugie/stonecutter/build/param/DeprecatedBu
 	public fun dependencies (Ljava/lang/Iterable;)V
 	public fun dependencies (Ljava/util/Map;)V
 	public fun dependencies ([Lkotlin/Pair;)V
-	public abstract fun dependency (Ljava/lang/String;Ljava/lang/String;)V
+	public fun dependency (Ljava/lang/String;Ljava/lang/String;)V
 	public fun dependency (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
-	public abstract fun excludeFiles (Ljava/lang/Iterable;)V
+	public fun excludeFiles (Ljava/lang/Iterable;)V
 	public fun excludeFiles ([Ljava/lang/String;)V
-	public abstract fun overrideExtensions (Ljava/lang/Iterable;)V
+	public fun overrideExtensions (Ljava/lang/Iterable;)V
 	public fun overrideExtensions ([Ljava/lang/String;)V
-	public abstract fun regexReplacement (Lorg/gradle/api/Action;)V
+	public fun regexReplacement (Lorg/gradle/api/Action;)V
 	public fun replacement (Ljava/util/Map;)V
 	public fun replacement (ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
 	public fun replacement (ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
 	public static synthetic fun replacement$default (Ldev/kikugie/stonecutter/build/param/DeprecatedBuildParams;ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)V
 	public static synthetic fun replacement$default (Ldev/kikugie/stonecutter/build/param/DeprecatedBuildParams;ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)V
-	public abstract fun stringReplacement (Lorg/gradle/api/Action;)V
-	public abstract fun swap (Ljava/lang/String;Ljava/lang/String;)V
+	public fun stringReplacement (Lorg/gradle/api/Action;)V
+	public fun swap (Ljava/lang/String;Ljava/lang/String;)V
 	public fun swap (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
 	public fun swaps (Ljava/lang/Iterable;)V
 	public fun swaps (Ljava/util/Map;)V
 	public fun swaps ([Lkotlin/Pair;)V
+}
+
+public final class dev/kikugie/stonecutter/build/param/StonecutterBuildData {
+	public static final field Companion Ldev/kikugie/stonecutter/build/param/StonecutterBuildData$Companion;
+	public synthetic fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/List;Ljava/util/Set;Ljava/util/Set;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/List;Ljava/util/Set;Ljava/util/Set;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/util/Map;
+	public final fun component2 ()Ljava/util/Map;
+	public final fun component3 ()Ljava/util/Map;
+	public final fun component4-Q2D5v-g ()Ljava/util/List;
+	public final fun component5 ()Ljava/util/Set;
+	public final fun component6 ()Ljava/util/Set;
+	public final fun copy--nkaOCQ (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/List;Ljava/util/Set;Ljava/util/Set;)Ldev/kikugie/stonecutter/build/param/StonecutterBuildData;
+	public static synthetic fun copy--nkaOCQ$default (Ldev/kikugie/stonecutter/build/param/StonecutterBuildData;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/List;Ljava/util/Set;Ljava/util/Set;ILjava/lang/Object;)Ldev/kikugie/stonecutter/build/param/StonecutterBuildData;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getConstants ()Ljava/util/Map;
+	public final fun getDependencies ()Ljava/util/Map;
+	public final fun getExcludes ()Ljava/util/Set;
+	public final fun getExtensions ()Ljava/util/Set;
+	public final fun getReplacements-Q2D5v-g ()Ljava/util/List;
+	public final fun getSwaps ()Ljava/util/Map;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public synthetic class dev/kikugie/stonecutter/build/param/StonecutterBuildData$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Ldev/kikugie/stonecutter/build/param/StonecutterBuildData$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/kikugie/stonecutter/build/param/StonecutterBuildData;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/kikugie/stonecutter/build/param/StonecutterBuildData;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+}
+
+public final class dev/kikugie/stonecutter/build/param/StonecutterBuildData$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
 public abstract interface class dev/kikugie/stonecutter/build/param/StonecutterBuildParams : dev/kikugie/stonecutter/StonecutterUtility {
@@ -135,13 +172,29 @@ public final class dev/kikugie/stonecutter/controller/StonecutterControllerManag
 	public fun getFilename ()Ljava/lang/String;
 }
 
-public final class dev/kikugie/stonecutter/controller/StonecutterDelegatedBuildParams : dev/kikugie/stonecutter/build/param/StonecutterBuildParams {
+public final class dev/kikugie/stonecutter/controller/StonecutterDelegatedBuildParams : dev/kikugie/stonecutter/build/param/DeprecatedBuildParams {
+	public fun allowExtensions (Ljava/lang/Iterable;)V
+	public fun allowExtensions ([Ljava/lang/String;)V
 	public fun compare (Ljava/lang/String;Ljava/lang/String;)I
 	public fun compareLenient (Ljava/lang/String;Ljava/lang/String;)I
+	public fun const (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
+	public fun const (Ljava/lang/String;Z)V
 	public fun constants (Lorg/gradle/api/Action;)V
+	public fun consts (Ljava/lang/Iterable;)V
+	public fun consts (Ljava/lang/String;Ljava/lang/Iterable;)V
+	public fun consts (Ljava/lang/String;[Ljava/lang/String;)V
+	public fun consts (Ljava/util/Map;)V
+	public fun consts ([Lkotlin/Pair;)V
+	public fun dependencies (Ljava/lang/Iterable;)V
+	public fun dependencies (Ljava/util/Map;)V
 	public fun dependencies (Lorg/gradle/api/Action;)V
+	public fun dependencies ([Lkotlin/Pair;)V
+	public fun dependency (Ljava/lang/String;Ljava/lang/String;)V
+	public fun dependency (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
 	public fun eval (Ljava/lang/String;Ljava/lang/String;)Z
 	public fun evalLenient (Ljava/lang/String;Ljava/lang/String;)Z
+	public fun excludeFiles (Ljava/lang/Iterable;)V
+	public fun excludeFiles ([Ljava/lang/String;)V
 	public fun filters (Lorg/gradle/api/Action;)V
 	public final fun getBranch ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectBranch;
 	public fun getConstants ()Ldev/kikugie/stonecutter/data/dsl/ConstantContainer;
@@ -151,8 +204,20 @@ public final class dev/kikugie/stonecutter/controller/StonecutterDelegatedBuildP
 	public final fun getNode ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectNode;
 	public fun getReplacements ()Ldev/kikugie/stonecutter/data/dsl/ReplacementContainer;
 	public fun getSwaps ()Ldev/kikugie/stonecutter/data/dsl/SwapContainer;
+	public fun overrideExtensions (Ljava/lang/Iterable;)V
+	public fun overrideExtensions ([Ljava/lang/String;)V
+	public fun regexReplacement (Lorg/gradle/api/Action;)V
+	public fun replacement (Ljava/util/Map;)V
+	public fun replacement (ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public fun replacement (ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
 	public fun replacements (Lorg/gradle/api/Action;)V
+	public fun stringReplacement (Lorg/gradle/api/Action;)V
+	public fun swap (Ljava/lang/String;Ljava/lang/String;)V
+	public fun swap (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
+	public fun swaps (Ljava/lang/Iterable;)V
+	public fun swaps (Ljava/util/Map;)V
 	public fun swaps (Lorg/gradle/api/Action;)V
+	public fun swaps ([Lkotlin/Pair;)V
 }
 
 public abstract interface class dev/kikugie/stonecutter/controller/flag/FlagContainer {
@@ -181,14 +246,20 @@ public final class dev/kikugie/stonecutter/controller/flag/StonecutterFlag {
 	public final fun getDefault ()Ljava/lang/Object;
 	public final fun getKey ()Ljava/lang/String;
 	public fun hashCode ()I
+	public static final fun named (Ljava/lang/String;)Ldev/kikugie/stonecutter/controller/flag/StonecutterFlag;
 	public fun toString ()Ljava/lang/String;
 }
 
 public final class dev/kikugie/stonecutter/controller/flag/StonecutterFlag$Companion {
+	public final fun named (Ljava/lang/String;)Ldev/kikugie/stonecutter/controller/flag/StonecutterFlag;
 }
 
 public abstract interface class dev/kikugie/stonecutter/controller/tasks/StonecutterControllerTasks {
 	public abstract fun getSwitch ()Ljava/util/Map;
+	public fun named (Ljava/lang/String;)Lorg/gradle/api/provider/ListProperty;
+	public fun named (Ljava/lang/String;Ljava/lang/Class;)Lorg/gradle/api/provider/ListProperty;
+	public abstract fun named (Ljava/lang/String;Ljava/lang/Class;Lkotlin/jvm/functions/Function1;)Lorg/gradle/api/provider/ListProperty;
+	public abstract fun named (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lorg/gradle/api/provider/ListProperty;
 	public fun switchTaskName (Ljava/lang/String;)Ljava/lang/String;
 	public fun switchTaskProvider (Ljava/lang/String;)Lorg/gradle/api/tasks/TaskProvider;
 }
@@ -274,7 +345,11 @@ public abstract interface class dev/kikugie/stonecutter/data/dsl/ConstantContain
 }
 
 public abstract interface class dev/kikugie/stonecutter/data/dsl/DependencyContainer : java/util/Map, kotlin/jvm/internal/markers/KMutableMap {
-	public fun put (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ljava/lang/String;
+	public fun parse (Ljava/lang/String;)Ldev/kikugie/semver/Version;
+	public fun put (Ljava/lang/String;Ljava/lang/String;)Ldev/kikugie/semver/Version;
+	public fun put (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ldev/kikugie/semver/Version;
+	public fun putIfAbsent (Ljava/lang/String;Ljava/lang/String;)Ldev/kikugie/semver/Version;
+	public fun set (Ljava/lang/String;Ljava/lang/String;)Ldev/kikugie/semver/Version;
 }
 
 public abstract interface class dev/kikugie/stonecutter/data/dsl/FilterContainer {
@@ -338,67 +413,6 @@ public abstract class dev/kikugie/stonecutter/data/tree/BranchBuilder : dev/kiku
 	public final fun mapBuilds (Lkotlin/jvm/functions/Function1;)V
 }
 
-public final class dev/kikugie/stonecutter/data/tree/BranchInfo {
-	public static final field Companion Ldev/kikugie/stonecutter/data/tree/BranchInfo$Companion;
-	public fun <init> (Ljava/lang/String;Ljava/nio/file/Path;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/nio/file/Path;
-	public final fun copy (Ljava/lang/String;Ljava/nio/file/Path;)Ldev/kikugie/stonecutter/data/tree/BranchInfo;
-	public static synthetic fun copy$default (Ldev/kikugie/stonecutter/data/tree/BranchInfo;Ljava/lang/String;Ljava/nio/file/Path;ILjava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/BranchInfo;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getId ()Ljava/lang/String;
-	public final fun getPath ()Ljava/nio/file/Path;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public synthetic class dev/kikugie/stonecutter/data/tree/BranchInfo$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Ldev/kikugie/stonecutter/data/tree/BranchInfo$$serializer;
-	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/kikugie/stonecutter/data/tree/BranchInfo;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/kikugie/stonecutter/data/tree/BranchInfo;)V
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-}
-
-public final class dev/kikugie/stonecutter/data/tree/BranchInfo$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class dev/kikugie/stonecutter/data/tree/BranchModel {
-	public static final field Companion Ldev/kikugie/stonecutter/data/tree/BranchModel$Companion;
-	public static final field FILENAME Ljava/lang/String;
-	public fun <init> (Ljava/lang/String;Ljava/nio/file/Path;Ljava/util/List;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/nio/file/Path;
-	public final fun component3 ()Ljava/util/List;
-	public final fun copy (Ljava/lang/String;Ljava/nio/file/Path;Ljava/util/List;)Ldev/kikugie/stonecutter/data/tree/BranchModel;
-	public static synthetic fun copy$default (Ldev/kikugie/stonecutter/data/tree/BranchModel;Ljava/lang/String;Ljava/nio/file/Path;Ljava/util/List;ILjava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/BranchModel;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getId ()Ljava/lang/String;
-	public final fun getNodes ()Ljava/util/List;
-	public final fun getRoot ()Ljava/nio/file/Path;
-	public fun hashCode ()I
-	public static final fun load-IoAF18A (Ljava/nio/file/Path;)Ljava/lang/Object;
-	public fun toString ()Ljava/lang/String;
-}
-
-public synthetic class dev/kikugie/stonecutter/data/tree/BranchModel$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Ldev/kikugie/stonecutter/data/tree/BranchModel$$serializer;
-	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/kikugie/stonecutter/data/tree/BranchModel;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/kikugie/stonecutter/data/tree/BranchModel;)V
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-}
-
-public final class dev/kikugie/stonecutter/data/tree/BranchModel$Companion {
-	public final fun load-IoAF18A (Ljava/nio/file/Path;)Ljava/lang/Object;
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
 public abstract interface class dev/kikugie/stonecutter/data/tree/ExpandedProject {
 	public abstract fun getBuildscript ()Ljava/lang/String;
 	public abstract fun getEntry ()Ldev/kikugie/stonecutter/data/StonecutterProject;
@@ -407,72 +421,6 @@ public abstract interface class dev/kikugie/stonecutter/data/tree/ExpandedProjec
 public final class dev/kikugie/stonecutter/data/tree/ExpandedProject$JsonSerializer : kotlinx/serialization/json/JsonContentPolymorphicSerializer {
 	public static final field INSTANCE Ldev/kikugie/stonecutter/data/tree/ExpandedProject$JsonSerializer;
 	public synthetic fun selectDeserializer (Lkotlinx/serialization/json/JsonElement;)Lkotlinx/serialization/DeserializationStrategy;
-}
-
-public final class dev/kikugie/stonecutter/data/tree/NodeInfo {
-	public static final field Companion Ldev/kikugie/stonecutter/data/tree/NodeInfo$Companion;
-	public fun <init> (Ldev/kikugie/stonecutter/data/StonecutterProject;Ljava/nio/file/Path;Z)V
-	public synthetic fun <init> (Ldev/kikugie/stonecutter/data/StonecutterProject;Ljava/nio/file/Path;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public final fun component2 ()Ljava/nio/file/Path;
-	public final fun component3 ()Z
-	public final fun copy (Ldev/kikugie/stonecutter/data/StonecutterProject;Ljava/nio/file/Path;Z)Ldev/kikugie/stonecutter/data/tree/NodeInfo;
-	public static synthetic fun copy$default (Ldev/kikugie/stonecutter/data/tree/NodeInfo;Ldev/kikugie/stonecutter/data/StonecutterProject;Ljava/nio/file/Path;ZILjava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/NodeInfo;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getActive ()Z
-	public final fun getMetadata ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public final fun getPath ()Ljava/nio/file/Path;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public synthetic class dev/kikugie/stonecutter/data/tree/NodeInfo$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Ldev/kikugie/stonecutter/data/tree/NodeInfo$$serializer;
-	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/kikugie/stonecutter/data/tree/NodeInfo;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/kikugie/stonecutter/data/tree/NodeInfo;)V
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-}
-
-public final class dev/kikugie/stonecutter/data/tree/NodeInfo$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class dev/kikugie/stonecutter/data/tree/NodeModel {
-	public static final field Companion Ldev/kikugie/stonecutter/data/tree/NodeModel$Companion;
-	public static final field FILENAME Ljava/lang/String;
-	public fun <init> (Ldev/kikugie/stonecutter/data/StonecutterProject;Ljava/nio/file/Path;Ldev/kikugie/stonecutter/data/tree/BranchInfo;Z)V
-	public final fun component1 ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public final fun component2 ()Ljava/nio/file/Path;
-	public final fun component3 ()Ldev/kikugie/stonecutter/data/tree/BranchInfo;
-	public final fun component4 ()Z
-	public final fun copy (Ldev/kikugie/stonecutter/data/StonecutterProject;Ljava/nio/file/Path;Ldev/kikugie/stonecutter/data/tree/BranchInfo;Z)Ldev/kikugie/stonecutter/data/tree/NodeModel;
-	public static synthetic fun copy$default (Ldev/kikugie/stonecutter/data/tree/NodeModel;Ldev/kikugie/stonecutter/data/StonecutterProject;Ljava/nio/file/Path;Ldev/kikugie/stonecutter/data/tree/BranchInfo;ZILjava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/NodeModel;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getActive ()Z
-	public final fun getBranch ()Ldev/kikugie/stonecutter/data/tree/BranchInfo;
-	public final fun getMetadata ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public final fun getRoot ()Ljava/nio/file/Path;
-	public fun hashCode ()I
-	public static final fun load-IoAF18A (Ljava/nio/file/Path;)Ljava/lang/Object;
-	public fun toString ()Ljava/lang/String;
-}
-
-public synthetic class dev/kikugie/stonecutter/data/tree/NodeModel$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Ldev/kikugie/stonecutter/data/tree/NodeModel$$serializer;
-	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/kikugie/stonecutter/data/tree/NodeModel;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/kikugie/stonecutter/data/tree/NodeModel;)V
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-}
-
-public final class dev/kikugie/stonecutter/data/tree/NodeModel$Companion {
-	public final fun load-IoAF18A (Ljava/nio/file/Path;)Ljava/lang/Object;
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
 public final class dev/kikugie/stonecutter/data/tree/NodeProvider {
@@ -498,43 +446,6 @@ public abstract class dev/kikugie/stonecutter/data/tree/TreeBuilder : dev/kikugi
 	public abstract fun getKotlinController ()Lorg/gradle/api/provider/Property;
 	public abstract fun getVcsVersion ()Lorg/gradle/api/provider/Property;
 	public final fun mapBuilds (Lkotlin/jvm/functions/Function2;)V
-}
-
-public final class dev/kikugie/stonecutter/data/tree/TreeModel {
-	public static final field Companion Ldev/kikugie/stonecutter/data/tree/TreeModel$Companion;
-	public static final field FILENAME Ljava/lang/String;
-	public fun <init> (Ljava/lang/String;Ldev/kikugie/stonecutter/data/StonecutterProject;Ldev/kikugie/stonecutter/data/StonecutterProject;Ljava/util/List;Ljava/util/List;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public final fun component3 ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public final fun component4 ()Ljava/util/List;
-	public final fun component5 ()Ljava/util/List;
-	public final fun copy (Ljava/lang/String;Ldev/kikugie/stonecutter/data/StonecutterProject;Ldev/kikugie/stonecutter/data/StonecutterProject;Ljava/util/List;Ljava/util/List;)Ldev/kikugie/stonecutter/data/tree/TreeModel;
-	public static synthetic fun copy$default (Ldev/kikugie/stonecutter/data/tree/TreeModel;Ljava/lang/String;Ldev/kikugie/stonecutter/data/StonecutterProject;Ldev/kikugie/stonecutter/data/StonecutterProject;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/TreeModel;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getBranches ()Ljava/util/List;
-	public final fun getCurrent ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public final fun getNodes ()Ljava/util/List;
-	public final fun getStonecutter ()Ljava/lang/String;
-	public final fun getVcs ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public fun hashCode ()I
-	public static final fun load-IoAF18A (Ljava/nio/file/Path;)Ljava/lang/Object;
-	public fun toString ()Ljava/lang/String;
-}
-
-public synthetic class dev/kikugie/stonecutter/data/tree/TreeModel$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Ldev/kikugie/stonecutter/data/tree/TreeModel$$serializer;
-	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/kikugie/stonecutter/data/tree/TreeModel;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/kikugie/stonecutter/data/tree/TreeModel;)V
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-}
-
-public final class dev/kikugie/stonecutter/data/tree/TreeModel$Companion {
-	public final fun load-IoAF18A (Ljava/nio/file/Path;)Ljava/lang/Object;
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
 public abstract interface class dev/kikugie/stonecutter/data/tree/TreeSettings {
@@ -581,6 +492,191 @@ public synthetic class dev/kikugie/stonecutter/data/tree/TreeSettings$Standard$$
 }
 
 public final class dev/kikugie/stonecutter/data/tree/TreeSettings$Standard$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class dev/kikugie/stonecutter/data/tree/model/BranchInfo {
+	public static final field Companion Ldev/kikugie/stonecutter/data/tree/model/BranchInfo$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/nio/file/Path;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/nio/file/Path;
+	public final fun copy (Ljava/lang/String;Ljava/nio/file/Path;)Ldev/kikugie/stonecutter/data/tree/model/BranchInfo;
+	public static synthetic fun copy$default (Ldev/kikugie/stonecutter/data/tree/model/BranchInfo;Ljava/lang/String;Ljava/nio/file/Path;ILjava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/model/BranchInfo;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getId ()Ljava/lang/String;
+	public final fun getPath ()Ljava/nio/file/Path;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public synthetic class dev/kikugie/stonecutter/data/tree/model/BranchInfo$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Ldev/kikugie/stonecutter/data/tree/model/BranchInfo$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/kikugie/stonecutter/data/tree/model/BranchInfo;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/kikugie/stonecutter/data/tree/model/BranchInfo;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+}
+
+public final class dev/kikugie/stonecutter/data/tree/model/BranchInfo$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class dev/kikugie/stonecutter/data/tree/model/BranchModel {
+	public static final field Companion Ldev/kikugie/stonecutter/data/tree/model/BranchModel$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/nio/file/Path;Ljava/util/List;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/nio/file/Path;
+	public final fun component3 ()Ljava/util/List;
+	public final fun copy (Ljava/lang/String;Ljava/nio/file/Path;Ljava/util/List;)Ldev/kikugie/stonecutter/data/tree/model/BranchModel;
+	public static synthetic fun copy$default (Ldev/kikugie/stonecutter/data/tree/model/BranchModel;Ljava/lang/String;Ljava/nio/file/Path;Ljava/util/List;ILjava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/model/BranchModel;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getId ()Ljava/lang/String;
+	public final fun getNodes ()Ljava/util/List;
+	public final fun getRoot ()Ljava/nio/file/Path;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public synthetic class dev/kikugie/stonecutter/data/tree/model/BranchModel$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Ldev/kikugie/stonecutter/data/tree/model/BranchModel$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/kikugie/stonecutter/data/tree/model/BranchModel;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/kikugie/stonecutter/data/tree/model/BranchModel;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+}
+
+public final class dev/kikugie/stonecutter/data/tree/model/BranchModel$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class dev/kikugie/stonecutter/data/tree/model/FlagContainerJsonSerializer : kotlinx/serialization/KSerializer {
+	public static final field INSTANCE Ldev/kikugie/stonecutter/data/tree/model/FlagContainerJsonSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/kikugie/stonecutter/controller/flag/FlagContainer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/kikugie/stonecutter/controller/flag/FlagContainer;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+}
+
+public final class dev/kikugie/stonecutter/data/tree/model/NodeInfo {
+	public static final field Companion Ldev/kikugie/stonecutter/data/tree/model/NodeInfo$Companion;
+	public fun <init> (Ldev/kikugie/stonecutter/data/StonecutterProject;Ljava/nio/file/Path;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;ZLjava/nio/file/Path;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ZLjava/nio/file/Path;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Z
+	public final fun component4 ()Ljava/nio/file/Path;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;ZLjava/nio/file/Path;)Ldev/kikugie/stonecutter/data/tree/model/NodeInfo;
+	public static synthetic fun copy$default (Ldev/kikugie/stonecutter/data/tree/model/NodeInfo;Ljava/lang/String;Ljava/lang/String;ZLjava/nio/file/Path;ILjava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/model/NodeInfo;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getActive ()Z
+	public final fun getPath ()Ljava/nio/file/Path;
+	public final fun getProject ()Ljava/lang/String;
+	public final fun getVersion ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public synthetic class dev/kikugie/stonecutter/data/tree/model/NodeInfo$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Ldev/kikugie/stonecutter/data/tree/model/NodeInfo$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/kikugie/stonecutter/data/tree/model/NodeInfo;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/kikugie/stonecutter/data/tree/model/NodeInfo;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+}
+
+public final class dev/kikugie/stonecutter/data/tree/model/NodeInfo$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class dev/kikugie/stonecutter/data/tree/model/NodeModel {
+	public static final field Companion Ldev/kikugie/stonecutter/data/tree/model/NodeModel$Companion;
+	public fun <init> (Ldev/kikugie/stonecutter/data/StonecutterProject;Ldev/kikugie/stonecutter/data/tree/model/BranchInfo;Ljava/nio/file/Path;Ldev/kikugie/stonecutter/build/param/StonecutterBuildData;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;ZLdev/kikugie/stonecutter/data/tree/model/BranchInfo;Ljava/nio/file/Path;Ldev/kikugie/stonecutter/build/param/StonecutterBuildData;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ZLdev/kikugie/stonecutter/data/tree/model/BranchInfo;Ljava/nio/file/Path;Ldev/kikugie/stonecutter/build/param/StonecutterBuildData;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Z
+	public final fun component4 ()Ldev/kikugie/stonecutter/data/tree/model/BranchInfo;
+	public final fun component5 ()Ljava/nio/file/Path;
+	public final fun component6 ()Ldev/kikugie/stonecutter/build/param/StonecutterBuildData;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;ZLdev/kikugie/stonecutter/data/tree/model/BranchInfo;Ljava/nio/file/Path;Ldev/kikugie/stonecutter/build/param/StonecutterBuildData;)Ldev/kikugie/stonecutter/data/tree/model/NodeModel;
+	public static synthetic fun copy$default (Ldev/kikugie/stonecutter/data/tree/model/NodeModel;Ljava/lang/String;Ljava/lang/String;ZLdev/kikugie/stonecutter/data/tree/model/BranchInfo;Ljava/nio/file/Path;Ldev/kikugie/stonecutter/build/param/StonecutterBuildData;ILjava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/model/NodeModel;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getActive ()Z
+	public final fun getBranch ()Ldev/kikugie/stonecutter/data/tree/model/BranchInfo;
+	public final fun getParameters ()Ldev/kikugie/stonecutter/build/param/StonecutterBuildData;
+	public final fun getProject ()Ljava/lang/String;
+	public final fun getRoot ()Ljava/nio/file/Path;
+	public final fun getVersion ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public synthetic class dev/kikugie/stonecutter/data/tree/model/NodeModel$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Ldev/kikugie/stonecutter/data/tree/model/NodeModel$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/kikugie/stonecutter/data/tree/model/NodeModel;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/kikugie/stonecutter/data/tree/model/NodeModel;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+}
+
+public final class dev/kikugie/stonecutter/data/tree/model/NodeModel$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class dev/kikugie/stonecutter/data/tree/model/PathSerializer : kotlinx/serialization/KSerializer {
+	public static final field INSTANCE Ldev/kikugie/stonecutter/data/tree/model/PathSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/nio/file/Path;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/nio/file/Path;)V
+}
+
+public final class dev/kikugie/stonecutter/data/tree/model/TreeModel {
+	public static final field Companion Ldev/kikugie/stonecutter/data/tree/model/TreeModel$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ldev/kikugie/stonecutter/controller/flag/FlagContainer;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ldev/kikugie/stonecutter/controller/flag/FlagContainer;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/util/List;
+	public final fun component5 ()Ljava/util/List;
+	public final fun component6 ()Ldev/kikugie/stonecutter/controller/flag/FlagContainer;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ldev/kikugie/stonecutter/controller/flag/FlagContainer;)Ldev/kikugie/stonecutter/data/tree/model/TreeModel;
+	public static synthetic fun copy$default (Ldev/kikugie/stonecutter/data/tree/model/TreeModel;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ldev/kikugie/stonecutter/controller/flag/FlagContainer;ILjava/lang/Object;)Ldev/kikugie/stonecutter/data/tree/model/TreeModel;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBranches ()Ljava/util/List;
+	public final fun getCurrent ()Ljava/lang/String;
+	public final fun getFlags ()Ldev/kikugie/stonecutter/controller/flag/FlagContainer;
+	public final fun getNodes ()Ljava/util/List;
+	public final fun getStonecutter ()Ljava/lang/String;
+	public final fun getVcs ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public synthetic class dev/kikugie/stonecutter/data/tree/model/TreeModel$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Ldev/kikugie/stonecutter/data/tree/model/TreeModel$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/kikugie/stonecutter/data/tree/model/TreeModel;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/kikugie/stonecutter/data/tree/model/TreeModel;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+}
+
+public final class dev/kikugie/stonecutter/data/tree/model/TreeModel$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
@@ -642,21 +738,6 @@ public abstract class dev/kikugie/stonecutter/process/FileGeneratingTask : org/g
 	public abstract fun getSource ()Lorg/gradle/api/provider/Property;
 	public abstract fun getSources ()Lorg/gradle/api/file/ConfigurableFileCollection;
 	public final fun run (Lorg/gradle/work/InputChanges;)V
-}
-
-public abstract interface class dev/kikugie/stonecutter/process/FileProcessingData {
-	public abstract fun getConstants ()Lorg/gradle/api/provider/MapProperty;
-	public abstract fun getDependencies ()Lorg/gradle/api/provider/MapProperty;
-	public abstract fun getReplacements ()Lorg/gradle/api/provider/ListProperty;
-	public abstract fun getSwaps ()Lorg/gradle/api/provider/MapProperty;
-}
-
-public abstract interface class dev/kikugie/stonecutter/process/FileProcessingData$ReplacementData {
-	public abstract fun getId ()Lorg/gradle/api/provider/Property;
-	public abstract fun getPhase ()Lorg/gradle/api/provider/Property;
-	public abstract fun getSources ()Lorg/gradle/api/provider/ListProperty;
-	public abstract fun getTarget ()Lorg/gradle/api/provider/Property;
-	public abstract fun getType ()Lorg/gradle/api/provider/Property;
 }
 
 public abstract class dev/kikugie/stonecutter/process/FileProcessingTask : org/gradle/api/DefaultTask {

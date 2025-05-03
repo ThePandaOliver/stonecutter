@@ -38,7 +38,7 @@ public abstract class FileProcessingTask : DefaultTask() {
      * Processor parameters used for file processing.
      */
     @get:Input
-    public abstract val parameters: Property<FileProcessingData>
+    public abstract val parameters: Property<String>
 
     /**
      * Cache directory for processed files,
