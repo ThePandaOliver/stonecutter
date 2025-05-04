@@ -38,6 +38,7 @@ public abstract class StonecutterSettingsExtension(internal val objects: ObjectF
     /**Buildscript used by all subprojects. Defaults to `build.gradle`.*/
     public abstract val centralScript: Property<String>
 
+    /**Provides [VersionOperations], which work strictly with [SemanticVersion]s.*/
     public val semantics: VersionOperations<SemanticVersion>
         get() = SemanticOperations
 

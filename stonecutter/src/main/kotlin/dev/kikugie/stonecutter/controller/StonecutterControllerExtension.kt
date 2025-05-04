@@ -31,6 +31,7 @@ public interface StonecutterControllerExtension : VersionOperations<ParsedVersio
      */
     public val versions: Collection<StonecutterProject> get() = tree.versions
 
+    /**Provides [VersionOperations], which work strictly with [SemanticVersion]s.*/
     public val semantics: VersionOperations<SemanticVersion> get() = SemanticOperations
 
     /**

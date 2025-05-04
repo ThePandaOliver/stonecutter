@@ -16,6 +16,8 @@ public interface StonecutterBuildParams : VersionOperations<ParsedVersion> {
     public val swaps: SwapContainer
     public val replacements: ReplacementContainer
     public val filters: FilterContainer
+
+    /**Provides [VersionOperations], which work strictly with [SemanticVersion]s.*/
     public val semantics: VersionOperations<SemanticVersion>
         get() = SemanticOperations
 

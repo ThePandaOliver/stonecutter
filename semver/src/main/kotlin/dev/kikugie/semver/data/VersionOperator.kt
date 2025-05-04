@@ -1,5 +1,12 @@
 package dev.kikugie.semver.data
 
+/**
+ * Represents operators used in [VersionPredicate]s.
+ * Each operator has a [literal] value and implements its own logic in [invoke].
+ *
+ * [SAME_MINOR] and [SAME_MAJOR] operators can only be used with [SemanticVersion]s.
+ * When any parameter is not a [SemanticVersion], they will always return `false`.
+ */
 enum class VersionOperator(val literal: String) {
     IMPLICIT_EQUAL("") {
         override fun invoke(left: Version, right: Version) = left.compareTo(right) == 0

@@ -26,6 +26,13 @@ sealed interface Version : Comparable<Version> {
     }
 }
 
+/**
+ * Plain-string version representation, which is compared lexicographically.
+ * When compared to a [SemanticVersion], [SemanticVersion.toString] value is used.
+ *
+ * The version value must only contain English alphanumeric characters, dashes, and underscores.
+ * The default constructor **does not** validate the input - for this purpose use [StringVersion.parse].
+ */
 @Serializable @JvmInline
 value class StringVersion(val value: String) : Version {
     companion object : Version.Operations {
@@ -55,6 +62,23 @@ value class StringVersion(val value: String) : Version {
         value.compareTo(other.toString())
 }
 
+/**
+ * Semantic version representation, which loosely follows the [SemVer](https://semver.org/) specification with a few exceptions:
+ * - The version code can have any number of identifiers, allowing versions like `1.0.0.1`.
+ *   When comparing versions with different number of core components, the rest is treated as 0:
+ *   `1.2.3 < 1.2.3.1` is the same as `1.2.3.0 < 1.2.3.1`.
+ * - The version core components can have any number of leading zeros:
+ *   `000.1.0` is the same as `0.1.0`.
+ * - Pre-release modifiers can contain dashes, dots, and underscores.
+ *   When comparing versions, the one without a modifier is considered greater.
+ *   The modifiers are split at dots, with each segment being compared numerically or lexicographically:
+ *   `1.0-alpha < 1.0-alpha.1 < 1.0-beta < 1.0-beta.2 < 1.0-rc.1 < 1.0`.
+ *  - Build metadata modifiers can contain dashes, dots, and underscores.
+ *    When comparing versions, if one has build metadata and the other doesn't, the one with metadata is considered greater.
+ *    If both versions have build metadata, they are ignored.
+ *
+ *  The default constructor **does not** validate the input - for this purpose use [SemanticVersion.parse].
+ */
 @Serializable
 data class SemanticVersion(
     val components: IntArray,
@@ -101,7 +125,7 @@ data class SemanticVersion(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is dev.kikugie.semver.data.SemanticVersion) return false
+        if (other !is SemanticVersion) return false
 
         if (!components.contentEquals(other.components)) return false
         if (preRelease != other.preRelease) return false
@@ -130,6 +154,7 @@ data class SemanticVersion(
         if (preRelease.isEmpty() && preRelease.isEmpty()) return 0
         if (preRelease.isEmpty() && other.preRelease.isNotEmpty()) return 1
         if (buildMetadata.isNotEmpty() && other.buildMetadata.isEmpty()) return -1
+        if (buildMetadata.isEmpty() && other.buildMetadata.isNotEmpty()) return 1
 
         val myTokenizer = StringTokenizer(preRelease, ".")
         val otherTokenizer = StringTokenizer(other.preRelease, ".")

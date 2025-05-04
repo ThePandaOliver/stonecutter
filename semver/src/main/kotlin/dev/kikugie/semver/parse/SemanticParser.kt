@@ -5,7 +5,7 @@ import dev.kikugie.semver.data.SemanticVersion
 @JvmInline
 value class SemanticParser(val input: String) {
     fun parse(): Result<SemanticVersion> = kotlin.runCatching {
-        check(input.isNotEmpty()) { "Version string cannot be empty" }
+        require(input.isNotEmpty()) { "Version string cannot be empty" }
         var cursor = 0
 
         val components = mutableListOf<Int>().also {
@@ -20,7 +20,7 @@ value class SemanticParser(val input: String) {
             input.substring(cursor + 1, it).apply { cursor = it }
         }
 
-        check(cursor == input.length) { "Version input string has not been fully consumed" }
+        require(cursor == input.length) { "Version input string has not been fully consumed" }
         SemanticVersion(components.toIntArray(), preRelease, buildMetadata)
     }
 
@@ -38,7 +38,7 @@ value class SemanticParser(val input: String) {
             }
             else -> break
         }
-        check(number >= 0) { "Invalid version component" }
+        require(number >= 0) { "Invalid version component" }
         collector += number
         return cursor
     }
@@ -47,12 +47,12 @@ value class SemanticParser(val input: String) {
         if (start >= input.length || input[start] != '-') return start
         var cursor = start + 1
 
-        check(cursor < input.length) { "Empty pre-release modifier" }
+        require(cursor < input.length) { "Empty pre-release modifier" }
         while (cursor < input.length) when (input[cursor]) {
             in 'a'..'z', in 'A'..'Z', in '0'..'9', '-', '_', '.' -> cursor++
             '+' -> if (cursor != start + 1) break
-            else throw IllegalStateException("Empty pre-release modifier")
-            else -> throw IllegalStateException("Invalid pre-release modifier")
+            else throw IllegalArgumentException("Empty pre-release modifier")
+            else -> throw IllegalArgumentException("Invalid pre-release modifier")
         }
         return cursor
     }
@@ -61,10 +61,10 @@ value class SemanticParser(val input: String) {
         if (start >= input.length || input[start] != '+') return start
         var cursor = start + 1
 
-        check(cursor < input.length) { "Empty build metadata" }
+        require(cursor < input.length) { "Empty build metadata" }
         while (cursor < input.length) when (input[cursor]) {
             in 'a'..'z', in 'A'..'Z', in '0'..'9', '-', '_', '.' -> cursor++
-            else -> throw IllegalStateException("Invalid build metadata")
+            else -> throw IllegalArgumentException("Invalid build metadata")
         }
         return cursor
     }
