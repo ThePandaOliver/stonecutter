@@ -7,17 +7,20 @@ public data class StonecutterFlag<T : Any>(
 
     init {
         require(key.isNotBlank()) { "Flag key cannot be blank" }
-        require(default is Boolean || default is Int || default is Long || default is Float || default is Double || default is String) {
-            "Flag value must be a primitive type, got ${default::class.simpleName} instead"
-        }
-        check(REGISTRY.putIfAbsent(key, this) == null) { "Flag '$key' already registered" }
+        require(key.all { it in 'a'..'z' || it == '_' }) { "Flag key must be written in snake case" }
+        require(default.isPrimitive()) { "Flag value must be a primitive type, got ${default::class.simpleName} instead" }
+        check(REGISTRY.putIfAbsent(key, this) == null) { "Flag '$key' is already registered" }
     }
 
     public companion object {
         private val REGISTRY: MutableMap<String, StonecutterFlag<*>> = mutableMapOf()
+        private fun Any.isPrimitive(): Boolean = when (this) {
+            is Boolean, is Int, is Long, is Float, is Double, is String -> true
+            else -> false
+        }
 
         @JvmStatic public fun named(name: String): StonecutterFlag<*> =
-            checkNotNull(REGISTRY[name]) { "Flag '$name' not registered" }
+            checkNotNull(REGISTRY[name]) { "Flag '$name' is not registered" }
 
         /**
          * Configures the automatic plugin application behaviour.
@@ -33,7 +36,7 @@ public data class StonecutterFlag<T : Any>(
          * **Default**: `true`
          */
         @JvmField
-        public val APPLY_PLUGIN_TO_NODES: StonecutterFlag<Boolean> = StonecutterFlag("applyPluginToNodes", true)
+        public val APPLY_PLUGIN_TO_NODES: StonecutterFlag<Boolean> = StonecutterFlag("apply_plugin_to_nodes", true)
 
         /**
          * Configures versioned source generation on IntelliJ sync.
@@ -42,7 +45,7 @@ public data class StonecutterFlag<T : Any>(
          * **Default**: `true`
          */
         @JvmField
-        public val GENERATE_SOURCES_ON_SYNC: StonecutterFlag<Boolean> = StonecutterFlag("generateSourcesOnSync", true)
+        public val GENERATE_SOURCES_ON_SYNC: StonecutterFlag<Boolean> = StonecutterFlag("generate_sources_on_sync", true)
 
         /**
          * Configures run configuration generation in IntelliJ.
@@ -52,7 +55,7 @@ public data class StonecutterFlag<T : Any>(
          * **Default**: `true`
          */
         @JvmField
-        public val GENERATE_SWITCH_ACTIONS: StonecutterFlag<Boolean> = StonecutterFlag("generateSwitchActions", true)
+        public val GENERATE_SWITCH_ACTIONS: StonecutterFlag<Boolean> = StonecutterFlag("generate_switch_actions", true)
 
         /**
          * Configures the source generation mode for [dev.kikugie.stonecutter.build.StonecutterBuildExtension].
@@ -63,7 +66,7 @@ public data class StonecutterFlag<T : Any>(
          * **Default**: `true`
          */
         @JvmField
-        public val APPEND_SOURCES_AFTER_EVAL: StonecutterFlag<Boolean> = StonecutterFlag("appendSourcesAfterEval", true)
+        public val APPEND_SOURCES_AFTER_EVAL: StonecutterFlag<Boolean> = StonecutterFlag("append_sources_after_eval", true)
 
         /**
          * Configures the implicit receiver target used in file processing.
@@ -72,6 +75,6 @@ public data class StonecutterFlag<T : Any>(
          * **Default**: `"minecraft"`
          */
         @JvmField
-        public val IMPLICIT_RECEIVER: StonecutterFlag<String> = StonecutterFlag("implicitReceiver", "minecraft")
+        public val IMPLICIT_RECEIVER: StonecutterFlag<String> = StonecutterFlag("implicit_receiver", "minecraft")
     }
 }

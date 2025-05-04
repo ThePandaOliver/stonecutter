@@ -104,7 +104,7 @@ tasks {
 
         from(sourceSets.main.map(SourceSet::getOutput))
         dependencies {
-//            include(project(":semver"))
+            include(project(":semver"))
             include(project(":stitcher"))
         }
     }
