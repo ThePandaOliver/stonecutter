@@ -5,6 +5,14 @@ import dev.kikugie.stonecutter.StonecutterDevAPI
 internal fun CharSequence.getOrDefault(index: Int, default: Char = ' ') =
     if (index >= 0 && index < length) get(index) else default
 
+internal inline fun CharSequence.countIn(start: Int = 0, end: Int = length, predicate: (Char) -> Boolean): Int {
+    var offset = start
+    while (offset < end)
+        if (predicate(this[offset])) offset++
+        else break
+    return offset - start
+}
+
 internal fun Char.isEnglishLetter() =
     this in 'a'..'z' || this in 'A'..'Z'
 

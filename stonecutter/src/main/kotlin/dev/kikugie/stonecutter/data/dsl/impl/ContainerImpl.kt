@@ -1,8 +1,10 @@
 package dev.kikugie.stonecutter.data.dsl.impl
 
-import dev.kikugie.semver.Version
+import dev.kikugie.semver.data.Version as ParsedVersion
 import dev.kikugie.stitcher.data.replacement.ReplacementList
 import dev.kikugie.stitcher.data.replacement.ReplacementPhase
+import dev.kikugie.stonecutter.Identifier
+import dev.kikugie.stonecutter.Version
 import dev.kikugie.stonecutter.data.dsl.*
 import dev.kikugie.stonecutter.util.invoke
 import dev.kikugie.stonecutter.util.isIdentifier
@@ -26,8 +28,11 @@ internal class SwapContainerImpl(delegate: MutableMap<String, String>) : Checked
     override fun checkKey(key: String) = checkKeyImpl(key, "Swap")
 }
 
-internal class DependencyContainerImpl(delegate: MutableMap<String, Version>) : CheckedMutableMap<String, Version>(delegate), DependencyContainer {
+internal class DependencyContainerImpl(delegate: MutableMap<String, ParsedVersion>) : CheckedMutableMap<String, ParsedVersion>(delegate), DependencyContainer {
     override fun checkKey(key: String) = checkKeyImpl(key, "Dependency")
+
+    override fun put(id: Identifier, version: Version): ParsedVersion? =
+        put(id, LenientOperations.parse(version))
 }
 
 internal class FilterContainerImpl(extensions: MutableSet<String>, excludes: MutableSet<String>) : FilterContainer {

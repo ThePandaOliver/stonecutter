@@ -1,7 +1,6 @@
 package dev.kikugie.stitcher.lexer
 
-import dev.kikugie.semver.VersionParser
-import dev.kikugie.semver.VersionParsingException
+import dev.kikugie.semver.data.VersionPredicate
 import dev.kikugie.stitcher.data.token.NullType
 import dev.kikugie.stitcher.data.token.StitcherTokenType.*
 import dev.kikugie.stitcher.data.token.TokenType
@@ -81,12 +80,11 @@ class TokenMatcher(private val input: CharSequence) {
         return slice(offset..<offset + count, IDENTIFIER)
     }
 
-    private fun matchPredicate(offset: Int, lenient: Boolean): LexSlice? = try {
-        val end = if (lenient) VersionParser.parsePredicateLenient(input, offset).end
-        else VersionParser.parsePredicate(input, offset).end
-        slice(offset..<end, PREDICATE)
-    } catch (e: VersionParsingException) {
-        null
+    private fun matchPredicate(offset: Int, lenient: Boolean): LexSlice? {
+        val ops = if (lenient) VersionPredicate else VersionPredicate.Semantic
+        val end = ops.locate(input, offset).also { if (it < 0) return null }
+        if (ops.parse(input.substring(offset, end)).isFailure) return null
+        return slice(offset..<end, PREDICATE)
     }
 
     private fun slice(range: IntRange, type: TokenType) =

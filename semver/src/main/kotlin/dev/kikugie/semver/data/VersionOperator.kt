@@ -1,16 +1,9 @@
 package dev.kikugie.semver.data
 
-interface VersionOperator {
-    val literal: String
-    operator fun invoke(left: Version, right: Version): Boolean
-}
-
-object ImplicitEqualOperator : VersionOperator {
-    override val literal: String = ""
-    override fun invoke(left: Version, right: Version): Boolean = left.compareTo(right) == 0
-}
-
-enum class CommonOperator(override val literal: String) : VersionOperator {
+enum class VersionOperator(val literal: String) {
+    IMPLICIT_EQUAL("") {
+        override fun invoke(left: Version, right: Version) = left.compareTo(right) == 0
+    },
     EQUAL("=") {
         override fun invoke(left: Version, right: Version) = left.compareTo(right) == 0
     },
@@ -25,10 +18,7 @@ enum class CommonOperator(override val literal: String) : VersionOperator {
     },
     GREATER_EQUAL(">=") {
         override fun invoke(left: Version, right: Version) = left >= right
-    };
-}
-
-enum class SemanticOperator(override val literal: String) : VersionOperator {
+    },
     SAME_MINOR("~") {
         override fun invoke(left: Version, right: Version) = left is SemanticVersion && right is SemanticVersion
             && left >= right
@@ -40,4 +30,6 @@ enum class SemanticOperator(override val literal: String) : VersionOperator {
             && left >= right
             && left.components[0] == right.components[0]
     };
+
+    abstract operator fun invoke(left: Version, right: Version): Boolean
 }

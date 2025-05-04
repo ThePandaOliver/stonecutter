@@ -1,7 +1,6 @@
 package dev.kikugie.stitcher.transformer
 
-import dev.kikugie.semver.Version
-import dev.kikugie.semver.VersionParser
+import dev.kikugie.semver.data.Version
 import dev.kikugie.stitcher.data.replacement.ReplacementList
 import kotlinx.serialization.Serializable
 
@@ -26,7 +25,7 @@ data class TransformParameters(
         fun build() = TransformParameters(
             swaps.toMap(),
             constants.toMap(),
-            dependencies.mapValues { VersionParser.parseLenient(it.value).value },
+            dependencies.mapValues { Version.parse(it.value).getOrThrow() },
             replacements
         )
     }

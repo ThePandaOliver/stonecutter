@@ -1,6 +1,6 @@
 package dev.kikugie.stonecutter.build
 
-import dev.kikugie.semver.VersionParser
+import dev.kikugie.semver.data.Version as ParsedVersion
 import dev.kikugie.stonecutter.data.dsl.ConstantContainer
 import dev.kikugie.stonecutter.build.param.StonecutterBuildProperties
 import dev.kikugie.stonecutter.build.task.StonecutterBuildTasksImpl
@@ -12,7 +12,9 @@ import dev.kikugie.stonecutter.data.dsl.DependencyContainer
 import dev.kikugie.stonecutter.data.dsl.FilterContainer
 import dev.kikugie.stonecutter.data.dsl.ReplacementContainer
 import dev.kikugie.stonecutter.data.dsl.SwapContainer
+import dev.kikugie.stonecutter.data.dsl.VersionOperations
 import dev.kikugie.stonecutter.data.dsl.impl.FilterContainerImpl
+import dev.kikugie.stonecutter.data.dsl.impl.LenientOperations
 import dev.kikugie.stonecutter.data.tree.struct.ProjectBranch
 import dev.kikugie.stonecutter.data.tree.struct.ProjectNode
 import dev.kikugie.stonecutter.data.tree.struct.ProjectTree
@@ -23,7 +25,8 @@ import kotlinx.serialization.json.Json
 import org.gradle.api.Project
 import org.gradle.api.tasks.SourceSet
 
-internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuildExtension {
+internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuildExtension,
+VersionOperations<ParsedVersion> by LenientOperations {
     override val tasks: StonecutterBuildTasksImpl = StonecutterBuildTasksImpl(this)
     override val tree: ProjectTree by lazy { project.findProjectTree() }
     override val branch: ProjectBranch by lazy { tree.getChecked(parent.hierarchy) { "Branch for '$it' not found in ${tree.hierarchy}: ${keysToString()}" } }
@@ -99,8 +102,7 @@ internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuil
     }
 
     private fun putDefaultReceiver() {
-        val parsed = VersionParser.parseLenient(current.version, full = true).value
-        val version = dependencies.getOrDefault(flags[StonecutterFlag.IMPLICIT_RECEIVER], parsed)
+        val version = dependencies.getOrDefault(flags[StonecutterFlag.IMPLICIT_RECEIVER], parse(current.version))
         dependencies[flags[StonecutterFlag.IMPLICIT_RECEIVER]] = version
         data.dependencies.delegate[""] = version
     }

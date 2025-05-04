@@ -1,6 +1,5 @@
 package dev.kikugie.stitcher.data.component
 
-import dev.kikugie.semver.VersionPredicate
 import dev.kikugie.stitcher.data.component.Component.Visitor
 import dev.kikugie.stitcher.data.scope.Scope
 import dev.kikugie.stitcher.data.scope.ScopeType

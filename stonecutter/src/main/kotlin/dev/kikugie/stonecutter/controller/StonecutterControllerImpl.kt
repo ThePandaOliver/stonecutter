@@ -1,5 +1,6 @@
 package dev.kikugie.stonecutter.controller
 
+import dev.kikugie.semver.data.Version as ParsedVersion
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterInternalAPI
 import dev.kikugie.stonecutter.StonecutterPlugin
@@ -16,6 +17,8 @@ import dev.kikugie.stonecutter.data.StonecutterProject
 import dev.kikugie.stonecutter.data.container.ProjectTreeContainer
 import dev.kikugie.stonecutter.data.container.TreeBuilderContainer
 import dev.kikugie.stonecutter.data.container.getContainer
+import dev.kikugie.stonecutter.data.dsl.VersionOperations
+import dev.kikugie.stonecutter.data.dsl.impl.LenientOperations
 import dev.kikugie.stonecutter.data.tree.*
 import dev.kikugie.stonecutter.data.tree.struct.ProjectBranchImpl
 import dev.kikugie.stonecutter.data.tree.struct.ProjectNodeImpl
@@ -30,14 +33,17 @@ import org.gradle.kotlin.dsl.named
 import java.io.File
 
 @OptIn(StonecutterInternalAPI::class)
-internal open class StonecutterControllerImpl(val root: Project) : StonecutterControllerExtension {
+internal open class StonecutterControllerImpl(val root: Project) : StonecutterControllerExtension,
+    VersionOperations<ParsedVersion> by LenientOperations {
     override val tree: ProjectTreeImpl = constructTree().also {
         root.gradle.getContainer<ProjectTreeContainer>().register(root.hierarchy, it)
     }
     override val flags: MutableFlagContainer = FlagContainerImpl()
     override val tasks: StonecutterControllerTasksImpl = StonecutterControllerTasksImpl(this)
+
     /**Stores configured build data instances.*/
     private val data: MutableMap<ProjectHierarchy, StonecutterBuildProperties> = mutableMapOf()
+
     /**
      * Stores lazy functions for build configuration.
      * When a [StonecutterBuildData] instance is created,

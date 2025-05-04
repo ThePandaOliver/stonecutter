@@ -1,9 +1,12 @@
 package dev.kikugie.stonecutter.settings
 
+import dev.kikugie.semver.data.SemanticVersion
+import dev.kikugie.semver.data.Version as ParsedVersion
 import dev.kikugie.stonecutter.LENIENT_JSON
 import dev.kikugie.stonecutter.ProjectReference
 import dev.kikugie.stonecutter.StonecutterAPI
-import dev.kikugie.stonecutter.StonecutterUtility
+import dev.kikugie.stonecutter.data.dsl.VersionOperations
+import dev.kikugie.stonecutter.data.dsl.impl.SemanticOperations
 import dev.kikugie.stonecutter.data.tree.TreeBuilder
 import dev.kikugie.stonecutter.data.tree.TreeSettings
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -23,7 +26,7 @@ private fun readTreeSettings(file: File): Action<TreeBuilder> {
 }
 
 @StonecutterAPI
-public abstract class StonecutterSettingsExtension(internal val objects: ObjectFactory) : StonecutterUtility {
+public abstract class StonecutterSettingsExtension(internal val objects: ObjectFactory) : VersionOperations<ParsedVersion> {
     private lateinit var shared: Action<TreeBuilder>
 
     /**
@@ -34,6 +37,9 @@ public abstract class StonecutterSettingsExtension(internal val objects: ObjectF
 
     /**Buildscript used by all subprojects. Defaults to `build.gradle`.*/
     public abstract val centralScript: Property<String>
+
+    public val semantics: VersionOperations<SemanticVersion>
+        get() = SemanticOperations
 
     /* Shared configuration */
     /**Stores the provided configuration to be used in [create] methods.*/

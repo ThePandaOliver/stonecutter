@@ -1,17 +1,21 @@
 package dev.kikugie.stonecutter.build.param
 
+import dev.kikugie.semver.data.Version as ParsedVersion
 import dev.kikugie.stonecutter.data.dsl.FilterContainer
 import dev.kikugie.stonecutter.data.dsl.ReplacementContainer
 import dev.kikugie.stonecutter.data.dsl.SwapContainer
+import dev.kikugie.stonecutter.data.dsl.VersionOperations
 import dev.kikugie.stonecutter.data.dsl.impl.ConstantContainerImpl
 import dev.kikugie.stonecutter.data.dsl.impl.DependencyContainerImpl
 import dev.kikugie.stonecutter.data.dsl.impl.FilterContainerImpl
+import dev.kikugie.stonecutter.data.dsl.impl.LenientOperations
 import dev.kikugie.stonecutter.data.dsl.impl.ReplacementContainerImpl
 import dev.kikugie.stonecutter.data.dsl.impl.SwapContainerImpl
 import org.gradle.api.model.ObjectFactory
 import javax.inject.Inject
 
-internal open class StonecutterBuildProperties @Inject constructor(objects: ObjectFactory) : DeprecatedBuildParams {
+internal open class StonecutterBuildProperties @Inject constructor(objects: ObjectFactory) : DeprecatedBuildParams,
+    VersionOperations<ParsedVersion> by LenientOperations {
     val data = StonecutterBuildData()
 
     override val constants: ConstantContainerImpl = ConstantContainerImpl(data.constants as MutableMap)

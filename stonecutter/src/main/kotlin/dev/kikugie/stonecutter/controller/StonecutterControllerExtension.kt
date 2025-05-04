@@ -1,19 +1,22 @@
 package dev.kikugie.stonecutter.controller
 
+import dev.kikugie.semver.data.SemanticVersion
+import dev.kikugie.semver.data.Version as ParsedVersion
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterAPI
-import dev.kikugie.stonecutter.StonecutterUtility
 import dev.kikugie.stonecutter.data.StonecutterProject
 import dev.kikugie.stonecutter.controller.flag.MutableFlagContainer
 import dev.kikugie.stonecutter.controller.flag.StonecutterFlag
 import dev.kikugie.stonecutter.controller.tasks.StonecutterControllerTasks
+import dev.kikugie.stonecutter.data.dsl.VersionOperations
+import dev.kikugie.stonecutter.data.dsl.impl.SemanticOperations
 import dev.kikugie.stonecutter.data.tree.struct.ProjectTree
 import groovy.lang.Closure
 import java.io.File
 
 /**Stonecutter plugin available in `stonecutter.gradle[.kts]`.*/
 @StonecutterAPI
-public interface StonecutterControllerExtension : StonecutterUtility {
+public interface StonecutterControllerExtension : VersionOperations<ParsedVersion> {
     public val tree: ProjectTree
 
     /**Active version assigned by [active] function.*/
@@ -27,6 +30,8 @@ public interface StonecutterControllerExtension : StonecutterUtility {
      * these may contain duplicate [StonecutterProject.project] entries.
      */
     public val versions: Collection<StonecutterProject> get() = tree.versions
+
+    public val semantics: VersionOperations<SemanticVersion> get() = SemanticOperations
 
     /**
      * Structured task container for version switches,

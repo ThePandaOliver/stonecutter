@@ -1,15 +1,87 @@
 package dev.kikugie.semver.data
 
+import dev.kikugie.semver.parse.SemanticParser
+import dev.kikugie.semver.util.allowedInStringVer
+import dev.kikugie.semver.util.countIn
+import kotlinx.serialization.Serializable
 import java.util.StringTokenizer
-import kotlin.math.max
 
-interface Version : Comparable<Version>
+@Serializable
+sealed interface Version : Comparable<Version> {
+    sealed interface Operations {
+        fun parse(value: String): Result<Version>
+        fun locate(input: CharSequence, start: Int = 0, end: Int = input.length): Int
+    }
 
+    companion object : Operations {
+        override fun parse(value: String): Result<Version> {
+            SemanticVersion.parse(value).let { if (it.isSuccess) return it }
+            return StringVersion.parse(value)
+        }
+
+        override fun locate(input: CharSequence, start: Int, end: Int): Int {
+            SemanticVersion.locate(input, start, end).let { if (it >= 0) return it }
+            return StringVersion.locate(input, start, end)
+        }
+    }
+}
+
+@Serializable @JvmInline
+value class StringVersion(val value: String) : Version {
+    companion object : Version.Operations {
+        /**
+         * Validates the input [value] as a [StringVersion], returning the corresponding [Result].
+         */
+        @JvmStatic override fun parse(value: String): Result<StringVersion> = kotlin.runCatching {
+            require(value.isNotEmpty()) { "Version string cannot be empty" }
+            require(value.all(Char::allowedInStringVer)) { "Version string contains invalid characters" }
+            StringVersion(value)
+        }
+
+        /**
+         * Loosely determines the [StringVersion] boundary in the given [input] in [start]..<[end].
+         * Returns the exclusive end index of the version string, or -1 if the input is not a valid version string.
+         */
+        @JvmStatic override fun locate(input: CharSequence, start: Int, end: Int): Int {
+            val coercedStart = start.coerceAtLeast(0)
+            val coercedEnd = end.coerceAtMost(input.length)
+            return if (coercedStart >= coercedEnd) -1
+            else coercedStart + input.countIn(coercedStart, coercedEnd, Char::allowedInStringVer)
+        }
+    }
+
+    override fun toString(): String = value
+    override fun compareTo(other: Version): Int =
+        value.compareTo(other.toString())
+}
+
+@Serializable
 data class SemanticVersion(
     val components: IntArray,
     val preRelease: String = "",
     val buildMetadata: String = "",
 ) : Version {
+    companion object : Version.Operations {
+        /**
+         * Parses the given [value] as a [SemanticVersion], returning the corresponding [Result].
+         */
+        @JvmStatic override fun parse(value: String): Result<SemanticVersion> =
+            SemanticParser(value).parse()
+
+        /**
+         * Loosely determines the [SemanticVersion] boundary in the given [input] in [start]..<[end].
+         * Returns the exclusive end index of the version string, or -1 if the input is not a valid semantic version string.
+         */
+        @JvmStatic override fun locate(input: CharSequence, start: Int, end: Int): Int {
+            val coercedStart = start.coerceAtLeast(0)
+            val coercedEnd = end.coerceAtMost(input.length)
+            return if (coercedStart >= coercedEnd) -1
+            else coercedStart + input.countIn(coercedStart, coercedEnd) {
+                it.allowedInStringVer() || it == '.' || it == '+'
+            }
+        }
+    }
+
     private val friendlyName by lazy {
         buildString {
             append(components.joinToString("."))
@@ -22,14 +94,14 @@ data class SemanticVersion(
 
     override fun toString(): String = friendlyName
     override fun compareTo(other: Version): Int = when(other) {
-        is SemanticVersion -> compareToComponents(other).takeIf { it != 0 }
-            ?: compareToPreModifier(other)
-        else -> friendlyName compareTo other.toString()
+        is StringVersion -> friendlyName.compareTo(other.value)
+        is SemanticVersion -> compareComponents(other)
+            .let { if (it != 0) it else compareToPreModifier(other) }
     }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is SemanticVersion) return false
+        if (other !is dev.kikugie.semver.data.SemanticVersion) return false
 
         if (!components.contentEquals(other.components)) return false
         if (preRelease != other.preRelease) return false
@@ -45,12 +117,11 @@ data class SemanticVersion(
         return result
     }
 
-    private fun compareToComponents(other: SemanticVersion): Int {
-        for (i in 0 until max(components.size, other.components.size)) {
+    private fun compareComponents(other: SemanticVersion): Int {
+        for (i in 0 until maxOf(components.size, other.components.size)) {
             val first = components.getOrElse(i) { 0 }
             val second = other.components.getOrElse(i) { 0 }
-            val compare = first.compareTo(second)
-            if (compare != 0) return compare
+            first.compareTo(second).let { if (it != 0) return it }
         }
         return 0
     }
@@ -86,11 +157,4 @@ data class SemanticVersion(
         }
         return 0
     }
-}
-
-@JvmInline
-value class PlainVersion(val value: String) : Version {
-    override fun toString(): String = value
-    override fun compareTo(other: Version): Int =
-        value compareTo other.toString()
 }

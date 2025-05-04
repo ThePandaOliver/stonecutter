@@ -1,19 +1,23 @@
 package dev.kikugie.stonecutter.build.param
 
+import dev.kikugie.semver.data.SemanticVersion
+import dev.kikugie.semver.data.Version as ParsedVersion
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterAPI
-import dev.kikugie.stonecutter.StonecutterUtility
 import dev.kikugie.stonecutter.Version
 import dev.kikugie.stonecutter.data.dsl.*
+import dev.kikugie.stonecutter.data.dsl.impl.SemanticOperations
 import org.gradle.api.Action
 
 @StonecutterAPI
-public interface StonecutterBuildParams : StonecutterUtility {
+public interface StonecutterBuildParams : VersionOperations<ParsedVersion> {
     public val constants: ConstantContainer
     public val dependencies: DependencyContainer
     public val swaps: SwapContainer
     public val replacements: ReplacementContainer
     public val filters: FilterContainer
+    public val semantics: VersionOperations<SemanticVersion>
+        get() = SemanticOperations
 
     public fun constants(block: Action<ConstantContainer>): Unit = block.execute(constants)
     public fun dependencies(block: Action<DependencyContainer>): Unit = block.execute(dependencies)

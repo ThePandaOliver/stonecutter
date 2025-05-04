@@ -1,11 +1,9 @@
 package dev.kikugie.stonecutter.data.dsl
 
-import dev.kikugie.semver.VersionParser
-import dev.kikugie.semver.Version as ParsedVersion
+import dev.kikugie.semver.data.Version as ParsedVersion
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.Version
 import dev.kikugie.stonecutter.StonecutterAPI
-import org.jetbrains.annotations.ApiStatus
 
 @StonecutterAPI @StonecutterParametersDSL
 public interface ConstantContainer : MutableMap<Identifier, Boolean> {
@@ -26,11 +24,8 @@ public interface DependencyContainer : MutableMap<Identifier, ParsedVersion> {
     public fun put(id: Identifier, version: () -> Version): ParsedVersion? = put(id, version())
 
     public operator fun set(id: Identifier, version: Version): ParsedVersion? = put(id, version)
-    public fun put(id: Identifier, version: Version): ParsedVersion? = put(id, parse(version))
     public fun putIfAbsent(id: Identifier, value: Version): ParsedVersion? = if (id !in this) put(id, value) else null
-
-    @ApiStatus.Experimental
-    public fun parse(version: Version): ParsedVersion = VersionParser.parseLenient(version, full = true).value
+    public fun put(id: Identifier, version: Version): ParsedVersion?
 }
 
 @StonecutterAPI @StonecutterParametersDSL

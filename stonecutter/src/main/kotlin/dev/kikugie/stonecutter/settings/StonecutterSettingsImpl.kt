@@ -1,5 +1,6 @@
 package dev.kikugie.stonecutter.settings
 
+import dev.kikugie.semver.data.Version as ParsedVersion
 import dev.kikugie.stonecutter.ProjectReference
 import dev.kikugie.stonecutter.StonecutterInternalAPI
 import dev.kikugie.stonecutter.StonecutterPlugin
@@ -8,6 +9,8 @@ import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
 import dev.kikugie.stonecutter.data.container.ProjectTreeContainer
 import dev.kikugie.stonecutter.data.container.TreeBuilderContainer
 import dev.kikugie.stonecutter.data.container.createContainer
+import dev.kikugie.stonecutter.data.dsl.VersionOperations
+import dev.kikugie.stonecutter.data.dsl.impl.LenientOperations
 import dev.kikugie.stonecutter.data.tree.BranchBuilder
 import dev.kikugie.stonecutter.data.tree.NodeBuilder
 import dev.kikugie.stonecutter.data.tree.TreeBuilder
@@ -19,7 +22,6 @@ import org.gradle.api.initialization.Settings
 import org.gradle.api.invocation.Gradle
 import org.gradle.api.logging.Logger
 import org.gradle.api.model.ObjectFactory
-import org.gradle.api.problems.ProblemReporter
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
@@ -34,7 +36,7 @@ import kotlin.io.path.notExists
 
 @OptIn(StonecutterInternalAPI::class)
 internal open class StonecutterSettingsImpl @Inject constructor(private val settings: Settings, objects: ObjectFactory) :
-    StonecutterSettingsExtension(objects) {
+    StonecutterSettingsExtension(objects), VersionOperations<ParsedVersion> by LenientOperations {
     final override val kotlinController: Property<Boolean> = objects.property()
     final override val centralScript: Property<String> = objects.property()
     internal val providers: ProviderFactory get() = settings.providers
