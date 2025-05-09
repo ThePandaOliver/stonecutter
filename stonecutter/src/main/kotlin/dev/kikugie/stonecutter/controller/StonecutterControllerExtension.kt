@@ -12,6 +12,7 @@ import dev.kikugie.stonecutter.data.dsl.VersionOperations
 import dev.kikugie.stonecutter.data.dsl.impl.SemanticOperations
 import dev.kikugie.stonecutter.data.tree.struct.ProjectTree
 import groovy.lang.Closure
+import org.jetbrains.annotations.ApiStatus
 import java.io.File
 
 /**Stonecutter plugin available in `stonecutter.gradle[.kts]`.*/
@@ -52,6 +53,8 @@ public interface StonecutterControllerExtension : VersionOperations<ParsedVersio
     public infix fun <T : Any> StonecutterFlag<T>.assign(value: T): Unit =
         flags.set(this, value)
 
+    @ApiStatus.Experimental
+    public fun init()
     /**
      * Assigns the given [StonecutterProject.project] name as the tree's active entry.
      * When switching versions, `stonecutter.gradle[.kts]` will be updated.

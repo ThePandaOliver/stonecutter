@@ -50,6 +50,7 @@ internal open class StonecutterControllerImpl(val root: Project) : StonecutterCo
      * the functions are applied and removed from the map.
      */
     private val configurations: MutableMap<ProjectHierarchy, MutableList<(StonecutterDelegatedBuildParams) -> Unit>> = mutableMapOf()
+    private var hasInitialized: Boolean = false
 
     init {
         configureProject()
@@ -57,15 +58,9 @@ internal open class StonecutterControllerImpl(val root: Project) : StonecutterCo
         configureModelTasks()
     }
 
-    override fun active(name: Identifier) {
-        check(tree.current == null) { "Active version has already been set!" }
-        initializePluginConfiguration(name)
-    }
-
-    override fun active(file: File) {
-        check(tree.current == null) { "Active version has already been set!" }
-        initializePluginConfiguration(file)
-    }
+    override fun init() = initializePluginConfiguration(null)
+    override fun active(name: Identifier) = initializePluginConfiguration(name)
+    override fun active(file: File) = initializePluginConfiguration(file)
 
     override fun parameters(config: StonecutterDelegatedBuildParams.() -> Unit) {
         for (branch in tree.branches) for (version in versions) configurations
@@ -82,7 +77,8 @@ internal open class StonecutterControllerImpl(val root: Project) : StonecutterCo
 
     private fun configureProject() = with(root) {
         afterEvaluate {
-            if (plugins.hasPlugin("java")) logger.warn("Stonecutter branch root $hierarchy should not be a buildable project.")
+            if (!hasInitialized) logger.warn("Stonecutter branch root $hierarchy has not been initialized - the plugin configuration may be incomplete. Use `stonecutter.init()` or `stonecutter.active()` to initialize it.")
+            if (plugins.hasPlugin("java")) logger.warn("Stonecutter branch root $hierarchy should not be a buildable project. Remove the `java` plugin to fix the issue.")
         }
 
         if (tree.current == null) return@with
@@ -105,12 +101,13 @@ internal open class StonecutterControllerImpl(val root: Project) : StonecutterCo
         }
     }
 
-    private fun initializePluginConfiguration(active: Any) {
+    private fun initializePluginConfiguration(active: Any?) {
+        check(!hasInitialized) { "The plugin has already been initialized!" }
         fun findByName(name: String): StonecutterProject = checkNotNull(tree.versions.find { it.project == name }) {
             "Version '$name' is not registered. This might've been caused by removing a version that is set to be active."
         }
 
-        when (active) {
+        if (active != null)  when (active) {
             is String -> {
                 tree.current = findByName(active)
                 val controller = root.getController()!!
@@ -125,6 +122,7 @@ internal open class StonecutterControllerImpl(val root: Project) : StonecutterCo
 
         if (flags[StonecutterFlag.APPLY_PLUGIN_TO_NODES]) for (it in tree.nodes)
             it.project.plugins.apply(StonecutterPlugin::class)
+        hasInitialized = true
     }
 
     private fun configureSyncTask() = root.afterEvaluate {
