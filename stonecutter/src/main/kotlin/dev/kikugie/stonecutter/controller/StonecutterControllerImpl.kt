@@ -127,8 +127,8 @@ internal open class StonecutterControllerImpl(val root: Project) : StonecutterCo
             it.project.plugins.apply(StonecutterPlugin::class)
     }
 
-    private fun configureSyncTask() = root.rootProject.afterEvaluate {
-        if (flags[StonecutterFlag.GENERATE_SWITCH_ACTIONS]) tasks.named<IdeaSetupTask>("stonecutterIdea") {
+    private fun configureSyncTask() = root.afterEvaluate {
+        if (flags[StonecutterFlag.GENERATE_SWITCH_ACTIONS]) rootProject.tasks.named<IdeaSetupTask>("stonecutterIdea") {
             versions[tree.hierarchy] = tree.versions.map(StonecutterProject::project)
         }
     }

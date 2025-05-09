@@ -109,11 +109,6 @@ tasks {
         }
     }
 
-    register("publishSnapshotLocal") {
-        group = "publishing"
-        dependsOn("publishToMavenLocal")
-    }
-
     named<Jar>("javadocJar") {
         from(named("dokkaGeneratePublicationJavadoc"))
     }
