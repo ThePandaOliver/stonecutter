@@ -142,6 +142,7 @@ public abstract interface class dev/kikugie/stonecutter/controller/StonecutterCo
 	public abstract fun getTree ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectTree;
 	public fun getVcsVersion ()Ldev/kikugie/stonecutter/data/StonecutterProject;
 	public fun getVersions ()Ljava/util/Collection;
+	public abstract fun init ()V
 	public fun parameters (Lgroovy/lang/Closure;)V
 	public abstract fun parameters (Lkotlin/jvm/functions/Function1;)V
 }
@@ -218,12 +219,14 @@ public final class dev/kikugie/stonecutter/controller/StonecutterDelegatedBuildP
 
 public abstract interface class dev/kikugie/stonecutter/controller/flag/FlagContainer {
 	public abstract fun get (Ldev/kikugie/stonecutter/controller/flag/StonecutterFlag;)Ljava/lang/Object;
+	public fun get (Ljava/lang/String;)Ljava/lang/Object;
 	public fun invoke (Ldev/kikugie/stonecutter/controller/flag/StonecutterFlag;)Ljava/lang/Object;
 }
 
 public abstract interface class dev/kikugie/stonecutter/controller/flag/MutableFlagContainer : dev/kikugie/stonecutter/controller/flag/FlagContainer {
 	public fun invoke (Ldev/kikugie/stonecutter/controller/flag/StonecutterFlag;Ljava/lang/Object;)V
 	public abstract fun set (Ldev/kikugie/stonecutter/controller/flag/StonecutterFlag;Ljava/lang/Object;)V
+	public fun set (Ljava/lang/String;Ljava/lang/Object;)V
 }
 
 public final class dev/kikugie/stonecutter/controller/flag/StonecutterFlag {
