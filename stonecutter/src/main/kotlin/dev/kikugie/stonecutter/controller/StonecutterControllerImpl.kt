@@ -80,25 +80,6 @@ internal open class StonecutterControllerImpl(val root: Project) : StonecutterCo
             if (!hasInitialized) logger.warn("Stonecutter branch root $hierarchy has not been initialized - the plugin configuration may be incomplete. Use `stonecutter.init()` or `stonecutter.active()` to initialize it.")
             if (plugins.hasPlugin("java")) logger.warn("Stonecutter branch root $hierarchy should not be a buildable project. Remove the `java` plugin to fix the issue.")
         }
-
-        if (tree.current == null) return@with
-        tasks.register("Reset active project") {
-            group = "stonecutter"
-            description = "Sets active version to ${tree.vcs.project}. Run this before making a commit."
-            dependsOn("${root.hierarchy.orBlank()}:${this@StonecutterControllerImpl.tasks.switchTaskName(tree.vcs.project)}")
-        }
-
-        tasks.register("Refresh active project") {
-            group = "stonecutter"
-            description = "Runs the comment processor on the active version. Useful for fixing comments in wrong states."
-            dependsOn("${root.hierarchy.orBlank()}:${this@StonecutterControllerImpl.tasks.switchTaskName(tree.current!!.project)}")
-        }
-
-        for (it in tree.versions) tasks.register("Set active project to ${it.project}") {
-            group = "stonecutter"
-            description = "Sets the active project to ${it.project}, processing all versioned comments."
-            dependsOn("${root.hierarchy.orBlank()}:${this@StonecutterControllerImpl.tasks.switchTaskName(it.project)}")
-        }
     }
 
     private fun initializePluginConfiguration(active: Any?) {
@@ -107,7 +88,7 @@ internal open class StonecutterControllerImpl(val root: Project) : StonecutterCo
             "Version '$name' is not registered. This might've been caused by removing a version that is set to be active."
         }
 
-        if (active != null)  when (active) {
+        if (active != null) when (active) {
             is String -> {
                 tree.current = findByName(active)
                 val controller = root.getController()!!
@@ -122,6 +103,27 @@ internal open class StonecutterControllerImpl(val root: Project) : StonecutterCo
 
         if (flags[StonecutterFlag.APPLY_PLUGIN_TO_NODES]) for (it in tree.nodes)
             it.project.plugins.apply(StonecutterPlugin::class)
+
+        if (tree.current != null) with(root) {
+            tasks.register("Reset active project") {
+                group = "stonecutter"
+                description = "Sets active version to ${tree.vcs.project}. Run this before making a commit."
+                dependsOn("${root.hierarchy.orBlank()}:${this@StonecutterControllerImpl.tasks.switchTaskName(tree.vcs.project)}")
+            }
+
+            tasks.register("Refresh active project") {
+                group = "stonecutter"
+                description = "Runs the comment processor on the active version. Useful for fixing comments in wrong states."
+                dependsOn("${root.hierarchy.orBlank()}:${this@StonecutterControllerImpl.tasks.switchTaskName(tree.current!!.project)}")
+            }
+
+            for (it in tree.versions) tasks.register("Set active project to ${it.project}") {
+                group = "stonecutter"
+                description = "Sets the active project to ${it.project}, processing all versioned comments."
+                dependsOn("${root.hierarchy.orBlank()}:${this@StonecutterControllerImpl.tasks.switchTaskName(it.project)}")
+            }
+        }
+
         hasInitialized = true
     }
 
