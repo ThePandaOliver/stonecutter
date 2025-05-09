@@ -75,11 +75,9 @@ internal open class StonecutterControllerImpl(val root: Project) : StonecutterCo
         }
     }
 
-    private fun configureProject() = with(root) {
-        afterEvaluate {
-            if (!hasInitialized) logger.warn("Stonecutter branch root $hierarchy has not been initialized - the plugin configuration may be incomplete. Use `stonecutter.init()` or `stonecutter.active()` to initialize it.")
-            if (plugins.hasPlugin("java")) logger.warn("Stonecutter branch root $hierarchy should not be a buildable project. Remove the `java` plugin to fix the issue.")
-        }
+    private fun configureProject() = root.afterEvaluate {
+        if (!hasInitialized) error("Stonecutter branch root $hierarchy has not been initialized. Use `stonecutter.init()` or `stonecutter.active()` to initialize it.")
+        if (plugins.hasPlugin("java")) logger.warn("Stonecutter branch root $hierarchy should not be a buildable project. Remove the `java` plugin to fix the issue.")
     }
 
     private fun initializePluginConfiguration(active: Any?) {
