@@ -2,7 +2,6 @@ package dev.kikugie.stonecutter.controller
 
 import dev.kikugie.semver.data.SemanticVersion
 import dev.kikugie.semver.data.Version as ParsedVersion
-import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.data.StonecutterProject
 import dev.kikugie.stonecutter.controller.flag.MutableFlagContainer
@@ -12,7 +11,6 @@ import dev.kikugie.stonecutter.data.dsl.VersionOperations
 import dev.kikugie.stonecutter.data.dsl.impl.SemanticOperations
 import dev.kikugie.stonecutter.data.tree.struct.ProjectTree
 import groovy.lang.Closure
-import org.jetbrains.annotations.ApiStatus
 import java.io.File
 
 /**Stonecutter plugin available in `stonecutter.gradle[.kts]`.*/
@@ -53,23 +51,19 @@ public interface StonecutterControllerExtension : VersionOperations<ParsedVersio
     public infix fun <T : Any> StonecutterFlag<T>.assign(value: T): Unit =
         flags.set(this, value)
 
-    @ApiStatus.Experimental
-    public fun init()
     /**
-     * Assigns the given [StonecutterProject.project] name as the tree's active entry.
-     * When switching versions, `stonecutter.gradle[.kts]` will be updated.
-     * - **The function call should be given a literal string, or the active version won't be updated.**
-     * - **This function must be called exactly once, otherwise an exception will be thrown.**
+     * Initialises the plugin with the given active version.
+     * This function must be called **exactly once**.
+     * The provider can be one of:
+     * - [File], [Provider<File>][org.gradle.api.provider.Provider], [RegularFileProperty][org.gradle.api.file.RegularFileProperty]:
+     *   a text file in UTF-8/ASCII encoding containing **only** the project name.
+     *   The file will be overridden when switching versions.
+     * - [String]: a literal string passed directly as a function argument.
+     *   The build script file will be overridden, replacing the string when switching versions.
+     * - `null`: initialises the plugin without attaching the root source.
+     *   **This functionality is currently experimental.**
      */
-    public infix fun active(name: Identifier)
-
-    /**
-     * Assigns the given [file] content as the tree's active entry.
-     * When switching versions, the [file] will be updated.
-     * - **The provided file must contain the name of the active project on the first line in UTF-8 encoding.**
-     * - **This function must be called exactly once, otherwise an exception will be thrown.**
-     */
-    public infix fun active(file: File)
+    public infix fun active(provider: Any?)
 
     /**
      * Configures [stonecutter parameters][dev.kikugie.stonecutter.build.param.StonecutterBuildParams] for each subproject in the tree.

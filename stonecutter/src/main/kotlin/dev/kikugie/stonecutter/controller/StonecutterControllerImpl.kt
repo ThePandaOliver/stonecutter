@@ -1,7 +1,6 @@
 package dev.kikugie.stonecutter.controller
 
 import dev.kikugie.semver.data.Version as ParsedVersion
-import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterInternalAPI
 import dev.kikugie.stonecutter.StonecutterPlugin
 import dev.kikugie.stonecutter.build.param.StonecutterBuildData
@@ -28,6 +27,8 @@ import dev.kikugie.stonecutter.util.newInstance
 import dev.kikugie.stonecutter.util.requestTasks
 import dev.kikugie.stonecutter.util.set
 import org.gradle.api.Project
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.named
 import java.io.File
@@ -58,9 +59,7 @@ internal open class StonecutterControllerImpl(val root: Project) : StonecutterCo
         configureModelTasks()
     }
 
-    override fun init() = initializePluginConfiguration(null)
-    override fun active(name: Identifier) = initializePluginConfiguration(name)
-    override fun active(file: File) = initializePluginConfiguration(file)
+    override fun active(provider: Any?) = initializePluginConfiguration(provider)
 
     override fun parameters(config: StonecutterDelegatedBuildParams.() -> Unit) {
         for (branch in tree.branches) for (version in versions) configurations
@@ -86,17 +85,22 @@ internal open class StonecutterControllerImpl(val root: Project) : StonecutterCo
             "Version '$name' is not registered. This might've been caused by removing a version that is set to be active."
         }
 
-        if (active != null) when (active) {
-            is String -> {
-                tree.current = findByName(active)
-                val controller = root.getController()!!
-                for (it in tree.versions) tasks.registerSelfSwitchTask(it.project, controller)
-            }
+        fun registerSelf(name: String) {
+            tree.current = findByName(name)
+            val controller = root.getController()!!
+            for (it in tree.versions) tasks.registerSelfSwitchTask(it.project, controller)
+        }
 
-            is File -> {
-                tree.current = findByName(active.readText())
-                for (it in tree.versions) tasks.registerExternalSwitchTask(it.project, active)
-            }
+        fun registerExternal(file: File) {
+            tree.current = findByName(file.readText())
+            for (it in tree.versions) tasks.registerExternalSwitchTask(it.project, file)
+        }
+
+        if (active != null) when (active) {
+            is String -> registerSelf(active)
+            is File -> registerExternal(active)
+            is RegularFileProperty -> registerExternal(active.asFile.get())
+            is Provider<*> -> active.orNull?.let { registerExternal(it as File) }
         }
 
         if (flags[StonecutterFlag.APPLY_PLUGIN_TO_NODES]) for (it in tree.nodes)
