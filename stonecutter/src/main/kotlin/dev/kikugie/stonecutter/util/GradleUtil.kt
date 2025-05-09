@@ -79,7 +79,7 @@ internal fun InputChanges.clearIfNotIncremental(vararg files: File) {
 }
 
 internal val isIdeaSync: Boolean get() = System.getProperty("idea.sync.active", "false").toBoolean()
-internal fun Gradle.requestTasks(tasks: Iterable<String>, path: String? = null, dir: File? = null) = startParameter.run {
+internal fun Gradle.requestTasks(tasks: Iterable<String>, path: String, dir: File) = startParameter.run {
     setTaskRequests(taskRequests + DefaultTaskExecutionRequest(tasks, path, dir))
 }
 

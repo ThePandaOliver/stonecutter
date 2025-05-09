@@ -121,7 +121,7 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
             group = "ide"
         }
 
-        if (isIdeaSync) gradle.requestTasks(listOf("stonecutterIdea"))
+        if (isIdeaSync) gradle.requestTasks(listOf("stonecutterIdea"), root.path, root.projectDir)
     }
 
     private fun checkGroovy(file: String) {

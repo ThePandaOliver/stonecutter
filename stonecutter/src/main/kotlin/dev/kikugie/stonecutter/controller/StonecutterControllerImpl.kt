@@ -101,6 +101,7 @@ internal open class StonecutterControllerImpl(val root: Project) : StonecutterCo
             is File -> registerExternal(active)
             is RegularFileProperty -> registerExternal(active.asFile.get())
             is Provider<*> -> active.orNull?.let { registerExternal(it as File) }
+            else -> error("Invalid active project type ${active::class.qualifiedName}")
         }
 
         if (flags[StonecutterFlag.APPLY_PLUGIN_TO_NODES]) for (it in tree.nodes)
@@ -139,7 +140,7 @@ internal open class StonecutterControllerImpl(val root: Project) : StonecutterCo
         registerModelGroupingTask()
         registerTreeModelTask()
         for (branch in tree.branches) registerBranchModelTask(branch)
-        root.gradle.requestTasks(listOf("stonecutterSaveModels"))
+        root.gradle.requestTasks(listOf("stonecutterSaveModels"), root.path, root.projectDir)
     }
 
     private fun constructTree(): ProjectTreeImpl {
