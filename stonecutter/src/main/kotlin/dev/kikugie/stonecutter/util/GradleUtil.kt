@@ -4,11 +4,7 @@ package dev.kikugie.stonecutter.util
 
 import dev.kikugie.stonecutter.controller.StonecutterControllerExtension
 import dev.kikugie.stonecutter.controller.StonecutterControllerImpl
-import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
-import dev.kikugie.stonecutter.data.container.ProjectTreeContainer
-import dev.kikugie.stonecutter.data.container.getContainer
 import dev.kikugie.stonecutter.data.tree.struct.ProjectTree
-import dev.kikugie.stonecutter.keysToString
 import org.gradle.api.Project
 import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.invocation.Gradle
@@ -58,13 +54,6 @@ internal fun SourceSet.allSources() = sequence {
         .mapNotNull { extensions[it.name] }
         .filterIsInstance<SourceDirectorySet>()
         .let { yieldAll(it) }
-}
-
-internal fun Project.findProjectTree(): ProjectTree {
-    val project = checkNotNull(parent) { "Stonecutter plugin was incorrectly applied. Refer to the documentation for more info."}
-        .let { it.parent ?: it }
-    val container = gradle.getContainer<ProjectTreeContainer>()
-    return checkNotNull(container[project]) { "Tree for '${project.hierarchy}' not found in ${container.projects.keysToString()}" }
 }
 
 internal fun ProjectTree.getControllerImpl(): StonecutterControllerImpl =

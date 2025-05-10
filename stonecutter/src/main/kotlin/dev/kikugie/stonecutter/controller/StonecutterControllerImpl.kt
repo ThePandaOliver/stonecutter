@@ -36,9 +36,7 @@ import java.io.File
 @OptIn(StonecutterInternalAPI::class)
 internal open class StonecutterControllerImpl(val root: Project) : StonecutterControllerExtension,
     VersionOperations<ParsedVersion> by LenientOperations {
-    override val tree: ProjectTreeImpl = constructTree().also {
-        root.gradle.getContainer<ProjectTreeContainer>().register(root.hierarchy, it)
-    }
+    override val tree: ProjectTreeImpl = constructTree()
     override val flags: MutableFlagContainer = FlagContainerImpl()
     override val tasks: StonecutterControllerTasksImpl = StonecutterControllerTasksImpl(this)
 
@@ -54,6 +52,7 @@ internal open class StonecutterControllerImpl(val root: Project) : StonecutterCo
     private var hasInitialized: Boolean = false
 
     init {
+        registerTree()
         configureProject()
         configureSyncTask()
         configureModelTasks()
@@ -151,6 +150,12 @@ internal open class StonecutterControllerImpl(val root: Project) : StonecutterCo
         return ProjectTreeImpl(root.gradle, root.hierarchy, builder.vcsProject, branches).apply {
             for (it in branches) it.tree = this
         }
+    }
+
+    private fun registerTree() = with(root.gradle.getContainer<ProjectTreeContainer>()) {
+        register(tree.hierarchy, tree)
+        for (branch in tree.branches) register(branch.hierarchy, tree)
+        for (node in tree.nodes) register(node.hierarchy, tree)
     }
 
     private fun TreeBuilder.constructBranches(tree: ProjectHierarchy) = branches.values.map {

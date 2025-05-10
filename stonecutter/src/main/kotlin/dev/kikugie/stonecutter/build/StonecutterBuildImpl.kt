@@ -8,6 +8,8 @@ import dev.kikugie.stonecutter.controller.StonecutterControllerImpl
 import dev.kikugie.stonecutter.controller.flag.FlagContainer
 import dev.kikugie.stonecutter.controller.flag.StonecutterFlag
 import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
+import dev.kikugie.stonecutter.data.container.ProjectTreeContainer
+import dev.kikugie.stonecutter.data.container.getContainer
 import dev.kikugie.stonecutter.data.dsl.DependencyContainer
 import dev.kikugie.stonecutter.data.dsl.FilterContainer
 import dev.kikugie.stonecutter.data.dsl.ReplacementContainer
@@ -28,7 +30,9 @@ import org.gradle.api.tasks.SourceSet
 internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuildExtension,
 VersionOperations<ParsedVersion> by LenientOperations {
     override val tasks: StonecutterBuildTasksImpl = StonecutterBuildTasksImpl(this)
-    override val tree: ProjectTree by lazy { project.findProjectTree() }
+    override val tree: ProjectTree by lazy { project.gradle.getContainer<ProjectTreeContainer>().projects.getChecked(project.hierarchy) {
+        "Tree for $it not found: ${keysToString()}"
+    } }
     override val branch: ProjectBranch by lazy { tree.getChecked(parent.hierarchy) { "Branch for '$it' not found in ${tree.hierarchy}: ${keysToString()}" } }
     override val node: ProjectNode by lazy { branch.getChecked(project.hierarchy) { "Node for '$it' not found in ${branch.hierarchy}: ${keysToString()}" } }
     override val flags: FlagContainer get() = controller.flags
