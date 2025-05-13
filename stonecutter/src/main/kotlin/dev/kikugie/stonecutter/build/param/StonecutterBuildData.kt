@@ -11,5 +11,10 @@ public data class StonecutterBuildData(
     val swaps: Map<String, String> = mutableMapOf(),
     val replacements: ReplacementList = ReplacementList(),
     val excludes: Set<String> = mutableSetOf(),
-    val extensions: Set<String> = mutableSetOf(),
-)
+    val extensions: Set<String> = DEFAULT_EXTENSIONS.toMutableSet(),
+) {
+    public companion object {
+        @JvmField
+        public val DEFAULT_EXTENSIONS: Set<String> = setOf("java", "kt", "kts", "groovy", "gradle", "scala", "sc", "json5", "hjson")
+    }
+}

@@ -69,17 +69,11 @@ VersionOperations<ParsedVersion> by LenientOperations {
         controller.tasks.switchTaskProvider(current.project)?.configure {
             dependsOn(this@StonecutterBuildImpl.tasks.merge)
         }
-
-        with(filters as FilterContainerImpl) {
-            for (it in this@StonecutterBuildImpl.tasks.prepare.values) it.configure {
-                sources.from(files(sources.files).asFileTree.filter { filter(it.toPath()) })
-            }
-        }
     }
 
     private fun createProcessingTasks(src: SourceSet) {
         val prepareTask = tasks.registerPrepareTask(src) {
-            sources.from(parent.projectDirectory.resolve("src/${src.name}"))
+            sources.from(parent.files("src/${src.name}").asFileTree.filter { (filters as FilterContainerImpl).filter(it.toPath()) })
             root.set(parent.projectDirectory.resolve("src/${src.name}"))
             caches.set(tasks.processedCacheDir.resolve(src.name))
             project.provider { Json.encodeToString(data.apply { putDefaultReceiver() }.data) }
