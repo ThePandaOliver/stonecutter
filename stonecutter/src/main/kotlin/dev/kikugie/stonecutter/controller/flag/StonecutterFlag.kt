@@ -68,6 +68,9 @@ public data class StonecutterFlag<T : Any>(
         @JvmField
         public val APPEND_SOURCES_AFTER_EVAL: StonecutterFlag<Boolean> = StonecutterFlag("append_sources_after_eval", true)
 
+        @JvmField
+        public val SERIALIZE_TREE_MODEL: StonecutterFlag<Boolean> = StonecutterFlag("serialize_tree_model", true)
+
         /**
          * Configures the implicit receiver target used in file processing.
          * For more information on this functionality refer to the wiki.
