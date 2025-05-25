@@ -3,7 +3,6 @@ package dev.kikugie.stonecutter.build.task
 import dev.kikugie.stonecutter.build.StonecutterBuildImpl
 import dev.kikugie.stonecutter.data.tree.model.BranchInfo
 import dev.kikugie.stonecutter.data.tree.model.NodeModel
-import dev.kikugie.stonecutter.process.FileGeneratingTask
 import dev.kikugie.stonecutter.process.FileProcessingTask
 import dev.kikugie.stonecutter.process.ModelSavingTask
 import dev.kikugie.stonecutter.util.*
@@ -12,6 +11,7 @@ import org.gradle.api.Task
 import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.Sync
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.register
 import java.io.File
@@ -19,7 +19,7 @@ import kotlin.reflect.KClass
 
 internal class StonecutterBuildTasksImpl(private val ext: StonecutterBuildImpl) : StonecutterBuildTasks {
     override val prepare: MutableTaskProviderMap<FileProcessingTask> = mutableMapOf()
-    override val generate: MutableTaskProviderMap<FileGeneratingTask> = mutableMapOf()
+    override val generate: MutableTaskProviderMap<Sync> = mutableMapOf()
     override val merge: MutableTaskProviderMap<Copy> = mutableMapOf()
     override val processedCacheDir: File get() = ext.project.buildDirectory.resolve("stonecutter-cache/sources")
     override val generatedSourcesDir: File get() = ext.project.buildDirectory.resolve("generated/stonecutter")
@@ -29,8 +29,8 @@ internal class StonecutterBuildTasksImpl(private val ext: StonecutterBuildImpl) 
     fun registerPrepareTask(src: SourceSet, config: FileProcessingTask.() -> Unit) : TaskProvider<FileProcessingTask> =
         registerDefaultTask(prepareTaskName(src), FileProcessingTask::class).apply { configure(config); prepare[name] = this }
 
-    fun registerGenerateTask(src: SourceSet, config: FileGeneratingTask.() -> Unit) : TaskProvider<FileGeneratingTask> =
-        registerDefaultTask(generateTaskName(src), FileGeneratingTask::class).apply { configure(config); generate[name] = this }
+    fun registerGenerateTask(src: SourceSet, config: Sync.() -> Unit) : TaskProvider<Sync> =
+        registerDefaultTask(generateTaskName(src), Sync::class).apply { configure(config); generate[name] = this }
 
     fun registerMergeTask(src: SourceSet, config: Copy.() -> Unit) : TaskProvider<Copy> =
         registerDefaultTask(mergeTaskName(src), Copy::class).apply { configure(config); merge[name] = this }

@@ -1,19 +1,18 @@
 package dev.kikugie.stonecutter.controller.tasks
 
 import dev.kikugie.stonecutter.Identifier
-import dev.kikugie.stonecutter.StonecutterDevAPI
+import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.data.tree.struct.ProjectNode
 import dev.kikugie.stonecutter.process.StonecutterUpdateTask
 import dev.kikugie.stonecutter.util.TaskProviderMap
 import org.gradle.api.Task
 import org.gradle.api.provider.ListProperty
-import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
 
 /**
  * Provides structured access to tasks created by [StonecutterController][dev.kikugie.stonecutter.controller.StonecutterControllerExtension].
  */
-@StonecutterDevAPI
+@StonecutterAPI
 public interface StonecutterControllerTasks {
     /**
      * All underlying active version switch tasks.

@@ -13,17 +13,6 @@ import kotlin.annotation.AnnotationTarget.*
 public annotation class StonecutterAPI
 
 /**
- * Marks members used for advanced configuration by
- * Stonecutter addons and case-specific fixes
- * and should be used with care.
- */
-@MustBeDocumented
-@Suppress("unused", "MemberVisibilityCanBePrivate")
-@Target(CLASS, TYPEALIAS, FUNCTION)
-@Retention(AnnotationRetention.BINARY)
-public annotation class StonecutterDevAPI
-
-/**
  * Marks members that should not be used,
  * but need to have public visibility for technical reasons.
  */

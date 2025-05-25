@@ -1,17 +1,17 @@
 package dev.kikugie.stonecutter.build.task
 
-import dev.kikugie.stonecutter.StonecutterDevAPI
-import dev.kikugie.stonecutter.process.FileGeneratingTask
+import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.process.FileProcessingTask
 import dev.kikugie.stonecutter.util.TaskProviderMap
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.Sync
 import java.io.File
 
 /**
  * Provides structured access to tasks created by [StonecutterBuild][dev.kikugie.stonecutter.build.StonecutterBuildExtension].
  */
-@StonecutterDevAPI
+@StonecutterAPI
 public interface StonecutterBuildTasks {
     /**
      * Comment processing tasks for each source set in the project.
@@ -23,7 +23,7 @@ public interface StonecutterBuildTasks {
      * Versioned source generating tasks for each source set in the project.
      * @see FileGeneratingTask
      */
-    public val generate: TaskProviderMap<FileGeneratingTask>
+    public val generate: TaskProviderMap<Sync>
 
     /**Version switch merging tasks for each source set in the project.*/
     public val merge: TaskProviderMap<Copy>

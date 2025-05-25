@@ -25,6 +25,7 @@ import dev.kikugie.stonecutter.keysToString
 import dev.kikugie.stonecutter.util.*
 import kotlinx.serialization.json.Json
 import org.gradle.api.Project
+import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.tasks.SourceSet
 
 internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuildExtension,
@@ -81,14 +82,9 @@ VersionOperations<ParsedVersion> by LenientOperations {
         }
 
         tasks.registerGenerateTask(src) {
-            root.set(parent.projectDirectory.resolve("src/${src.name}"))
-            source.set(project.projectDirectory.resolve("src/${src.name}"))
-            cache.set(tasks.processedCacheDir.resolve(src.name))
-
-            sources.from(parent.projectDirectory.resolve("src/${src.name}"))
-            excludes.from(project.layout.projectDirectory.dir("src/${src.name}"))
-            processed.set(tasks.processedCacheDir.resolve(src.name))
-            generated.set(tasks.generatedSourcesDir.resolve(src.name))
+            duplicatesStrategy = DuplicatesStrategy.INCLUDE
+            from(parent.projectDirectory.resolve("src/${src.name}"), tasks.processedCacheDir.resolve(src.name), project.projectDirectory.resolve("src/${src.name}"))
+            into(tasks.generatedSourcesDir.resolve(src.name))
             dependsOn(prepareTask)
         }
 
