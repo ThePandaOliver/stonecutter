@@ -1,7 +1,5 @@
 package dev.kikugie.stonecutter.build
 
-import dev.kikugie.semver.data.Version as ParsedVersion
-import dev.kikugie.stonecutter.data.dsl.ConstantContainer
 import dev.kikugie.stonecutter.build.param.StonecutterBuildProperties
 import dev.kikugie.stonecutter.build.task.StonecutterBuildTasksImpl
 import dev.kikugie.stonecutter.controller.StonecutterControllerImpl
@@ -10,11 +8,7 @@ import dev.kikugie.stonecutter.controller.flag.StonecutterFlag
 import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
 import dev.kikugie.stonecutter.data.container.ProjectTreeContainer
 import dev.kikugie.stonecutter.data.container.getContainer
-import dev.kikugie.stonecutter.data.dsl.DependencyContainer
-import dev.kikugie.stonecutter.data.dsl.FilterContainer
-import dev.kikugie.stonecutter.data.dsl.ReplacementContainer
-import dev.kikugie.stonecutter.data.dsl.SwapContainer
-import dev.kikugie.stonecutter.data.dsl.VersionOperations
+import dev.kikugie.stonecutter.data.dsl.*
 import dev.kikugie.stonecutter.data.dsl.impl.FilterContainerImpl
 import dev.kikugie.stonecutter.data.dsl.impl.LenientOperations
 import dev.kikugie.stonecutter.data.tree.struct.ProjectBranch
@@ -23,10 +17,10 @@ import dev.kikugie.stonecutter.data.tree.struct.ProjectTree
 import dev.kikugie.stonecutter.getChecked
 import dev.kikugie.stonecutter.keysToString
 import dev.kikugie.stonecutter.util.*
-import kotlinx.serialization.json.Json
 import org.gradle.api.Project
 import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.tasks.SourceSet
+import dev.kikugie.semver.data.Version as ParsedVersion
 
 internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuildExtension,
 VersionOperations<ParsedVersion> by LenientOperations {
@@ -74,11 +68,9 @@ VersionOperations<ParsedVersion> by LenientOperations {
 
     private fun createProcessingTasks(src: SourceSet) {
         val prepareTask = tasks.registerPrepareTask(src) {
-            sources.from(parent.files("src/${src.name}").asFileTree.filter { (filters as FilterContainerImpl).filter(it.toPath()) })
-            root.set(parent.projectDirectory.resolve("src/${src.name}"))
-            caches.set(tasks.processedCacheDir.resolve(src.name))
-            project.provider { Json.encodeToString(data.apply { putDefaultReceiver() }.data) }
-                .let(parameters::set)
+            project.provider { data.apply { putDefaultReceiver() }.encode() }.let(key::set)
+            parent.fileTree("src/${src.name}") { filter { (filters as FilterContainerImpl).filter(it.toPath()) } }.let(source::set)
+            tasks.processedCacheDir.resolve(src.name).let(destination::set)
         }
 
         tasks.registerGenerateTask(src) {

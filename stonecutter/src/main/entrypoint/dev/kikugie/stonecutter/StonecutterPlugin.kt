@@ -7,6 +7,7 @@ import dev.kikugie.stonecutter.controller.StonecutterControllerImpl
 import dev.kikugie.stonecutter.controller.StonecutterControllerManager.Companion.getController
 import dev.kikugie.stonecutter.settings.StonecutterSettingsExtension
 import dev.kikugie.stonecutter.settings.StonecutterSettingsImpl
+import dev.kikugie.stonecutter.settings.StonecutterSetup
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.initialization.Settings
@@ -22,15 +23,17 @@ public open class StonecutterPlugin : Plugin<ExtensionAware> {
      * Applies the plugin either to [Settings] or [Project].
      * Applying the plugin to an incorrect target will throw an exception.
      */
-    override fun apply(target: ExtensionAware): Unit = target.applyPlugin()
-
     @OptIn(StonecutterInternalAPI::class)
-    private fun ExtensionAware.applyPlugin() = when (this) {
-        is Settings ->
-            stonecutter<StonecutterSettingsExtension, StonecutterSettingsImpl>()
+    override fun apply(target: ExtensionAware): Unit = when (target) {
+        is Settings -> {
+            StonecutterSetup(target).apply()
+            target.stonecutter<StonecutterSettingsExtension, StonecutterSettingsImpl>()
+        }
+
         is Project ->
-            if (getController() == null) stonecutter<StonecutterBuildExtension, StonecutterBuildImpl>()
-            else stonecutter<StonecutterControllerExtension, StonecutterControllerImpl>()
+            if (target.getController() == null) target.stonecutter<StonecutterBuildExtension, StonecutterBuildImpl>()
+            else target.stonecutter<StonecutterControllerExtension, StonecutterControllerImpl>()
+
         else ->
             error("The plugin may only be applied to settings and projects")
     }

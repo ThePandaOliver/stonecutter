@@ -1,7 +1,7 @@
 package dev.kikugie.stonecutter.build.task
 
 import dev.kikugie.stonecutter.StonecutterAPI
-import dev.kikugie.stonecutter.process.FileProcessingTask
+import dev.kikugie.stonecutter.process.SCPrepareTask
 import dev.kikugie.stonecutter.util.TaskProviderMap
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.SourceSet
@@ -15,9 +15,9 @@ import java.io.File
 public interface StonecutterBuildTasks {
     /**
      * Comment processing tasks for each source set in the project.
-     * @see FileProcessingTask
+     * @see SCPrepareTask
      */
-    public val prepare: TaskProviderMap<FileProcessingTask>
+    public val prepare: TaskProviderMap<SCPrepareTask>
 
     /**
      * Versioned source generating tasks for each source set in the project.

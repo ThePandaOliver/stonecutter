@@ -22,6 +22,8 @@ import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.newInstance
 import org.gradle.kotlin.dsl.the
 import org.gradle.work.InputChanges
+import org.gradle.workers.WorkQueue
+import org.gradle.workers.WorkerExecutor
 import java.io.File
 
 public typealias TaskProviderMap<T> = Map<String, TaskProvider<T>>
@@ -74,3 +76,6 @@ internal fun Gradle.requestTasks(tasks: Iterable<String>, path: String, dir: Fil
 
 internal val Project.projectDirectory get() = layout.projectDirectory.asFile
 internal val Project.buildDirectory get() = layout.buildDirectory.asFile()
+
+internal inline fun WorkerExecutor.execute(action: (queue: WorkQueue) -> Unit) =
+    noIsolation().apply(action).await()

@@ -3,7 +3,7 @@ package dev.kikugie.stonecutter.build.task
 import dev.kikugie.stonecutter.build.StonecutterBuildImpl
 import dev.kikugie.stonecutter.data.tree.model.BranchInfo
 import dev.kikugie.stonecutter.data.tree.model.NodeModel
-import dev.kikugie.stonecutter.process.FileProcessingTask
+import dev.kikugie.stonecutter.process.SCPrepareTask
 import dev.kikugie.stonecutter.process.ModelSavingTask
 import dev.kikugie.stonecutter.util.*
 import kotlinx.serialization.json.Json
@@ -18,7 +18,7 @@ import java.io.File
 import kotlin.reflect.KClass
 
 internal class StonecutterBuildTasksImpl(private val ext: StonecutterBuildImpl) : StonecutterBuildTasks {
-    override val prepare: MutableTaskProviderMap<FileProcessingTask> = mutableMapOf()
+    override val prepare: MutableTaskProviderMap<SCPrepareTask> = mutableMapOf()
     override val generate: MutableTaskProviderMap<Sync> = mutableMapOf()
     override val merge: MutableTaskProviderMap<Copy> = mutableMapOf()
     override val processedCacheDir: File get() = ext.project.buildDirectory.resolve("stonecutter-cache/sources")
@@ -26,8 +26,8 @@ internal class StonecutterBuildTasksImpl(private val ext: StonecutterBuildImpl) 
     private val registeredSources: MutableSet<File> = mutableSetOf()
     private val encoder = Json { prettyPrint = true }
 
-    fun registerPrepareTask(src: SourceSet, config: FileProcessingTask.() -> Unit) : TaskProvider<FileProcessingTask> =
-        registerDefaultTask(prepareTaskName(src), FileProcessingTask::class).apply { configure(config); prepare[name] = this }
+    fun registerPrepareTask(src: SourceSet, config: SCPrepareTask.() -> Unit) : TaskProvider<SCPrepareTask> =
+        registerDefaultTask(prepareTaskName(src), SCPrepareTask::class).apply { configure(config); prepare[name] = this }
 
     fun registerGenerateTask(src: SourceSet, config: Sync.() -> Unit) : TaskProvider<Sync> =
         registerDefaultTask(generateTaskName(src), Sync::class).apply { configure(config); generate[name] = this }
