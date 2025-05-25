@@ -11,15 +11,21 @@ import dev.kikugie.stonecutter.data.container.getContainer
 import dev.kikugie.stonecutter.data.dsl.*
 import dev.kikugie.stonecutter.data.dsl.impl.FilterContainerImpl
 import dev.kikugie.stonecutter.data.dsl.impl.LenientOperations
+import dev.kikugie.stonecutter.data.service.ParameterCacheService
 import dev.kikugie.stonecutter.data.tree.struct.ProjectBranch
 import dev.kikugie.stonecutter.data.tree.struct.ProjectNode
 import dev.kikugie.stonecutter.data.tree.struct.ProjectTree
 import dev.kikugie.stonecutter.getChecked
 import dev.kikugie.stonecutter.keysToString
 import dev.kikugie.stonecutter.util.*
+import kotlinx.serialization.json.Json
 import org.gradle.api.Project
 import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.tasks.SourceSet
+import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.named
+import org.gradle.kotlin.dsl.support.serviceOf
+import java.io.File
 import dev.kikugie.semver.data.Version as ParsedVersion
 
 internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuildExtension,
@@ -48,6 +54,8 @@ VersionOperations<ParsedVersion> by LenientOperations {
 
     private fun configureProject() = with(project) {
         plugins.apply("java")
+        gradle.getService<ParameterCacheService>("SCParameterCache")[hierarchy.toString()] = provider { data.apply { putDefaultReceiver() }.convert() }
+
         sourceSets.all {
             createProcessingTasks(this)
             this@StonecutterBuildImpl.tasks.configureSource(this)
@@ -68,8 +76,9 @@ VersionOperations<ParsedVersion> by LenientOperations {
 
     private fun createProcessingTasks(src: SourceSet) {
         val prepareTask = tasks.registerPrepareTask(src) {
-            project.provider { data.apply { putDefaultReceiver() }.encode() }.let(key::set)
-            parent.fileTree("src/${src.name}") { filter { (filters as FilterContainerImpl).filter(it.toPath()) } }.let(source::set)
+            key.set(project.hierarchy.toString())
+            parent.file("src/${src.name}").let(root::set)
+            parent.fileTree("src/${src.name}") { filter { (filters as FilterContainerImpl).filter(it.toPath()) } }.let(source::setFrom)
             tasks.processedCacheDir.resolve(src.name).let(destination::set)
         }
 

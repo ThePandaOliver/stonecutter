@@ -7,7 +7,6 @@ import dev.kikugie.stonecutter.controller.StonecutterControllerImpl
 import dev.kikugie.stonecutter.controller.StonecutterControllerManager.Companion.getController
 import dev.kikugie.stonecutter.settings.StonecutterSettingsExtension
 import dev.kikugie.stonecutter.settings.StonecutterSettingsImpl
-import dev.kikugie.stonecutter.settings.StonecutterSetup
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.initialization.Settings
@@ -16,7 +15,7 @@ import org.gradle.api.plugins.ExtensionAware
 public open class StonecutterPlugin : Plugin<ExtensionAware> {
     public companion object {
         /**Current Stonecutter version.*/ // Updated by ':updateVersion' task during build
-        public const val VERSION: String = "0.7-alpha.16"
+        public const val VERSION: String = "0.7-alpha.17"
     }
 
     /**
@@ -25,10 +24,8 @@ public open class StonecutterPlugin : Plugin<ExtensionAware> {
      */
     @OptIn(StonecutterInternalAPI::class)
     override fun apply(target: ExtensionAware): Unit = when (target) {
-        is Settings -> {
-            StonecutterSetup(target).apply()
+        is Settings ->
             target.stonecutter<StonecutterSettingsExtension, StonecutterSettingsImpl>()
-        }
 
         is Project ->
             if (target.getController() == null) target.stonecutter<StonecutterBuildExtension, StonecutterBuildImpl>()

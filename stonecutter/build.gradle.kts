@@ -93,7 +93,7 @@ java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
     withSourcesJar()
-    withJavadocJar()
+//    withJavadocJar()
 }
 
 tasks {
@@ -109,9 +109,9 @@ tasks {
         }
     }
 
-    named<Jar>("javadocJar") {
-        from(named("dokkaGeneratePublicationJavadoc"))
-    }
+//    named<Jar>("javadocJar") {
+//        from(named("dokkaGeneratePublicationJavadoc"))
+//    }
 
     shadowJar {
         archiveClassifier = ""

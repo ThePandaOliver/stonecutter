@@ -26,5 +26,5 @@ internal open class StonecutterBuildProperties @Inject constructor(objects: Obje
     override val replacements: ReplacementContainer = ReplacementContainerImpl(data.replacements, objects)
     override val filters: FilterContainer = FilterContainerImpl(data.extensions as MutableSet, data.excludes as MutableSet)
 
-    internal fun encode() = Json.encodeToString(TransformParameters(data.swaps, data.constants, data.dependencies, data.replacements))
+    internal fun convert() = TransformParameters(data.swaps, data.constants, data.dependencies, data.replacements)
 }

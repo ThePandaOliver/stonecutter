@@ -1,4 +1,4 @@
-@file:Suppress("NOTHING_TO_INLINE")
+@file:Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST")
 
 package dev.kikugie.stonecutter.util
 
@@ -13,6 +13,7 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import org.gradle.api.services.BuildService
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskProvider
@@ -21,10 +22,12 @@ import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.newInstance
 import org.gradle.kotlin.dsl.the
+import org.gradle.kotlin.dsl.named
 import org.gradle.work.InputChanges
 import org.gradle.workers.WorkQueue
 import org.gradle.workers.WorkerExecutor
 import java.io.File
+import kotlin.reflect.KClass
 
 public typealias TaskProviderMap<T> = Map<String, TaskProvider<T>>
 internal typealias MutableTaskProviderMap<T> = MutableMap<String, TaskProvider<T>>
@@ -79,3 +82,9 @@ internal val Project.buildDirectory get() = layout.buildDirectory.asFile()
 
 internal inline fun WorkerExecutor.execute(action: (queue: WorkQueue) -> Unit) =
     noIsolation().apply(action).await()
+
+internal inline fun <reified T : BuildService<*>> Gradle.getService(name: String): T =
+    getService(name, T::class)
+
+internal fun <T : BuildService<*>> Gradle.getService(name: String, cls: KClass<T>): T =
+    sharedServices.registrations[name].service.get() as T

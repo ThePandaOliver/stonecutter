@@ -1,15 +1,12 @@
 package dev.kikugie.stonecutter.controller.flag
 
-import dev.kikugie.stonecutter.StonecutterDevAPI
 
-@StonecutterDevAPI
 public sealed interface FlagContainer {
     public operator fun get(key: String): Any = StonecutterFlag.named(key).let(::get)
     public operator fun <T : Any> get(key: StonecutterFlag<T>): T
     public operator fun <T : Any> StonecutterFlag<T>.invoke(): T = get(this)
 }
 
-@StonecutterDevAPI
 public sealed interface MutableFlagContainer : FlagContainer {
     public operator fun set(key: String, value: Any): Unit = StonecutterFlag.named(key).let {
         require(value::class == it.default::class) { "Value must be ${it.default::class.simpleName} for flag '$key'" }

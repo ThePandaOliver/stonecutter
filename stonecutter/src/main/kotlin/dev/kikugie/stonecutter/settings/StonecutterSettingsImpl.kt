@@ -11,6 +11,7 @@ import dev.kikugie.stonecutter.data.container.TreeBuilderContainer
 import dev.kikugie.stonecutter.data.container.createContainer
 import dev.kikugie.stonecutter.data.dsl.VersionOperations
 import dev.kikugie.stonecutter.data.dsl.impl.LenientOperations
+import dev.kikugie.stonecutter.data.service.ParameterCacheService
 import dev.kikugie.stonecutter.data.tree.BranchBuilder
 import dev.kikugie.stonecutter.data.tree.NodeBuilder
 import dev.kikugie.stonecutter.data.tree.TreeBuilder
@@ -27,8 +28,10 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.kotlin.dsl.property
 import org.gradle.kotlin.dsl.register
+import org.gradle.kotlin.dsl.registerIfAbsent
 import java.io.File
 import java.nio.file.Path
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
@@ -46,6 +49,7 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
 
     init {
         logger.lifecycle { "Running Stonecutter ${StonecutterPlugin.VERSION}" }
+        registerBuildServices()
         settings.gradle.settingsEvaluated {
             if (groovy) reportGroovyComplaint()
         }
@@ -126,6 +130,12 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
 
     private fun checkGroovy(file: String) {
         if (groovy || file.endsWith(".gradle")) groovy = true
+    }
+
+    private fun registerBuildServices() = settings.gradle.sharedServices.run {
+        registerIfAbsent("SCParameterCache", ParameterCacheService::class) {
+            parameters.cache.convention(ConcurrentHashMap())
+        }
     }
 
     @Suppress("ReplacePrintlnWithLogging")

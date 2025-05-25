@@ -17,14 +17,18 @@ import dev.kikugie.stonecutter.util.clearIfNotIncremental
 import dev.kikugie.stonecutter.util.execute
 import dev.kikugie.stonecutter.util.invoke
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.ConfigurableFileTree
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileType
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.Logger
 import org.gradle.api.provider.Property
+import org.gradle.api.services.ServiceReference
+import org.gradle.api.tasks.IgnoreEmptyDirectories
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.submit
@@ -46,8 +50,11 @@ public abstract class SCPrepareTask : DefaultTask() {
     @get:Input
     public abstract val key: Property<String>
 
-    @get:InputDirectory @get:Incremental
-    public abstract val source: Property<ConfigurableFileTree>
+    @get:Input
+    public abstract val root: Property<File>
+
+    @get:[InputFiles Incremental IgnoreEmptyDirectories]
+    public abstract val source: ConfigurableFileCollection
 
     @get:OutputDirectory
     public abstract val destination: DirectoryProperty
@@ -55,30 +62,27 @@ public abstract class SCPrepareTask : DefaultTask() {
     @get:Inject
     public abstract val executor: WorkerExecutor
 
+    @get:ServiceReference("SCParameterCache")
+    internal abstract val cache: Property<ParameterCacheService>
+
     @TaskAction
     public fun run(inputs: InputChanges) {
         inputs.clearIfNotIncremental(destination.asFile())
         executor.execute {
-            for (change in inputs.getFileChanges(source()))
+            for (change in inputs.getFileChanges(source))
                 if (change.fileType != FileType.DIRECTORY) it.processFile(change)
         }
     }
 
-    private fun WorkQueue.processFile(change: FileChange) = when (change.changeType) {
-        ChangeType.REMOVED -> processDeleted(change)
-        else -> processModified(change)
-    }
-
-    private fun WorkQueue.processDeleted(change: FileChange) = submit(SCPrepareAction::class) {
-        output.set(change.file.cacheFile())
-    }
-
-    private fun WorkQueue.processModified(change: FileChange) = submit(SCPrepareAction::class) {
+    private fun WorkQueue.processFile(change: FileChange) = submit(SCPrepareAction::class) {
         source.set(change.file)
         output.set(change.file.cacheFile())
+
+        key.set(this@SCPrepareTask.key)
+        service.set(cache)
     }
 
-    private fun File.cacheFile(): File = destination.asFile().resolve(relativeTo(source().dir))
+    private fun File.cacheFile(): File = destination.asFile().resolve(relativeTo(root()))
 }
 
 private interface SCPrepareAction : WorkAction<SCPrepareAction.Parameters> {
@@ -87,7 +91,6 @@ private interface SCPrepareAction : WorkAction<SCPrepareAction.Parameters> {
         val key: Property<String>
         val source: RegularFileProperty
         val output: RegularFileProperty
-        val logger: Property<Logger>
     }
 
     override fun execute() {
@@ -95,7 +98,7 @@ private interface SCPrepareAction : WorkAction<SCPrepareAction.Parameters> {
         val output: Path = parameters.output.asFile().toPath()
 
         if (!source.exists()) { output.deleteIfExists(); return }
-        val transforms: TransformParameters = parameters.service()[parameters.key()]
+        val transforms: TransformParameters = parameters.service()[parameters.key()].get()
 
         val original: CharSequence = source.readText(Charsets.UTF_8)
         var modified: CharSequence = original.applyReplacements(transforms, ReplacementPhase.FIRST)
@@ -132,7 +135,7 @@ private interface SCPrepareAction : WorkAction<SCPrepareAction.Parameters> {
     private fun ErrorHandler.throwIfHasErrors(): Nothing? {
         if (errors.isEmpty()) return null
         for (err in errors)
-            parameters.logger().error(err.join())
+            System.err.println(err.join())
         val file = parameters.source().asFile.absolutePath
         throw RuntimeException("Failed to parse $file")
     }
