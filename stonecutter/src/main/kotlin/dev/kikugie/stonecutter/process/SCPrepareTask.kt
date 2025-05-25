@@ -12,27 +12,18 @@ import dev.kikugie.stitcher.scanner.CommentRecognizers
 import dev.kikugie.stitcher.scanner.Scanner
 import dev.kikugie.stitcher.transformer.TransformParameters
 import dev.kikugie.stitcher.transformer.Transformer
-import dev.kikugie.stonecutter.data.service.ParameterCacheService
 import dev.kikugie.stonecutter.util.clearIfNotIncremental
 import dev.kikugie.stonecutter.util.execute
 import dev.kikugie.stonecutter.util.invoke
+import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.ConfigurableFileTree
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileType
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.logging.Logger
 import org.gradle.api.provider.Property
-import org.gradle.api.services.ServiceReference
-import org.gradle.api.tasks.IgnoreEmptyDirectories
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.*
 import org.gradle.kotlin.dsl.submit
-import org.gradle.work.ChangeType
 import org.gradle.work.FileChange
 import org.gradle.work.Incremental
 import org.gradle.work.InputChanges
@@ -48,7 +39,7 @@ import kotlin.io.path.*
 
 public abstract class SCPrepareTask : DefaultTask() {
     @get:Input
-    public abstract val key: Property<String>
+    public abstract val params: Property<String>
 
     @get:Input
     public abstract val root: Property<File>
@@ -62,9 +53,6 @@ public abstract class SCPrepareTask : DefaultTask() {
     @get:Inject
     public abstract val executor: WorkerExecutor
 
-    @get:ServiceReference("SCParameterCache")
-    internal abstract val cache: Property<ParameterCacheService>
-
     @TaskAction
     public fun run(inputs: InputChanges) {
         inputs.clearIfNotIncremental(destination.asFile())
@@ -75,11 +63,9 @@ public abstract class SCPrepareTask : DefaultTask() {
     }
 
     private fun WorkQueue.processFile(change: FileChange) = submit(SCPrepareAction::class) {
+        params.set(this@SCPrepareTask.params)
         source.set(change.file)
         output.set(change.file.cacheFile())
-
-        key.set(this@SCPrepareTask.key)
-        service.set(cache)
     }
 
     private fun File.cacheFile(): File = destination.asFile().resolve(relativeTo(root()))
@@ -87,8 +73,7 @@ public abstract class SCPrepareTask : DefaultTask() {
 
 private interface SCPrepareAction : WorkAction<SCPrepareAction.Parameters> {
     interface Parameters : WorkParameters {
-        val service: Property<ParameterCacheService>
-        val key: Property<String>
+        val params: Property<String>
         val source: RegularFileProperty
         val output: RegularFileProperty
     }
@@ -98,7 +83,7 @@ private interface SCPrepareAction : WorkAction<SCPrepareAction.Parameters> {
         val output: Path = parameters.output.asFile().toPath()
 
         if (!source.exists()) { output.deleteIfExists(); return }
-        val transforms: TransformParameters = parameters.service()[parameters.key()].get()
+        val transforms: TransformParameters = Json.decodeFromString(parameters.params())
 
         val original: CharSequence = source.readText(Charsets.UTF_8)
         var modified: CharSequence = original.applyReplacements(transforms, ReplacementPhase.FIRST)

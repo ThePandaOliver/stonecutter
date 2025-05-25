@@ -1,9 +1,6 @@
 public abstract interface annotation class dev/kikugie/stonecutter/StonecutterAPI : java/lang/annotation/Annotation {
 }
 
-public abstract interface annotation class dev/kikugie/stonecutter/StonecutterDevAPI : java/lang/annotation/Annotation {
-}
-
 public abstract interface annotation class dev/kikugie/stonecutter/StonecutterInternalAPI : java/lang/annotation/Annotation {
 }
 
@@ -69,6 +66,7 @@ public abstract interface class dev/kikugie/stonecutter/build/param/DeprecatedBu
 
 public final class dev/kikugie/stonecutter/build/param/StonecutterBuildData {
 	public static final field Companion Ldev/kikugie/stonecutter/build/param/StonecutterBuildData$Companion;
+	public static final field DEFAULT_EXTENSIONS Ljava/util/Set;
 	public synthetic fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/List;Ljava/util/Set;Ljava/util/Set;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/List;Ljava/util/Set;Ljava/util/Set;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/util/Map;
@@ -234,6 +232,7 @@ public final class dev/kikugie/stonecutter/controller/flag/StonecutterFlag {
 	public static final field GENERATE_SOURCES_ON_SYNC Ldev/kikugie/stonecutter/controller/flag/StonecutterFlag;
 	public static final field GENERATE_SWITCH_ACTIONS Ldev/kikugie/stonecutter/controller/flag/StonecutterFlag;
 	public static final field IMPLICIT_RECEIVER Ldev/kikugie/stonecutter/controller/flag/StonecutterFlag;
+	public static final field SERIALIZE_TREE_MODEL Ldev/kikugie/stonecutter/controller/flag/StonecutterFlag;
 	public fun <init> (Ljava/lang/String;Ljava/lang/Object;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/Object;
@@ -730,26 +729,13 @@ public abstract class dev/kikugie/stonecutter/process/ControllerScriptUpdateTask
 	public final fun run ()V
 }
 
-public abstract class dev/kikugie/stonecutter/process/FileGeneratingTask : org/gradle/api/DefaultTask {
+public abstract class dev/kikugie/stonecutter/process/SCPrepareTask : org/gradle/api/DefaultTask {
 	public fun <init> ()V
-	public abstract fun getCache ()Lorg/gradle/api/provider/Property;
-	public abstract fun getExcludes ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public abstract fun getDestination ()Lorg/gradle/api/file/DirectoryProperty;
 	public abstract fun getExecutor ()Lorg/gradle/workers/WorkerExecutor;
-	public abstract fun getGenerated ()Lorg/gradle/api/file/DirectoryProperty;
-	public abstract fun getProcessed ()Lorg/gradle/api/file/DirectoryProperty;
+	public abstract fun getKey ()Lorg/gradle/api/provider/Property;
 	public abstract fun getRoot ()Lorg/gradle/api/provider/Property;
-	public abstract fun getSource ()Lorg/gradle/api/provider/Property;
-	public abstract fun getSources ()Lorg/gradle/api/file/ConfigurableFileCollection;
-	public final fun run (Lorg/gradle/work/InputChanges;)V
-}
-
-public abstract class dev/kikugie/stonecutter/process/FileProcessingTask : org/gradle/api/DefaultTask {
-	public fun <init> ()V
-	public abstract fun getCaches ()Lorg/gradle/api/file/DirectoryProperty;
-	public abstract fun getExecutor ()Lorg/gradle/workers/WorkerExecutor;
-	public abstract fun getParameters ()Lorg/gradle/api/provider/Property;
-	public abstract fun getRoot ()Lorg/gradle/api/provider/Property;
-	public abstract fun getSources ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public abstract fun getSource ()Lorg/gradle/api/file/ConfigurableFileCollection;
 	public final fun run (Lorg/gradle/work/InputChanges;)V
 }
 

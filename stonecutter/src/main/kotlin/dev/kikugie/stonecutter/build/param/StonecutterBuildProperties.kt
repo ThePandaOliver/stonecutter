@@ -12,7 +12,6 @@ import dev.kikugie.stonecutter.data.dsl.impl.FilterContainerImpl
 import dev.kikugie.stonecutter.data.dsl.impl.LenientOperations
 import dev.kikugie.stonecutter.data.dsl.impl.ReplacementContainerImpl
 import dev.kikugie.stonecutter.data.dsl.impl.SwapContainerImpl
-import kotlinx.serialization.json.Json
 import org.gradle.api.model.ObjectFactory
 import javax.inject.Inject
 
@@ -26,5 +25,14 @@ internal open class StonecutterBuildProperties @Inject constructor(objects: Obje
     override val replacements: ReplacementContainer = ReplacementContainerImpl(data.replacements, objects)
     override val filters: FilterContainer = FilterContainerImpl(data.extensions as MutableSet, data.excludes as MutableSet)
 
-    internal fun convert() = TransformParameters(data.swaps, data.constants, data.dependencies, data.replacements)
+    internal fun convert(key: String, version: ParsedVersion): TransformParameters {
+        val deps = buildMap {
+            putAll(data.dependencies)
+            val main = getOrDefault(key, version)
+            put(key, main)
+            put("", main)
+        }
+
+        return TransformParameters(data.swaps, data.constants, deps, data.replacements)
+    }
 }

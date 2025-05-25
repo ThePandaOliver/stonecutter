@@ -1,6 +1,5 @@
 package dev.kikugie.stonecutter.settings
 
-import dev.kikugie.semver.data.Version as ParsedVersion
 import dev.kikugie.stonecutter.ProjectReference
 import dev.kikugie.stonecutter.StonecutterInternalAPI
 import dev.kikugie.stonecutter.StonecutterPlugin
@@ -11,12 +10,14 @@ import dev.kikugie.stonecutter.data.container.TreeBuilderContainer
 import dev.kikugie.stonecutter.data.container.createContainer
 import dev.kikugie.stonecutter.data.dsl.VersionOperations
 import dev.kikugie.stonecutter.data.dsl.impl.LenientOperations
-import dev.kikugie.stonecutter.data.service.ParameterCacheService
 import dev.kikugie.stonecutter.data.tree.BranchBuilder
 import dev.kikugie.stonecutter.data.tree.NodeBuilder
 import dev.kikugie.stonecutter.data.tree.TreeBuilder
 import dev.kikugie.stonecutter.process.IdeaSetupTask
-import dev.kikugie.stonecutter.util.*
+import dev.kikugie.stonecutter.util.isIdeaSync
+import dev.kikugie.stonecutter.util.lifecycle
+import dev.kikugie.stonecutter.util.logger
+import dev.kikugie.stonecutter.util.requestTasks
 import org.gradle.api.Project
 import org.gradle.api.initialization.ProjectDescriptor
 import org.gradle.api.initialization.Settings
@@ -28,14 +29,13 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.kotlin.dsl.property
 import org.gradle.kotlin.dsl.register
-import org.gradle.kotlin.dsl.registerIfAbsent
 import java.io.File
 import java.nio.file.Path
-import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.notExists
+import dev.kikugie.semver.data.Version as ParsedVersion
 
 @OptIn(StonecutterInternalAPI::class)
 internal open class StonecutterSettingsImpl @Inject constructor(private val settings: Settings, objects: ObjectFactory) :
@@ -133,9 +133,6 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
     }
 
     private fun registerBuildServices() = settings.gradle.sharedServices.run {
-        registerIfAbsent("SCParameterCache", ParameterCacheService::class) {
-            parameters.cache.convention(ConcurrentHashMap())
-        }
     }
 
     @Suppress("ReplacePrintlnWithLogging")
