@@ -75,6 +75,7 @@ VersionOperations<ParsedVersion> by LenientOperations {
     }
 
     private fun createProcessingTasks(src: SourceSet, data: Provider<String>) {
+        val overrides = project.projectDirectory.resolve("src/${src.name}")
         val prepareTask = tasks.registerPrepareTask(src) {
             params.set(data)
             parent.file("src/${src.name}").let(root::set)
@@ -84,7 +85,8 @@ VersionOperations<ParsedVersion> by LenientOperations {
 
         tasks.registerGenerateTask(src) {
             duplicatesStrategy = DuplicatesStrategy.INCLUDE
-            from(parent.projectDirectory.resolve("src/${src.name}"), tasks.processedCacheDir.resolve(src.name), project.projectDirectory.resolve("src/${src.name}"))
+            from(parent.projectDirectory.resolve("src/${src.name}"), tasks.processedCacheDir.resolve(src.name))
+            exclude { !it.isDirectory && it.relativePath.getFile(overrides).exists() }
             into(tasks.generatedSourcesDir.resolve(src.name))
             dependsOn(prepareTask)
         }
