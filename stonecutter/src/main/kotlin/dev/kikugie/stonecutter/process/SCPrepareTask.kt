@@ -88,10 +88,11 @@ private interface SCPrepareAction : WorkAction<SCPrepareAction.Parameters> {
         val original: CharSequence = source.readText(Charsets.UTF_8)
         var modified: CharSequence = original.applyReplacements(transforms, ReplacementPhase.FIRST)
 
-        if (!modified.containsStitcherComments()) { output.deleteIfExists(); return }
+        if (original == modified && !modified.containsStitcherComments()) { output.deleteIfExists(); return }
         modified = modified
             .applyTransformation(transforms)
             .applyReplacements(transforms, ReplacementPhase.LAST)
+        if (original == modified) { output.deleteIfExists(); return }
 
         output.parent.createDirectories()
         output.writeText(modified, Charsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
