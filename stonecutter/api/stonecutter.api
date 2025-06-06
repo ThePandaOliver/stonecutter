@@ -141,6 +141,8 @@ public abstract interface class dev/kikugie/stonecutter/controller/StonecutterCo
 	public fun getVersions ()Ljava/util/Collection;
 	public fun parameters (Lgroovy/lang/Closure;)V
 	public abstract fun parameters (Lkotlin/jvm/functions/Function1;)V
+	public fun tasks (Lgroovy/lang/Closure;)V
+	public fun tasks (Lkotlin/jvm/functions/Function1;)V
 }
 
 public final class dev/kikugie/stonecutter/controller/StonecutterControllerImpl$configureSyncTask$1$inlined$sam$i$org_gradle_api_Action$0 : org/gradle/api/Action {
@@ -252,10 +254,12 @@ public final class dev/kikugie/stonecutter/controller/flag/StonecutterFlag$Compa
 
 public abstract interface class dev/kikugie/stonecutter/controller/tasks/StonecutterControllerTasks {
 	public abstract fun getSwitch ()Ljava/util/Map;
-	public fun named (Ljava/lang/String;)Lorg/gradle/api/provider/ListProperty;
-	public fun named (Ljava/lang/String;Ljava/lang/Class;)Lorg/gradle/api/provider/ListProperty;
-	public abstract fun named (Ljava/lang/String;Ljava/lang/Class;Lkotlin/jvm/functions/Function1;)Lorg/gradle/api/provider/ListProperty;
-	public abstract fun named (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lorg/gradle/api/provider/ListProperty;
+	public fun named (Ljava/lang/String;)Lorg/gradle/api/provider/MapProperty;
+	public fun named (Ljava/lang/String;Ljava/lang/Class;)Lorg/gradle/api/provider/MapProperty;
+	public abstract fun named (Ljava/lang/String;Ljava/lang/Class;Lkotlin/jvm/functions/Function1;)Lorg/gradle/api/provider/MapProperty;
+	public abstract fun named (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lorg/gradle/api/provider/MapProperty;
+	public fun order (Lorg/gradle/api/provider/MapProperty;)V
+	public abstract fun order (Lorg/gradle/api/provider/MapProperty;Ljava/util/Comparator;)V
 	public fun switchTaskName (Ljava/lang/String;)Ljava/lang/String;
 	public fun switchTaskProvider (Ljava/lang/String;)Lorg/gradle/api/tasks/TaskProvider;
 }
@@ -733,7 +737,7 @@ public abstract class dev/kikugie/stonecutter/process/SCPrepareTask : org/gradle
 	public fun <init> ()V
 	public abstract fun getDestination ()Lorg/gradle/api/file/DirectoryProperty;
 	public abstract fun getExecutor ()Lorg/gradle/workers/WorkerExecutor;
-	public abstract fun getKey ()Lorg/gradle/api/provider/Property;
+	public abstract fun getParams ()Lorg/gradle/api/provider/Property;
 	public abstract fun getRoot ()Lorg/gradle/api/provider/Property;
 	public abstract fun getSource ()Lorg/gradle/api/file/ConfigurableFileCollection;
 	public final fun run (Lorg/gradle/work/InputChanges;)V

@@ -29,9 +29,6 @@ import org.gradle.workers.WorkerExecutor
 import java.io.File
 import kotlin.reflect.KClass
 
-public typealias TaskProviderMap<T> = Map<String, TaskProvider<T>>
-internal typealias MutableTaskProviderMap<T> = MutableMap<String, TaskProvider<T>>
-
 internal val Project.sourceSets: SourceSetContainer
     get() = project.the<SourceSetContainer>()
 

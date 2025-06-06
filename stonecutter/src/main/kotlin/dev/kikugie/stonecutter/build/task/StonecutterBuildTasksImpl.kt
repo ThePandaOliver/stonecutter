@@ -1,5 +1,7 @@
 package dev.kikugie.stonecutter.build.task
 
+import dev.kikugie.stonecutter.Identifier
+import dev.kikugie.stonecutter.MutableTaskProviderMap
 import dev.kikugie.stonecutter.build.StonecutterBuildImpl
 import dev.kikugie.stonecutter.data.tree.model.BranchInfo
 import dev.kikugie.stonecutter.data.tree.model.NodeModel
@@ -18,9 +20,9 @@ import java.io.File
 import kotlin.reflect.KClass
 
 internal class StonecutterBuildTasksImpl(private val ext: StonecutterBuildImpl) : StonecutterBuildTasks {
-    override val prepare: MutableTaskProviderMap<SCPrepareTask> = mutableMapOf()
-    override val generate: MutableTaskProviderMap<Sync> = mutableMapOf()
-    override val merge: MutableTaskProviderMap<Copy> = mutableMapOf()
+    override val prepare: MutableTaskProviderMap<Identifier,SCPrepareTask> = mutableMapOf()
+    override val generate: MutableTaskProviderMap<Identifier, Sync> = mutableMapOf()
+    override val merge: MutableTaskProviderMap<Identifier, Copy> = mutableMapOf()
     override val processedCacheDir: File get() = ext.project.buildDirectory.resolve("stonecutter-cache/sources")
     override val generatedSourcesDir: File get() = ext.project.buildDirectory.resolve("generated/stonecutter")
     private val registeredSources: MutableSet<File> = mutableSetOf()

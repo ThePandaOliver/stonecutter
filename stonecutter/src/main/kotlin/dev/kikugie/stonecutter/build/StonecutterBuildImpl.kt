@@ -79,7 +79,8 @@ VersionOperations<ParsedVersion> by LenientOperations {
         val prepareTask = tasks.registerPrepareTask(src) {
             params.set(data)
             parent.file("src/${src.name}").let(root::set)
-            parent.fileTree("src/${src.name}") { filter { (filters as FilterContainerImpl).filter(it.toPath()) } }.let(source::setFrom)
+            parent.fileTree("src/${src.name}").filter { (filters as FilterContainerImpl).filter(it.toPath()) }
+                .let(source::setFrom)
             tasks.processedCacheDir.resolve(src.name).let(destination::set)
         }
 

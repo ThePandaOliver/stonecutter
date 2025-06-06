@@ -1,8 +1,9 @@
 package dev.kikugie.stonecutter.build.task
 
+import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.process.SCPrepareTask
-import dev.kikugie.stonecutter.util.TaskProviderMap
+import dev.kikugie.stonecutter.TaskProviderMap
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.Sync
@@ -17,16 +18,16 @@ public interface StonecutterBuildTasks {
      * Comment processing tasks for each source set in the project.
      * @see SCPrepareTask
      */
-    public val prepare: TaskProviderMap<SCPrepareTask>
+    public val prepare: TaskProviderMap<Identifier, SCPrepareTask>
 
     /**
      * Versioned source generating tasks for each source set in the project.
      * @see FileGeneratingTask
      */
-    public val generate: TaskProviderMap<Sync>
+    public val generate: TaskProviderMap<Identifier, Sync>
 
     /**Version switch merging tasks for each source set in the project.*/
-    public val merge: TaskProviderMap<Copy>
+    public val merge: TaskProviderMap<Identifier, Copy>
 
     /**`versions/**/build/stonecutter-cache/sources/`*/
     public val processedCacheDir: File

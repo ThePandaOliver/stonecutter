@@ -86,23 +86,14 @@ private interface SCPrepareAction : WorkAction<SCPrepareAction.Parameters> {
         val transforms: TransformParameters = Json.decodeFromString(parameters.params())
 
         val original: CharSequence = source.readText(Charsets.UTF_8)
-        var modified: CharSequence = original.applyReplacements(transforms, ReplacementPhase.FIRST)
-
-        if (original == modified && !modified.containsStitcherComments()) { output.deleteIfExists(); return }
-        modified = modified
+        val modified: CharSequence = original
+            .applyReplacements(transforms, ReplacementPhase.FIRST)
             .applyTransformation(transforms)
             .applyReplacements(transforms, ReplacementPhase.LAST)
         if (original == modified) { output.deleteIfExists(); return }
 
         output.parent.createDirectories()
         output.writeText(modified, Charsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
-    }
-
-    private fun CharSequence.containsStitcherComments(): Boolean = Scanner.scan(this, CommentRecognizers.DEFAULT).any {
-        it.type == ContentType.COMMENT && when(it.value.ifEmpty { " " }.first()) {
-            '?', '$', '~' -> true
-            else -> false
-        }
     }
 
     private fun CharSequence.applyReplacements(transforms: TransformParameters, phase: ReplacementPhase): CharSequence =

@@ -1,11 +1,8 @@
 package dev.kikugie.stonecutter.controller.tasks
 
-import dev.kikugie.stonecutter.Identifier
-import dev.kikugie.stonecutter.StonecutterInternalAPI
-import dev.kikugie.stonecutter.StonecutterPlugin
+import dev.kikugie.stonecutter.*
 import dev.kikugie.stonecutter.controller.StonecutterControllerImpl
 import dev.kikugie.stonecutter.controller.StonecutterControllerManager
-import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
 import dev.kikugie.stonecutter.data.tree.model.BranchInfo
 import dev.kikugie.stonecutter.data.tree.model.BranchModel
 import dev.kikugie.stonecutter.data.tree.model.NodeInfo
@@ -16,29 +13,40 @@ import dev.kikugie.stonecutter.process.ControllerExternalUpdateTask
 import dev.kikugie.stonecutter.process.ControllerScriptUpdateTask
 import dev.kikugie.stonecutter.process.ModelSavingTask
 import dev.kikugie.stonecutter.process.StonecutterUpdateTask
-import dev.kikugie.stonecutter.util.MutableTaskProviderMap
+import dev.kikugie.stonecutter.util.buildDirectory
 import dev.kikugie.stonecutter.util.invoke
 import kotlinx.serialization.json.Json
 import org.gradle.api.Task
-import org.gradle.api.provider.ListProperty
 import org.gradle.api.tasks.TaskProvider
-import org.gradle.kotlin.dsl.listProperty
+import org.gradle.kotlin.dsl.mapProperty
 import org.gradle.kotlin.dsl.register
 import java.io.File
 
 @OptIn(StonecutterInternalAPI::class)
 internal class StonecutterControllerTasksImpl(val ext: StonecutterControllerImpl) : StonecutterControllerTasks {
-    override val switch: MutableTaskProviderMap<out StonecutterUpdateTask> = mutableMapOf()
+    override val switch: MutableTaskProviderMap<Identifier, out StonecutterUpdateTask> = mutableMapOf()
     private val encoder = Json { prettyPrint = true }
-    override fun named(name: String, filter: ProjectNode.() -> Boolean): ListProperty<TaskProvider<*>> =
-        ext.root.objects.listProperty<TaskProvider<*>>().value(ext.root.provider {
-            ext.tree.nodes.filter(filter).mapNotNull { if (name in it.project.tasks.names) it.project.tasks.named(name) else null }
+    override fun named(name: String, filter: ProjectNode.() -> Boolean): TaskProviderMapProperty<ProjectNode, *> =
+        ext.root.objects.mapProperty<ProjectNode, TaskProvider<*>>().value(ext.root.provider {
+            ext.tree.nodes
+                .filter { filter(it) && name in it.project.tasks.names }
+                .associateWith { it.project.tasks.named(name) }
         }).apply { disallowChanges() }
 
-    override fun <T : Task> named(name: String, cls: Class<T>, filter: ProjectNode.() -> Boolean): ListProperty<TaskProvider<T>> =
-        ext.root.objects.listProperty<TaskProvider<T>>().value(ext.root.provider {
-            ext.tree.nodes.filter(filter).mapNotNull { if (name in it.project.tasks.names) it.project.tasks.named(name, cls) else null }
+    override fun <T : Task> named(name: String, cls: Class<T>, filter: ProjectNode.() -> Boolean): TaskProviderMapProperty<ProjectNode, T> =
+        ext.root.objects.mapProperty<ProjectNode, TaskProvider<T>>().value(ext.root.provider {
+            ext.tree.nodes
+                .filter { filter(it) && name in it.project.tasks.names }
+                .associateWith { it.project.tasks.named(name, cls) }
         }).apply { disallowChanges() }
+
+    override fun order(tasks: TaskProviderMapProperty<ProjectNode, *>, ordering: Comparator<ProjectNode>) = ext.root.afterEvaluate {
+        val tasks = tasks().toSortedMap(ordering).values
+        val lock = ext.root.buildDirectory.resolve("stonecutter-cache/sc.lock")
+
+        for (it in tasks) it.configure { outputs.file(lock) }
+        for ((a, b) in tasks.zipWithNext()) b.configure { mustRunAfter(a) }
+    }
 
     fun registerSelfSwitchTask(project: Identifier, manager: StonecutterControllerManager) =
         ext.root.tasks.register<ControllerScriptUpdateTask>(switchTaskName(project)) {

@@ -65,6 +65,12 @@ public interface StonecutterControllerExtension : VersionOperations<ParsedVersio
      */
     public infix fun active(provider: Any?)
 
+    public infix fun tasks(action: StonecutterControllerTasks.() -> Unit): Unit =
+        action(tasks)
+
+    public fun tasks(action: Closure<StonecutterControllerTasks>): Unit =
+        tasks(action::call)
+
     /**
      * Configures [stonecutter parameters][dev.kikugie.stonecutter.build.param.StonecutterBuildParams] for each subproject in the tree.
      *

@@ -1,5 +1,8 @@
 package dev.kikugie.stonecutter
 
+import org.gradle.api.provider.MapProperty
+import org.gradle.api.tasks.TaskProvider
+
 /**
  * Constrained string used in project and parameter names.
  * Parameters of this type are usually checked to satisfy the following requirements:
@@ -22,3 +25,7 @@ public typealias Version = String
  */
 @StonecutterAPI
 public typealias ProjectReference = Any
+
+public typealias TaskProviderMap<K, V> = Map<K, TaskProvider<V>>
+public typealias TaskProviderMapProperty<K, V> = MapProperty<K, TaskProvider<V>>
+internal typealias MutableTaskProviderMap<K, V> = MutableMap<K, TaskProvider<V>>
