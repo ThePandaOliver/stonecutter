@@ -4,13 +4,23 @@ public data class StonecutterFlag<T : Any>(
     public val key: String,
     public val default: T,
 ) {
-
     init {
         require(key.isNotBlank()) { "Flag key cannot be blank" }
         require(key.all { it in 'a'..'z' || it == '_' }) { "Flag key must be written in snake case" }
         require(default.isPrimitive()) { "Flag value must be a primitive type, got ${default::class.simpleName} instead" }
         check(REGISTRY.putIfAbsent(key, this) == null) { "Flag '$key' is already registered" }
     }
+
+    @Suppress("UNCHECKED_CAST")
+    public fun fromString(value: String): T = when (default) {
+        is String -> value
+        is Boolean -> value.toBoolean()
+        is Int -> value.toInt()
+        is Long -> value.toLong()
+        is Float -> value.toFloat()
+        is Double -> value.toDouble()
+        else -> UnsupportedOperationException("Unreachable")
+    } as T
 
     public companion object {
         private val REGISTRY: MutableMap<String, StonecutterFlag<*>> = mutableMapOf()
@@ -36,7 +46,7 @@ public data class StonecutterFlag<T : Any>(
          * **Default**: `true`
          */
         @JvmField
-        public val APPLY_PLUGIN_TO_NODES: StonecutterFlag<Boolean> = StonecutterFlag("apply_plugin_to_nodes", true)
+        public val APPLY_PLUGIN_TO_NODES: StonecutterFlag<Boolean> = StonecutterFlag("auto_apply_plugin", true)
 
         /**
          * Configures versioned source generation on IntelliJ sync.
@@ -66,7 +76,7 @@ public data class StonecutterFlag<T : Any>(
          * **Default**: `true`
          */
         @JvmField
-        public val APPEND_SOURCES_AFTER_EVAL: StonecutterFlag<Boolean> = StonecutterFlag("append_sources_after_eval", true)
+        public val APPEND_SOURCES_AFTER_EVAL: StonecutterFlag<Boolean> = StonecutterFlag("extra_source_check", true)
 
         @JvmField
         public val SERIALIZE_TREE_MODEL: StonecutterFlag<Boolean> = StonecutterFlag("serialize_tree_model", true)

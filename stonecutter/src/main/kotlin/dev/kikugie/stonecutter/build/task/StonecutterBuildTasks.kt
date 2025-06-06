@@ -22,7 +22,6 @@ public interface StonecutterBuildTasks {
 
     /**
      * Versioned source generating tasks for each source set in the project.
-     * @see FileGeneratingTask
      */
     public val generate: TaskProviderMap<Identifier, Sync>
 

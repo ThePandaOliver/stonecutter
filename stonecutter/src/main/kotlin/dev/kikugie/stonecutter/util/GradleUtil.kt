@@ -16,13 +16,11 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.services.BuildService
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
-import org.gradle.api.tasks.TaskProvider
 import org.gradle.internal.DefaultTaskExecutionRequest
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.newInstance
 import org.gradle.kotlin.dsl.the
-import org.gradle.kotlin.dsl.named
 import org.gradle.work.InputChanges
 import org.gradle.workers.WorkQueue
 import org.gradle.workers.WorkerExecutor

@@ -38,7 +38,9 @@ import java.io.File
 internal open class StonecutterControllerImpl(val root: Project) : StonecutterControllerExtension,
     VersionOperations<ParsedVersion> by LenientOperations {
     override val tree: ProjectTreeImpl = constructTree()
-    override val flags: MutableFlagContainer = FlagContainerImpl()
+    override val flags: MutableFlagContainer = FlagContainerImpl().apply {
+        lookup = { root.findProperty("dev.kikugie.stonecutter.${it.key}")?.toString() }
+    }
     override val tasks: StonecutterControllerTasksImpl = StonecutterControllerTasksImpl(this)
 
     /**Stores configured build data instances.*/

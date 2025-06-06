@@ -1,6 +1,5 @@
 package dev.kikugie.stonecutter.build
 
-import dev.kikugie.stitcher.transformer.TransformParameters
 import dev.kikugie.stonecutter.build.param.StonecutterBuildProperties
 import dev.kikugie.stonecutter.build.task.StonecutterBuildTasksImpl
 import dev.kikugie.stonecutter.controller.StonecutterControllerImpl

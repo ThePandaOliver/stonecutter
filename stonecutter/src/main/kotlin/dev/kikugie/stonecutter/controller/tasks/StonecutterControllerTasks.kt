@@ -1,6 +1,5 @@
 package dev.kikugie.stonecutter.controller.tasks
 
-import dev.kikugie.semver.data.Version
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.TaskProviderMap

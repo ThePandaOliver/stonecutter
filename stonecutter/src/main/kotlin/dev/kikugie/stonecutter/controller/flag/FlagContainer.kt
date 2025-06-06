@@ -1,6 +1,5 @@
 package dev.kikugie.stonecutter.controller.flag
 
-
 public sealed interface FlagContainer {
     public operator fun get(key: String): Any = StonecutterFlag.named(key).let(::get)
     public operator fun <T : Any> get(key: StonecutterFlag<T>): T
@@ -20,9 +19,11 @@ public sealed interface MutableFlagContainer : FlagContainer {
 internal class FlagContainerImpl() : MutableFlagContainer {
     constructor(values: Map<String, Any>): this() { flags.putAll(values) }
     val flags: MutableMap<String, Any> = mutableMapOf()
+    var lookup: (StonecutterFlag<*>) -> String? = { null }
 
-    override fun <T : Any> get(key: StonecutterFlag<T>): T =
-        flags.getOrDefault(key.key, key.default) as T
+    override fun <T : Any> get(key: StonecutterFlag<T>): T = (flags[key.key]
+        ?: lookup(key)?.let(key::fromString)
+        ?: key.default) as T
 
     override fun <T : Any> set(key: StonecutterFlag<T>, value: T) =
         flags.set(key.key, value)
