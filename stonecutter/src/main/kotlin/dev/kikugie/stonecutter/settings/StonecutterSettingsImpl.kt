@@ -46,6 +46,7 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
     private var groovy = false
     private val container: TreeBuilderContainer = settings.gradle.createContainer()
     private val logger: Logger by logger("StonecutterSettings")
+    private val isHardMode: Boolean get() = settings.providers.gradleProperty("dev.kikugie.stonecutter.hard_mode").getOrElse("false").toBoolean()
 
     init {
         logger.lifecycle { "Running Stonecutter ${StonecutterPlugin.VERSION}" }
@@ -77,7 +78,7 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
 
     private fun getDefaultBuildScript(dir: Path, type: String): String = when {
         dir.resolve("$type.gradle.kts").exists() -> "$type.gradle.kts"
-        dir.resolve("$type.gradle").exists() -> "$type.gradle"
+        dir.resolve("$type.gradle").exists() || isHardMode -> "$type.gradle"
         else -> "$type.gradle.kts"
     }
 
@@ -106,6 +107,7 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
         is ProjectDescriptor -> ref
         is Provider<*> -> (ref.orNull as? String)?.let(::createDescriptor)
             ?: error("Project descriptor not found for $ref")
+
         is CharSequence -> createDescriptor(ref.toString())
         else -> error("Unsupported type ${ref::class.qualifiedName}")
     }
@@ -135,8 +137,10 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
     private fun registerBuildServices() = settings.gradle.sharedServices.run {
     }
 
-    @Suppress("ReplacePrintlnWithLogging")
-    private fun reportGroovyComplaint() = println("""
+    private fun reportGroovyComplaint() {
+        if (isHardMode) return
+
+        """
         NOTICE: Limited Groovy DSL support for Stonecutter
         
         While functional, the plugin's features are limited 
@@ -146,5 +150,6 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
         
         For more information see: 
           - https://stonecutter.codeberg.page/wiki/faq#groovy-support
-    """.trimIndent())
+        """.trimIndent().let(::println)
+    }
 }
