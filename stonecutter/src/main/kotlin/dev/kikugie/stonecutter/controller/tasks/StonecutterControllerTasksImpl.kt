@@ -56,7 +56,6 @@ internal class StonecutterControllerTasksImpl(val ext: StonecutterControllerImpl
             manager(manager::class.java)
             version(project)
             script.set(ext.root.buildFile)
-            dependsOn()
         }.also { switch[it.name] = it }
 
     fun registerExternalSwitchTask(project: Identifier, provider: File) =

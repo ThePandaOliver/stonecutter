@@ -91,10 +91,14 @@ VersionOperations<ParsedVersion> by LenientOperations {
             dependsOn(prepareTask)
         }
 
-        tasks.registerMergeTask(src) {
+        val merge = tasks.registerMergeTask(src) {
             from(tasks.processedCacheDir.resolve(src.name))
             into(parent.projectDirectory.resolve("src/${src.name}"))
             dependsOn(prepareTask)
+        }
+
+        controller.tasks.switchTaskProvider(current.project)?.configure {
+            dependsOn(merge)
         }
     }
 }
