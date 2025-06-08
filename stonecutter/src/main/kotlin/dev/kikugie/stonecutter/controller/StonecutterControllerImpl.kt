@@ -22,7 +22,7 @@ import dev.kikugie.stonecutter.data.tree.*
 import dev.kikugie.stonecutter.data.tree.struct.ProjectBranchImpl
 import dev.kikugie.stonecutter.data.tree.struct.ProjectNodeImpl
 import dev.kikugie.stonecutter.data.tree.struct.ProjectTreeImpl
-import dev.kikugie.stonecutter.process.IdeaSetupTask
+import dev.kikugie.stonecutter.process.SCIdeaConfigTask
 import dev.kikugie.stonecutter.util.isIdeaSync
 import dev.kikugie.stonecutter.util.newInstance
 import dev.kikugie.stonecutter.util.requestTasks
@@ -133,8 +133,8 @@ internal open class StonecutterControllerImpl(val root: Project) : StonecutterCo
     }
 
     private fun configureSyncTask() = root.afterEvaluate {
-        if (flags[StonecutterFlag.GENERATE_SWITCH_ACTIONS]) rootProject.tasks.named<IdeaSetupTask>("stonecutterIdea") {
-            versions[tree.hierarchy] = tree.versions.map(StonecutterProject::project)
+        if (flags[StonecutterFlag.GENERATE_SWITCH_ACTIONS]) rootProject.tasks.named<SCIdeaConfigTask>("stonecutterIdea") {
+            versions[tree.hierarchy.toString()] = tree.versions.map(StonecutterProject::project)
         }
 
         if (flags[StonecutterFlag.SERIALIZE_TREE_MODEL] && isIdeaSync)

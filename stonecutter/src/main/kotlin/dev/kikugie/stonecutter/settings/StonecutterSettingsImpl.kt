@@ -13,7 +13,7 @@ import dev.kikugie.stonecutter.data.dsl.impl.LenientOperations
 import dev.kikugie.stonecutter.data.tree.BranchBuilder
 import dev.kikugie.stonecutter.data.tree.NodeBuilder
 import dev.kikugie.stonecutter.data.tree.TreeBuilder
-import dev.kikugie.stonecutter.process.IdeaSetupTask
+import dev.kikugie.stonecutter.process.SCIdeaConfigTask
 import dev.kikugie.stonecutter.util.isIdeaSync
 import dev.kikugie.stonecutter.util.lifecycle
 import dev.kikugie.stonecutter.util.logger
@@ -50,7 +50,6 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
 
     init {
         logger.lifecycle { "Running Stonecutter ${StonecutterPlugin.VERSION}" }
-        registerBuildServices()
         settings.gradle.settingsEvaluated {
             if (groovy) reportGroovyComplaint()
         }
@@ -123,7 +122,7 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
     }
 
     private fun createIdeaConfigurations(gradle: Gradle, root: Project) {
-        root.tasks.register<IdeaSetupTask>("stonecutterIdea") {
+        root.tasks.register<SCIdeaConfigTask>("stonecutterIdea") {
             group = "ide"
         }
 
@@ -132,9 +131,6 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
 
     private fun checkGroovy(file: String) {
         if (groovy || file.endsWith(".gradle")) groovy = true
-    }
-
-    private fun registerBuildServices() = settings.gradle.sharedServices.run {
     }
 
     private fun reportGroovyComplaint() {
@@ -150,6 +146,6 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
         
         For more information see: 
           - https://stonecutter.codeberg.page/wiki/faq#groovy-support
-        """.trimIndent().let(::println)
+        """.trimIndent().let(logger::warn)
     }
 }
