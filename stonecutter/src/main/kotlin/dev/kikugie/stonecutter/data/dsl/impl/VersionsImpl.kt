@@ -1,15 +1,15 @@
 package dev.kikugie.stonecutter.data.dsl.impl
 
+import dev.kikugie.commons.text.countWhile
 import dev.kikugie.semver.data.Version as ParsedVersion
 import dev.kikugie.semver.data.SemanticVersion
 import dev.kikugie.semver.data.VersionPredicate
 import dev.kikugie.stonecutter.data.dsl.VersionOperations
-import dev.kikugie.stonecutter.util.countIn
 
 private fun unpackPredicates(source: String, operations: VersionPredicate.Operations): List<VersionPredicate> = buildList {
     var cursor = 0
     while (cursor < source.length) {
-        cursor += source.countIn(cursor, predicate = Char::isWhitespace)
+        cursor += source.countWhile(cursor, predicate = Char::isWhitespace)
         if (cursor >= source.length) break
         cursor = operations.locate(source, cursor).also {
             if (it < 0) throw IllegalArgumentException("Unable to locate predicate at: '${source.substring(cursor)}'")

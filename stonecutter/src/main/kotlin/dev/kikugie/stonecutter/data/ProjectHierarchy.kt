@@ -1,7 +1,6 @@
 package dev.kikugie.stonecutter.data
 
-import dev.kikugie.stonecutter.removeStarting
-import dev.kikugie.stonecutter.then
+import dev.kikugie.then
 import kotlinx.serialization.Serializable
 import org.gradle.api.Project
 import org.gradle.api.UnknownProjectException
@@ -13,30 +12,21 @@ import org.gradle.api.initialization.ProjectDescriptor
  * @property path String representation of the path
  */
 @JvmInline @Serializable
-public value class ProjectHierarchy(private val path: String) {
+public value class ProjectHierarchy(private val path: String) : List<String> {
     init {
         require(path.isNotBlank()) { "Path cannot be blank" }
         require(path.startsWith(':')) { "Path must be absolute" }
     }
 
     /**All subprojects in this path. If this is the root project, the list will be empty.*/
-    public val segments: List<String>
-        get() = if (path == ":") emptyList()
-        else path.substring(1).split(":")
+    public val segments: Sequence<String>
+        get() = if (path == ":") emptySequence()
+        else path.substring(1).splitToSequence(':')
+
+    override val size: Int
+        get() = path.count { it == ':' }
 
     public fun orBlank(): String = if (isEmpty()) "" else path
-
-    /**Whenever this path is the root project.*/
-    public fun isEmpty(): Boolean = path == ":"
-
-    /**Last subproject entry in the path or empty string if this is the root project.*/
-    public fun last(): String = lastOrNull() ?: ""
-
-    /**Last subproject entry in the path or `null` if this is the root project.*/
-    private fun lastOrNull(): String? = when (path) {
-        ":" -> null
-        else -> path.substringAfterLast(':')
-    }
 
     public fun relativize(child: ProjectHierarchy): String =
         child.path.removePrefix(path).removePrefix(":")
@@ -59,6 +49,33 @@ public value class ProjectHierarchy(private val path: String) {
     /**Represents the class as the underlying [path].*/
     override fun toString(): String = path
 
+    override fun contains(element: String): Boolean = element in path
+
+    override fun containsAll(elements: Collection<String>): Boolean = all { it in path }
+
+    override fun get(index: Int): String =
+        segments.elementAt(index)
+
+    override fun indexOf(element: String): Int =
+        segments.indexOf(element)
+
+    override fun isEmpty(): Boolean = path == ":"
+
+    override fun iterator(): Iterator<String> =
+        segments.iterator()
+
+    override fun lastIndexOf(element: String): Int =
+        segments.lastIndexOf(element)
+
+    override fun listIterator(): ListIterator<String> =
+        segments.toList().listIterator()
+
+    override fun listIterator(index: Int): ListIterator<String> =
+        segments.toList().listIterator(index)
+
+    override fun subList(fromIndex: Int, toIndex: Int): List<String> =
+        segments.toList().subList(fromIndex, toIndex)
+
     public companion object {
         /**Empty path.*/
         public val ROOT: ProjectHierarchy = ProjectHierarchy(":")
@@ -68,9 +85,16 @@ public value class ProjectHierarchy(private val path: String) {
         public val ProjectDescriptor.hierarchy: ProjectHierarchy get() = ProjectHierarchy(path)
 
         public fun of(path: String): ProjectHierarchy = when {
-            path.isEmpty() || path == ":" -> ROOT
-            else -> ProjectHierarchy(":${path.removeStarting(':')}")
+            path.startsWith(':') -> ProjectHierarchy(path)
+            else -> ProjectHierarchy(":$path")
         }
+
+        public fun of(components: Iterable<String>): ProjectHierarchy = ProjectHierarchy(buildString {
+            for (it in components) append(":$it")
+        })
+
+        public fun of(vararg components: String): ProjectHierarchy =
+            of(components.asIterable())
 
         /**
          * Gets the Gradle project for the given [hierarchy].

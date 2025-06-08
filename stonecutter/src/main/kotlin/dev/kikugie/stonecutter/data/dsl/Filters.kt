@@ -1,7 +1,7 @@
 package dev.kikugie.stonecutter.data.dsl
 
 import dev.kikugie.stonecutter.StonecutterAPI
-import dev.kikugie.stonecutter.then
+import dev.kikugie.then
 import org.gradle.api.Action
 
 @StonecutterAPI @StonecutterParametersDSL

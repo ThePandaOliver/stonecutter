@@ -1,8 +1,6 @@
 package dev.kikugie.stonecutter.settings
 
 import dev.kikugie.semver.data.SemanticVersion
-import dev.kikugie.semver.data.Version as ParsedVersion
-import dev.kikugie.stonecutter.LENIENT_JSON
 import dev.kikugie.stonecutter.ProjectReference
 import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.data.dsl.VersionOperations
@@ -10,12 +8,20 @@ import dev.kikugie.stonecutter.data.dsl.impl.SemanticOperations
 import dev.kikugie.stonecutter.data.tree.TreeBuilder
 import dev.kikugie.stonecutter.data.tree.TreeSettings
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import org.gradle.api.Action
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.kotlin.dsl.newInstance
 import java.io.File
+import dev.kikugie.semver.data.Version as ParsedVersion
+
+private val LENIENT_JSON = Json {
+    ignoreUnknownKeys = true
+    coerceInputValues = true
+    isLenient = true
+}
 
 @OptIn(ExperimentalSerializationApi::class)
 private fun readTreeSettings(file: File): Action<TreeBuilder> {

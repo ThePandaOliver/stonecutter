@@ -5,7 +5,6 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.gradle.jvm.tasks.Jar
 import kotlin.io.path.ExperimentalPathApi
 
 plugins {
@@ -32,6 +31,7 @@ idea {
 
 repositories {
     mavenCentral()
+    maven("https://central.sonatype.com/repository/maven-snapshots/")
 }
 
 sourceSets {
@@ -43,6 +43,7 @@ sourceSets {
 dependencies {
     api(project(path = ":semver"))
     api(project(path = ":stitcher"))
+    implementation(common.misc.commons)
     implementation(common.kotlin.serialization)
     implementation(common.kotlin.serialization.json)
 }

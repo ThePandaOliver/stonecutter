@@ -1,5 +1,7 @@
 package dev.kikugie.stonecutter.build
 
+import dev.kikugie.commons.collections.getOrThrow
+import dev.kikugie.commons.collections.present
 import dev.kikugie.stonecutter.build.param.StonecutterBuildProperties
 import dev.kikugie.stonecutter.build.task.StonecutterBuildTasksImpl
 import dev.kikugie.stonecutter.controller.StonecutterControllerImpl
@@ -14,8 +16,6 @@ import dev.kikugie.stonecutter.data.dsl.impl.LenientOperations
 import dev.kikugie.stonecutter.data.tree.struct.ProjectBranch
 import dev.kikugie.stonecutter.data.tree.struct.ProjectNode
 import dev.kikugie.stonecutter.data.tree.struct.ProjectTree
-import dev.kikugie.stonecutter.getChecked
-import dev.kikugie.stonecutter.keysToString
 import dev.kikugie.stonecutter.util.*
 import kotlinx.serialization.json.Json
 import org.gradle.api.Project
@@ -27,13 +27,20 @@ import org.gradle.kotlin.dsl.property
 import dev.kikugie.semver.data.Version as ParsedVersion
 
 internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuildExtension,
-VersionOperations<ParsedVersion> by LenientOperations {
+    VersionOperations<ParsedVersion> by LenientOperations {
     override val tasks: StonecutterBuildTasksImpl = StonecutterBuildTasksImpl(this)
-    override val tree: ProjectTree by lazy { project.gradle.getContainer<ProjectTreeContainer>().projects.getChecked(project.hierarchy) {
-        "Tree for $it not found: ${keysToString()}"
-    } }
-    override val branch: ProjectBranch by lazy { tree.getChecked(parent.hierarchy) { "Branch for '$it' not found in ${tree.hierarchy}: ${keysToString()}" } }
-    override val node: ProjectNode by lazy { branch.getChecked(project.hierarchy) { "Node for '$it' not found in ${branch.hierarchy}: ${keysToString()}" } }
+    override val tree: ProjectTree by lazy {
+        project.gradle.getContainer<ProjectTreeContainer>()
+            .getOrThrow(project.hierarchy) { "Tree for '$it' not found in ${keys.present()}" }
+    }
+    override val branch: ProjectBranch by lazy {
+        val id = tree.hierarchy.relativize(parent.hierarchy)
+        tree.getOrThrow(id) { "Branch for '$it' not found in ${keys.present()}" }
+    }
+    override val node: ProjectNode by lazy {
+        val version = branch.hierarchy.relativize(project.hierarchy)
+        branch.getOrThrow(version) { "Node for '$it' not found in ${keys.present()}" }
+    }
     override val flags: FlagContainer get() = controller.flags
 
     override val constants: ConstantContainer get() = data.constants
