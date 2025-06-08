@@ -14,13 +14,13 @@ plugins {
     signing
     `kotlin-dsl`
     `maven-publish`
-    alias(libs.plugins.gradle.shadow)
-    alias(libs.plugins.gradle.publish)
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.dokka)
-    alias(libs.plugins.kotlin.dokka.javadoc)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.kotlin.validator)
+    alias(common.plugins.gradle.shadow)
+    alias(common.plugins.gradle.publish)
+    alias(common.plugins.kotlin.jvm)
+    alias(common.plugins.kotlin.dokka)
+    alias(common.plugins.kotlin.dokka.javadoc)
+    alias(common.plugins.kotlin.serialization)
+    alias(common.plugins.kotlin.validator)
 }
 
 idea {
@@ -43,7 +43,8 @@ sourceSets {
 dependencies {
     api(project(path = ":semver"))
     api(project(path = ":stitcher"))
-    implementation(libs.bundles.stonecutter)
+    implementation(common.kotlin.serialization)
+    implementation(common.kotlin.serialization.json)
 }
 
 apiValidation {

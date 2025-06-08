@@ -4,9 +4,9 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     java
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.dokka)
-    alias(libs.plugins.kotlin.serialization)
+    alias(common.plugins.kotlin.jvm)
+    alias(common.plugins.kotlin.dokka)
+    alias(common.plugins.kotlin.serialization)
 }
 
 version = "SNAPSHOT"
@@ -17,12 +17,8 @@ repositories {
 
 dependencies {
     api(project(path = ":semver"))
-    implementation(kotlin("reflect"))
-    implementation(libs.bundles.stitcher)
-
-    testImplementation(libs.junit.api)
-    testImplementation(libs.extra.mordant)
-    testImplementation(libs.kotlin.serialization.yaml)
+    implementation(common.kotlin.reflect)
+    implementation(common.kotlin.serialization)
 }
 
 dokka {

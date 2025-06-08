@@ -2,9 +2,9 @@ import org.gradle.kotlin.dsl.register
 import tasks.UpdateVersionTask
 
 plugins {
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.kotlin.dokka)
+    alias(common.plugins.kotlin.jvm) apply false
+    alias(common.plugins.kotlin.serialization) apply false
+    alias(common.plugins.kotlin.dokka)
 }
 
 group = property("group").toString()

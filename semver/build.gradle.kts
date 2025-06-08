@@ -4,9 +4,9 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     java
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.dokka)
-    alias(libs.plugins.kotlin.serialization)
+    alias(common.plugins.kotlin.jvm)
+    alias(common.plugins.kotlin.dokka)
+    alias(common.plugins.kotlin.serialization)
 }
 
 version = "SNAPSHOT"
@@ -16,8 +16,10 @@ repositories {
 }
 
 dependencies {
-    implementation(libs.bundles.stitcher)
-    testImplementation(libs.bundles.test)
+    implementation(common.kotlin.serialization)
+    testImplementation(common.kotest.runner)
+    testImplementation(common.kotest.assertions)
+    testImplementation(common.kotest.datatest)
 }
 
 dokka {

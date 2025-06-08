@@ -1,7 +1,9 @@
 dependencyResolutionManagement {
+    repositories {
+        maven("https://central.sonatype.com/repository/maven-snapshots/")
+    }
+
     versionCatalogs {
-        create("libs") {
-            from(files("../gradle/libs.versions.toml"))
-        }
+        create("common") { from("dev.kikugie:stonecutter-versions:1-SNAPSHOT") }
     }
 }
