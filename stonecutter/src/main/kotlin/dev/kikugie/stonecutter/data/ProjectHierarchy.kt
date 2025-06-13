@@ -1,6 +1,6 @@
 package dev.kikugie.stonecutter.data
 
-import dev.kikugie.then
+import dev.kikugie.commons.then
 import kotlinx.serialization.Serializable
 import org.gradle.api.Project
 import org.gradle.api.UnknownProjectException
