@@ -84,10 +84,7 @@ public value class ProjectHierarchy(private val path: String) : List<String> {
 
         public val ProjectDescriptor.hierarchy: ProjectHierarchy get() = ProjectHierarchy(path)
 
-        public fun of(path: String): ProjectHierarchy = when {
-            path.startsWith(':') -> ProjectHierarchy(path)
-            else -> ProjectHierarchy(":$path")
-        }
+        public fun of(path: String): ProjectHierarchy = ProjectHierarchy(":${path.trimStart(':')}")
 
         public fun of(components: Iterable<String>): ProjectHierarchy = ProjectHierarchy(buildString {
             for (it in components) append(":$it")
