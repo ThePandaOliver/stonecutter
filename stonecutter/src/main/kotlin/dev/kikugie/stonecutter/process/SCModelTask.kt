@@ -11,7 +11,7 @@ import org.gradle.api.tasks.VerificationTask
 import java.nio.file.StandardOpenOption
 import kotlin.io.path.writeText
 
-internal abstract class ModelSavingTask : DefaultTask(), VerificationTask {
+internal abstract class SCModelTask : DefaultTask(), VerificationTask {
     @get:Input
     abstract val json: Property<String>
 

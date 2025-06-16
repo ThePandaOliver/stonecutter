@@ -5,7 +5,8 @@ import dev.kikugie.stonecutter.StonecutterInternalAPI
 import dev.kikugie.stonecutter.StonecutterPlugin
 import dev.kikugie.stonecutter.data.ProjectHierarchy
 import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
-import dev.kikugie.stonecutter.data.container.ProjectTreeContainer
+import dev.kikugie.stonecutter.data.container.BuildPropertiesContainer
+import dev.kikugie.stonecutter.data.container.ProjectNodeContainer
 import dev.kikugie.stonecutter.data.container.TreeBuilderContainer
 import dev.kikugie.stonecutter.data.container.createContainer
 import dev.kikugie.stonecutter.data.dsl.VersionOperations
@@ -50,18 +51,19 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
 
     init {
         logger.lifecycle { "Running Stonecutter ${StonecutterPlugin.VERSION}" }
+        settings.gradle.createContainer<ProjectNodeContainer>()
+        settings.gradle.createContainer<BuildPropertiesContainer>(objects, settings.providers)
         settings.gradle.settingsEvaluated {
             if (groovy) reportGroovyComplaint()
         }
         settings.gradle.projectsLoaded {
             createIdeaConfigurations(this, rootProject)
         }
-        settings.gradle.createContainer<ProjectTreeContainer>()
     }
 
     override fun create(ref: ProjectReference, setup: TreeBuilder): Unit = with(setup) {
         val project = getDescriptor(ref)
-        require(container.register(project.hierarchy, this)) { "Project ${project.path} is already registered" }
+        require(container.putIfAbsent(project.hierarchy, this) == null) { "Project ${project.path} is already registered" }
 
         val controller = controllerTypeFor()
         project.buildFileName = controller.filename.also(::checkGroovy)

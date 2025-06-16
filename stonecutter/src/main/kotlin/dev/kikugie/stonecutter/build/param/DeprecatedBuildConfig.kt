@@ -1,123 +1,100 @@
 package dev.kikugie.stonecutter.build.param
 
-import dev.kikugie.semver.data.SemanticVersion
-import dev.kikugie.semver.data.Version as ParsedVersion
 import dev.kikugie.stonecutter.Identifier
-import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.Version
-import dev.kikugie.stonecutter.data.dsl.*
-import dev.kikugie.stonecutter.data.dsl.impl.SemanticOperations
+import dev.kikugie.stonecutter.data.dsl.ReplacementContainer
 import org.gradle.api.Action
 
-@StonecutterAPI
-public interface StonecutterBuildParams : VersionOperations<ParsedVersion> {
-    public val constants: ConstantContainer
-    public val dependencies: DependencyContainer
-    public val swaps: SwapContainer
-    public val replacements: ReplacementContainer
-    public val filters: FilterContainer
-
-    /**Provides [VersionOperations], which work strictly with [SemanticVersion]s.*/
-    public val semantics: VersionOperations<SemanticVersion>
-        get() = SemanticOperations
-
-    public fun constants(block: Action<ConstantContainer>): Unit = block.execute(constants)
-    public fun dependencies(block: Action<DependencyContainer>): Unit = block.execute(dependencies)
-    public fun swaps(block: Action<SwapContainer>): Unit = block.execute(swaps)
-    public fun replacements(block: Action<ReplacementContainer>): Unit = block.execute(replacements)
-    public fun filters(block: Action<FilterContainer>): Unit = block.execute(filters)
-}
-
 @Suppress("DEPRECATION")
-public interface DeprecatedBuildParams : StonecutterBuildParams {
-    @Deprecated("Use DSL block instead")
+public interface DeprecatedBuildConfig : StonecutterBuildConfig {
+    @Deprecated("Use DSL block instead", ReplaceWith("swaps[id] = replacement"))
     public fun swap(id: Identifier, replacement: String) {
         swaps.put(id, replacement)
     }
 
-    @Deprecated("Use DSL block instead")
+    @Deprecated("Use DSL block instead", ReplaceWith("swaps[id] = replacement"))
     public fun swap(id: Identifier, replacement: () -> String) {
         swap(id, replacement())
     }
 
-    @Deprecated("Use DSL block instead")
+    @Deprecated("Use DSL block instead", ReplaceWith("swaps += values"))
     public fun swaps(vararg values: Pair<Identifier, String>) {
         for ((id, replacement) in values) swap(id, replacement)
     }
 
-    @Deprecated("Use DSL block instead")
+    @Deprecated("Use DSL block instead", ReplaceWith("swaps += values"))
     public fun swaps(values: Iterable<Pair<Identifier, String>>) {
         for ((id, replacement) in values) swap(id, replacement)
     }
 
-    @Deprecated("Use DSL block instead")
+    @Deprecated("Use DSL block instead", ReplaceWith("swaps += values"))
     public fun swaps(values: Map<Identifier, String>) {
         for ((id, replacement) in values) swap(id, replacement)
     }
 
-    @Deprecated("Use DSL block instead")
+    @Deprecated("Use DSL block instead", ReplaceWith("constants[id] = value"))
     public fun const(id: Identifier, value: Boolean) {
         constants.put(id, value)
     }
 
-    @Deprecated("Use DSL block instead")
+    @Deprecated("Use DSL block instead", ReplaceWith("constants[id] = value"))
     public fun const(id: Identifier, value: () -> Boolean) {
         const(id, value())
     }
 
-    @Deprecated("Use DSL block instead")
+    @Deprecated("Use DSL block instead", ReplaceWith("constants += values"))
     public fun consts(vararg values: Pair<Identifier, Boolean>) {
         for ((id, value) in values) const(id, value)
     }
 
-    @Deprecated("Use DSL block instead")
+    @Deprecated("Use DSL block instead", ReplaceWith("constants += values"))
     public fun consts(values: Iterable<Pair<Identifier, Boolean>>) {
         for ((id, value) in values) const(id, value)
     }
 
-    @Deprecated("Use DSL block instead")
+    @Deprecated("Use DSL block instead", ReplaceWith("constants += values"))
     public fun consts(values: Map<Identifier, Boolean>) {
         for ((id, value) in values) const(id, value)
     }
 
-    @Deprecated("Use DSL block instead")
+    @Deprecated("Use DSL block instead", ReplaceWith("constants.match(reference, choices)"))
     public fun consts(reference: Identifier, vararg choices: Identifier) {
         for (it in choices) const(it, it == reference)
     }
 
-    @Deprecated("Use DSL block instead")
+    @Deprecated("Use DSL block instead", ReplaceWith("constants.match(reference, choices)"))
     public fun consts(reference: Identifier, choices: Iterable<Identifier>) {
         for (it in choices) const(it, it == reference)
     }
 
-    @Deprecated("Use DSL block instead")
+    @Deprecated("Use DSL block instead", ReplaceWith("dependencies[id] = version"))
     public fun dependency(id: Identifier, version: Version) {
         dependencies.put(id, version)
     }
 
-    @Deprecated("Use DSL block instead")
+    @Deprecated("Use DSL block instead", ReplaceWith("dependencies[id] = version"))
     public fun dependency(id: Identifier, version: () -> Version) {
         dependency(id, version())
     }
 
-    @Deprecated("Use DSL block instead")
+    @Deprecated("Use DSL block instead", ReplaceWith("dependencies += values"))
     public fun dependencies(vararg values: Pair<Identifier, Version>) {
         for ((id, version) in values) dependency(id, version)
     }
 
-    @Deprecated("Use DSL block instead")
+    @Deprecated("Use DSL block instead", ReplaceWith("dependencies += values"))
     public fun dependencies(values: Iterable<Pair<Identifier, Version>>) {
         for ((id, version) in values) dependency(id, version)
     }
 
-    @Deprecated("Use DSL block instead")
+    @Deprecated("Use DSL block instead", ReplaceWith("dependencies += values"))
     public fun dependencies(values: Map<Identifier, Version>) {
         for ((id, version) in values) dependency(id, version)
     }
 
     @Deprecated("Use DSL block instead")
     public fun allowExtensions(extensions: Iterable<String>) {
-        filters.extensions.allow(extensions)
+        filters.include(extensions.map { "**/*.$it" })
     }
 
     @Deprecated("Use DSL block instead")
@@ -126,7 +103,7 @@ public interface DeprecatedBuildParams : StonecutterBuildParams {
 
     @Deprecated("Use DSL block instead")
     public fun overrideExtensions(extensions: Iterable<String>) {
-        filters.extensions.replace(extensions)
+        filters.setIncludes(extensions.map { "**/*.$it" })
     }
 
     @Deprecated("Use DSL block instead")
@@ -135,14 +112,18 @@ public interface DeprecatedBuildParams : StonecutterBuildParams {
 
     @Deprecated("Use DSL block instead")
     public fun excludeFiles(files: Iterable<String>) {
-        filters.excludes.exclude(files)
+        filters.exclude(files)
     }
 
     @Deprecated("Use DSL block instead")
     public fun excludeFiles(vararg files: String): Unit =
         excludeFiles(files.asIterable())
 
-    @Deprecated("Use DSL block instead")
+    @Deprecated("Use DSL block instead", ReplaceWith("""replacements.string(id) { 
+        |   direction = direction
+        |   phase = phase
+        |   replace(from, to)
+        |}"""))
     public fun replacement(
         direction: Boolean,
         from: String, to: String,
@@ -155,7 +136,12 @@ public interface DeprecatedBuildParams : StonecutterBuildParams {
         if (id != null) this.id.set(id)
     }
 
-    @Deprecated("Use DSL block instead")
+    @Deprecated("Use DSL block instead", ReplaceWith("""replacements.regex(id) { 
+        |   direction = direction
+        |   phase = phase
+        |   replace(fromPattern, toValue)
+        |   reverse(reversePattern, reverseValue
+        |}"""))
     public fun replacement(
         direction: Boolean,
         fromPattern: String, toValue: String,
@@ -174,12 +160,12 @@ public interface DeprecatedBuildParams : StonecutterBuildParams {
     public infix fun replacement(properties: Map<String, Any>): Unit =
         replacementMap(properties)
 
-    @Deprecated("Use DSL block instead")
+    @Deprecated("Use DSL block instead", ReplaceWith("replacements.string(build)"))
     public fun stringReplacement(build: Action<ReplacementContainer.StringReplacementBuilder>) {
         replacements.string(build)
     }
 
-    @Deprecated("Use DSL block instead")
+    @Deprecated("Use DSL block instead", ReplaceWith("replacements.regex(build)"))
     public fun regexReplacement(build: Action<ReplacementContainer.RegexReplacementBuilder>) {
         replacements.regex(build)
     }

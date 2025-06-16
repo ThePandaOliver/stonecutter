@@ -1,20 +1,15 @@
 package dev.kikugie.stonecutter.build
 
 import dev.kikugie.stonecutter.StonecutterAPI
-import dev.kikugie.stonecutter.build.param.DeprecatedBuildParams
+import dev.kikugie.stonecutter.build.param.DeprecatedBuildConfig
 import dev.kikugie.stonecutter.build.task.StonecutterBuildTasks
 import dev.kikugie.stonecutter.controller.flag.FlagContainer
 import dev.kikugie.stonecutter.data.StonecutterProject
-import dev.kikugie.stonecutter.data.tree.struct.*
 import org.gradle.api.Action
 
 /**Stonecutter plugin available in `build.gradle[.kts]`.*/
 @StonecutterAPI
-public interface StonecutterBuildExtension : DeprecatedBuildParams {
-    public val tree: ProjectTree
-    public val branch: ProjectBranch
-    public val node: ProjectNode
-
+public interface StonecutterBuildExtension : DeprecatedBuildConfig {
     /**
      * Read-only configuration flags container passed from `stonecutter.gradle[.kts]`.
      * Can be used to retrieve default and custom configuration values.

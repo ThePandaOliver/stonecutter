@@ -2,8 +2,29 @@ package dev.kikugie.stonecutter.data.dsl
 
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterAPI
+import dev.kikugie.stonecutter.Version
 import org.gradle.api.Action
 import org.gradle.api.provider.Property
+
+@StonecutterAPI @StonecutterParametersDSL
+public interface ConstantContainer : DynamicMap<Identifier, Boolean> {
+    /**
+     * Puts all [choices] into the constant map, with their values set to `true` if they equal [sample].
+     */
+    public fun match(sample: Identifier, vararg choices: Identifier): Unit = choices.forEach { put(it, it == sample) }
+    /**
+     * Puts all [choices] into the constant map, with their values set to `true` if they equal [sample].
+     */
+    public fun match(sample: Identifier, choices: Iterable<Identifier>): Unit = choices.forEach { put(it, it == sample) }
+}
+
+@StonecutterAPI @StonecutterParametersDSL
+public interface SwapContainer : DynamicMap<Identifier, String> {
+}
+
+@StonecutterAPI @StonecutterParametersDSL
+public interface DependencyContainer : DynamicMap<Identifier, Version> {
+}
 
 @StonecutterAPI @StonecutterParametersDSL
 public interface ReplacementContainer {

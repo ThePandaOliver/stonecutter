@@ -125,7 +125,7 @@ tasks {
         compilerOptions {
             languageVersion = KotlinVersion.KOTLIN_2_1
             apiVersion = KotlinVersion.KOTLIN_2_1
-            jvmTarget.set(JvmTarget.JVM_17)
+            jvmTarget = JvmTarget.JVM_17
         }
     }
 }

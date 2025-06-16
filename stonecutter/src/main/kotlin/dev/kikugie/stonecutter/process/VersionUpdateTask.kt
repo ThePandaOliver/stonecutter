@@ -13,9 +13,9 @@ import org.gradle.api.tasks.TaskAction
 import java.nio.file.StandardOpenOption
 import kotlin.io.path.writeText
 
-public sealed interface StonecutterUpdateTask : Task
+public sealed interface SCSwitchTask : Task
 
-public abstract class ControllerExternalUpdateTask : DefaultTask(), StonecutterUpdateTask {
+public abstract class SCExternalSwitchTask : DefaultTask(), SCSwitchTask {
     @get:InputFile
     public abstract val file: RegularFileProperty
 
@@ -29,7 +29,7 @@ public abstract class ControllerExternalUpdateTask : DefaultTask(), StonecutterU
 }
 
 @OptIn(StonecutterInternalAPI::class)
-public abstract class ControllerScriptUpdateTask : DefaultTask(), StonecutterUpdateTask {
+public abstract class SCScriptSwitchTask : DefaultTask(), SCSwitchTask {
     @get:InputFile
     public abstract val script: RegularFileProperty
 

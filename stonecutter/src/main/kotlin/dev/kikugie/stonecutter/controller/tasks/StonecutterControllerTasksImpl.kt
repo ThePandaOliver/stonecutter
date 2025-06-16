@@ -1,81 +1,85 @@
 package dev.kikugie.stonecutter.controller.tasks
 
 import dev.kikugie.stonecutter.*
+import dev.kikugie.stonecutter.build.StonecutterBuildExtension
 import dev.kikugie.stonecutter.controller.StonecutterControllerImpl
 import dev.kikugie.stonecutter.controller.StonecutterControllerManager
+import dev.kikugie.stonecutter.data.dsl.impl.LenientOperations
 import dev.kikugie.stonecutter.data.tree.model.BranchInfo
 import dev.kikugie.stonecutter.data.tree.model.BranchModel
 import dev.kikugie.stonecutter.data.tree.model.NodeInfo
 import dev.kikugie.stonecutter.data.tree.model.TreeModel
 import dev.kikugie.stonecutter.data.tree.struct.ProjectBranch
 import dev.kikugie.stonecutter.data.tree.struct.ProjectNode
-import dev.kikugie.stonecutter.process.ControllerExternalUpdateTask
-import dev.kikugie.stonecutter.process.ControllerScriptUpdateTask
-import dev.kikugie.stonecutter.process.ModelSavingTask
-import dev.kikugie.stonecutter.process.StonecutterUpdateTask
+import dev.kikugie.stonecutter.process.SCExternalSwitchTask
+import dev.kikugie.stonecutter.process.SCScriptSwitchTask
+import dev.kikugie.stonecutter.process.SCModelTask
+import dev.kikugie.stonecutter.process.SCSwitchTask
 import dev.kikugie.stonecutter.util.buildDirectory
 import dev.kikugie.stonecutter.util.invoke
 import kotlinx.serialization.json.Json
+import org.gradle.api.DefaultTask
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.mapProperty
 import org.gradle.kotlin.dsl.register
+import org.gradle.kotlin.dsl.the
 import java.io.File
+
+private val TRUE: (Any) -> Boolean = { true }
+private val BY_VERSION: Comparator<ProjectNode> = Comparator.comparing { LenientOperations.parse(it.metadata.version) }
 
 @OptIn(StonecutterInternalAPI::class)
 internal class StonecutterControllerTasksImpl(val ext: StonecutterControllerImpl) : StonecutterControllerTasks {
-    override val switch: MutableTaskProviderMap<Identifier, out StonecutterUpdateTask> = mutableMapOf()
+    override val switch: MutableTaskProviderMap<Identifier, out SCSwitchTask> = mutableMapOf()
     private val encoder = Json { prettyPrint = true }
-    override fun named(name: String, filter: ProjectNode.() -> Boolean): TaskProviderMapProperty<ProjectNode, *> =
-        ext.root.objects.mapProperty<ProjectNode, TaskProvider<*>>().value(ext.root.provider {
-            ext.tree.nodes
-                .filter { filter(it) && name in it.project.tasks.names }
-                .associateWith { it.project.tasks.named(name) }
-        }).apply { disallowChanges() }
+    override fun named(name: String, filter: (ProjectNode.() -> Boolean)?): TaskProviderMapProperty<ProjectNode, *> =
+        named(filter ?: TRUE) { it.project.tasks.named(name) }
 
-    override fun <T : Task> named(name: String, cls: Class<T>, filter: ProjectNode.() -> Boolean): TaskProviderMapProperty<ProjectNode, T> =
-        ext.root.objects.mapProperty<ProjectNode, TaskProvider<T>>().value(ext.root.provider {
-            ext.tree.nodes
-                .filter { filter(it) && name in it.project.tasks.names }
-                .associateWith { it.project.tasks.named(name, cls) }
-        }).apply { disallowChanges() }
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : Task> named(name: String, cls: Class<T>, filter: (ProjectNode.() -> Boolean)?): TaskProviderMapProperty<ProjectNode, T> =
+        named(filter ?: TRUE) { it.project.tasks.named(name, cls) } as TaskProviderMapProperty<ProjectNode, T>
 
-    override fun order(tasks: TaskProviderMapProperty<ProjectNode, *>, ordering: Comparator<ProjectNode>) = ext.root.afterEvaluate {
-        val tasks = tasks().toSortedMap(ordering).values
+    private inline fun named(
+        crossinline filter: ProjectNode.() -> Boolean,
+        crossinline selector: (ProjectNode) -> TaskProvider<*>
+    ): TaskProviderMapProperty<ProjectNode, *> = ext.root.objects.mapProperty<ProjectNode, TaskProvider<*>>()
+        .value(ext.root.provider { ext.tree.nodes.filter(filter).associateWith(selector) })
+
+    override fun order(name: String, ordering: Comparator<ProjectNode>?, filter: (ProjectNode.() -> Boolean)?) {
         val lock = ext.root.buildDirectory.resolve("stonecutter-cache/sc.lock")
+        val nodes = ext.tree.nodes.filter(filter ?: TRUE).sortedWith(ordering ?: BY_VERSION)
 
-        for (it in tasks) it.configure { outputs.file(lock) }
-        for ((a, b) in tasks.zipWithNext()) b.configure { mustRunAfter(a) }
+        for ((a, b) in nodes.zipWithNext()) {
+            val prev = "${a.hierarchy.orBlank()}:$name"
+            b.project.afterEvaluate {
+                tasks.named(name) { outputs.file(lock); mustRunAfter(prev) }
+            }
+        }
     }
 
-    fun registerSelfSwitchTask(project: Identifier, manager: StonecutterControllerManager) =
-        ext.root.tasks.register<ControllerScriptUpdateTask>(switchTaskName(project)) {
-            group = "stonecutter-impl"
-            description = "Internal Stonecutter task. Do not call manually."
-
+    fun registerSelfSwitchTask(project: Identifier, manager: StonecutterControllerManager): TaskProvider<SCScriptSwitchTask> {
+        val merges = getMergeTasks(project)
+        return registerDefaultTask<SCScriptSwitchTask>(switchTaskName(project)) {
             manager(manager::class.java)
             version(project)
             script.set(ext.root.buildFile)
-        }.also { switch[it.name] = it }
-
-    fun registerExternalSwitchTask(project: Identifier, provider: File) =
-        ext.root.tasks.register<ControllerExternalUpdateTask>(switchTaskName(project)) {
-            group = "stonecutter-impl"
-            description = "Internal Stonecutter task. Do not call manually."
-
-            version(project)
-            file.set(provider)
-        }.also { switch[it.name] = it }
-
-    fun registerModelGroupingTask() = ext.root.tasks.register("stonecutterSaveModels") {
-        group = "stonecutter-impl"
-        description = "Internal Stonecutter task. Do not call manually."
+            dependsOn(merges)
+        }.apply { switch[name] = this }
     }
 
-    fun registerTreeModelTask() = ext.root.tasks.register<ModelSavingTask>("stonecutterSaveTreeModel") {
-        group = "stonecutter-impl"
-        description = "Internal Stonecutter task. Do not call manually."
+    fun registerExternalSwitchTask(project: Identifier, provider: File): TaskProvider<SCExternalSwitchTask> {
+        val merges = getMergeTasks(project)
+        return registerDefaultTask<SCExternalSwitchTask>(switchTaskName(project)) {
+            version(project)
+            file.set(provider)
+            dependsOn(merges)
+        }.apply { switch[name] = this }
+    }
 
+    fun registerModelGroupingTask() = registerDefaultTask<DefaultTask>("stonecutterSaveModels")
+
+    fun registerTreeModelTask() = registerDefaultTask<SCModelTask>("stonecutterSaveTreeModel") {
         output.set(ext.root.layout.buildDirectory.file("stonecutter-cache/tree.json"))
         json.set(ext.root.provider {
             val branches = ext.tree.branches.map { BranchInfo(it.id, it.location) }
@@ -87,10 +91,7 @@ internal class StonecutterControllerTasksImpl(val ext: StonecutterControllerImpl
         ext.root.tasks.named("stonecutterSaveModels") { dependsOn(it) }
     }
 
-    fun registerBranchModelTask(branch: ProjectBranch) = branch.project.tasks.register<ModelSavingTask>("stonecutterSaveBranchModel") {
-        group = "stonecutter-impl"
-        description = "Internal Stonecutter task. Do not call manually."
-
+    fun registerBranchModelTask(branch: ProjectBranch) = registerDefaultTask<SCModelTask>("stonecutterSaveBranchModel") {
         output.set(branch.project.layout.buildDirectory.file("stonecutter-cache/branch.json"))
         json.set(ext.root.provider {
             val nodes = branch.nodes.map { NodeInfo(it.metadata, it.location) }
@@ -99,4 +100,19 @@ internal class StonecutterControllerTasksImpl(val ext: StonecutterControllerImpl
     }.also {
         ext.root.tasks.named("stonecutterSaveModels") { dependsOn(it) }
     }
+
+    private inline fun <reified T : Task> registerDefaultTask(name: String, crossinline config: T.() -> Unit = {}): TaskProvider<T> =
+        ext.root.tasks.register<T>(name) {
+            group = "stonecutter-impl"
+            description = "Internal Stonecutter task. Do not call manually."
+            config()
+        }
+
+    private fun getMergeTasks(project: Identifier) = ext.tree.nodes
+        .filter { it.metadata.project == project }
+        .map {
+            ext.root.provider {
+                it.project.the<StonecutterBuildExtension>().tasks.merge.values
+            }
+        }
 }

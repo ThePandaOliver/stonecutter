@@ -3,6 +3,7 @@ package dev.kikugie.stonecutter.controller
 import dev.kikugie.semver.data.SemanticVersion
 import dev.kikugie.semver.data.Version as ParsedVersion
 import dev.kikugie.stonecutter.StonecutterAPI
+import dev.kikugie.stonecutter.build.param.StonecutterBuildProperties
 import dev.kikugie.stonecutter.data.StonecutterProject
 import dev.kikugie.stonecutter.controller.flag.MutableFlagContainer
 import dev.kikugie.stonecutter.controller.flag.StonecutterFlag
@@ -72,21 +73,21 @@ public interface StonecutterControllerExtension : VersionOperations<ParsedVersio
         tasks(action::call)
 
     /**
-     * Configures [stonecutter parameters][dev.kikugie.stonecutter.build.param.StonecutterBuildParams] for each subproject in the tree.
+     * Configures [stonecutter parameters][dev.kikugie.stonecutter.build.param.StonecutterBuildConfig] for each subproject in the tree.
      *
      * This configuration is preferred to [subprojects {}][org.gradle.api.Project.subprojects],
      * as it's lazily evaluated when the build plugin is applied to the subproject,
      * instead of resolving it immediately.
      */
-    public infix fun parameters(config: StonecutterDelegatedBuildParams.() -> Unit)
+    public infix fun parameters(config: StonecutterBuildProperties.() -> Unit)
 
     /**
-     * Configures [stonecutter parameters][dev.kikugie.stonecutter.build.param.StonecutterBuildParams] for each subproject in the tree.
+     * Configures [stonecutter parameters][dev.kikugie.stonecutter.build.param.StonecutterBuildConfig] for each subproject in the tree.
      *
      * This configuration is preferred to [subprojects {}][org.gradle.api.Project.subprojects],
      * as it's lazily evaluated when the build plugin is applied to the subproject,
      * instead of resolving it immediately.
      */
-    public fun parameters(config: Closure<StonecutterDelegatedBuildParams>): Unit =
+    public fun parameters(config: Closure<StonecutterBuildProperties>): Unit =
         parameters(config::call)
 }

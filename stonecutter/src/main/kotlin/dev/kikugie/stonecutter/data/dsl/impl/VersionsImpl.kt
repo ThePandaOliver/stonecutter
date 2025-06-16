@@ -5,6 +5,13 @@ import dev.kikugie.semver.data.Version as ParsedVersion
 import dev.kikugie.semver.data.SemanticVersion
 import dev.kikugie.semver.data.VersionPredicate
 import dev.kikugie.stonecutter.data.dsl.VersionOperations
+import java.util.concurrent.ConcurrentHashMap
+
+private val VERSION_CACHE: MutableMap<String, ParsedVersion> = ConcurrentHashMap()
+
+@Suppress("UNCHECKED_CAST")
+internal fun <T : ParsedVersion> getOrParse(version: String, parser: ParsedVersion.Operations): T =
+    VERSION_CACHE.computeIfAbsent(version) { parser.parse(it).getOrThrow() } as T
 
 private fun unpackPredicates(source: String, operations: VersionPredicate.Operations): List<VersionPredicate> = buildList {
     var cursor = 0
@@ -25,17 +32,13 @@ private fun VersionPredicate.Operations.eval(version: ParsedVersion, vararg pred
     predicates.flatMap { unpackPredicates(it, this) }.all { it(version) }
 
 internal object SemanticOperations : VersionOperations<SemanticVersion> {
-    override fun parse(version: String): SemanticVersion =
-        SemanticVersion.parse(version).getOrThrow()
-
+    override fun parse(version: String): SemanticVersion = getOrParse(version, SemanticVersion)
     override fun eval(version: ParsedVersion, vararg predicates: String): Boolean =
         VersionPredicate.Semantic.eval(version, *predicates)
 }
 
 internal object LenientOperations : VersionOperations<ParsedVersion> {
-    override fun parse(version: String): ParsedVersion =
-        ParsedVersion.parse(version).getOrThrow()
-
+    override fun parse(version: String): ParsedVersion = getOrParse(version, ParsedVersion)
     override fun eval(version: ParsedVersion, vararg predicates: String): Boolean =
         VersionPredicate.eval(version, *predicates)
 }

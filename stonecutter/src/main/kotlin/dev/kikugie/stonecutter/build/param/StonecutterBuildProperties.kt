@@ -1,38 +1,32 @@
 package dev.kikugie.stonecutter.build.param
 
-import dev.kikugie.stitcher.transformer.TransformParameters
-import dev.kikugie.semver.data.Version as ParsedVersion
-import dev.kikugie.stonecutter.data.dsl.FilterContainer
-import dev.kikugie.stonecutter.data.dsl.ReplacementContainer
-import dev.kikugie.stonecutter.data.dsl.SwapContainer
-import dev.kikugie.stonecutter.data.dsl.VersionOperations
-import dev.kikugie.stonecutter.data.dsl.impl.ConstantContainerImpl
-import dev.kikugie.stonecutter.data.dsl.impl.DependencyContainerImpl
-import dev.kikugie.stonecutter.data.dsl.impl.FilterContainerImpl
-import dev.kikugie.stonecutter.data.dsl.impl.LenientOperations
-import dev.kikugie.stonecutter.data.dsl.impl.ReplacementContainerImpl
-import dev.kikugie.stonecutter.data.dsl.impl.SwapContainerImpl
+import dev.kikugie.stitcher.data.replacement.Replacement
+import dev.kikugie.stonecutter.data.dsl.*
+import dev.kikugie.stonecutter.data.dsl.impl.*
+import dev.kikugie.stonecutter.data.tree.struct.ProjectNode
+import org.gradle.api.Named
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.ProviderFactory
+import org.gradle.api.tasks.util.PatternFilterable
+import org.gradle.api.tasks.util.PatternSet
+import org.gradle.kotlin.dsl.newInstance
 import javax.inject.Inject
+import dev.kikugie.semver.data.Version as ParsedVersion
 
-internal open class StonecutterBuildProperties @Inject constructor(objects: ObjectFactory) : DeprecatedBuildParams,
-    VersionOperations<ParsedVersion> by LenientOperations {
-    val data = StonecutterBuildData()
+public abstract class StonecutterBuildProperties @Inject constructor(
+    override val node: ProjectNode,
+    objects: ObjectFactory,
+    factory: ProviderFactory
+) : DeprecatedBuildConfig, Named, VersionOperations<ParsedVersion> by LenientOperations {
+    private val list: MutableList<Replacement> = mutableListOf()
+    internal val data: StonecutterBuildData = objects.newInstance(list)
 
-    override val constants: ConstantContainerImpl = ConstantContainerImpl(data.constants as MutableMap)
-    override val dependencies: DependencyContainerImpl = DependencyContainerImpl(data.dependencies as MutableMap)
-    override val swaps: SwapContainer = SwapContainerImpl(data.swaps as MutableMap)
-    override val replacements: ReplacementContainer = ReplacementContainerImpl(data.replacements, objects)
-    override val filters: FilterContainer = FilterContainerImpl(data.extensions as MutableSet, data.excludes as MutableSet)
+    override val constants: ConstantContainer = ConstantContainerImpl(factory, data.constantsProperty)
+    override val dependencies: DependencyContainer = DependencyContainerImpl(factory, data.dependenciesProperty)
+    override val swaps: SwapContainer = SwapContainerImpl(factory, data.swapsProperty)
+    override val replacements: ReplacementContainer = ReplacementContainerImpl(objects, list)
+    override val filters: PatternFilterable = PatternSet()
 
-    internal fun convert(key: String, version: ParsedVersion): TransformParameters {
-        val deps = buildMap {
-            putAll(data.dependencies)
-            val main = getOrDefault(key, version)
-            put(key, main)
-            put("", main)
-        }
-
-        return TransformParameters(data.swaps, data.constants, deps, data.replacements)
-    }
+    override fun getName(): String = "StonecutterBuild@${node.hierarchy}"
 }
+

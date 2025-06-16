@@ -1,57 +1,43 @@
 package dev.kikugie.stonecutter.build
 
-import dev.kikugie.commons.collections.getOrThrow
-import dev.kikugie.commons.collections.present
 import dev.kikugie.stonecutter.build.param.StonecutterBuildProperties
 import dev.kikugie.stonecutter.build.task.StonecutterBuildTasksImpl
-import dev.kikugie.stonecutter.controller.StonecutterControllerImpl
+import dev.kikugie.stonecutter.controller.StonecutterControllerExtension
 import dev.kikugie.stonecutter.controller.flag.FlagContainer
 import dev.kikugie.stonecutter.controller.flag.StonecutterFlag
 import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
-import dev.kikugie.stonecutter.data.container.ProjectTreeContainer
+import dev.kikugie.stonecutter.data.container.BuildPropertiesContainer
+import dev.kikugie.stonecutter.data.container.ProjectNodeContainer
 import dev.kikugie.stonecutter.data.container.getContainer
 import dev.kikugie.stonecutter.data.dsl.*
-import dev.kikugie.stonecutter.data.dsl.impl.FilterContainerImpl
+import dev.kikugie.stonecutter.data.dsl.impl.DependencyContainerImpl
 import dev.kikugie.stonecutter.data.dsl.impl.LenientOperations
-import dev.kikugie.stonecutter.data.tree.struct.ProjectBranch
 import dev.kikugie.stonecutter.data.tree.struct.ProjectNode
-import dev.kikugie.stonecutter.data.tree.struct.ProjectTree
 import dev.kikugie.stonecutter.util.*
-import kotlinx.serialization.json.Json
 import org.gradle.api.Project
 import org.gradle.api.file.DuplicatesStrategy
-import org.gradle.api.provider.Property
-import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
-import org.gradle.kotlin.dsl.property
+import org.gradle.api.tasks.util.PatternFilterable
+import org.gradle.kotlin.dsl.the
 import dev.kikugie.semver.data.Version as ParsedVersion
 
-internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuildExtension,
-    VersionOperations<ParsedVersion> by LenientOperations {
-    override val tasks: StonecutterBuildTasksImpl = StonecutterBuildTasksImpl(this)
-    override val tree: ProjectTree by lazy {
-        project.gradle.getContainer<ProjectTreeContainer>()
-            .getOrThrow(project.hierarchy) { "Tree for '$it' not found in ${keys.present()}" }
-    }
-    override val branch: ProjectBranch by lazy {
-        val id = tree.hierarchy.relativize(parent.hierarchy)
-        tree.getOrThrow(id) { "Branch for '$it' not found in ${keys.present()}" }
-    }
-    override val node: ProjectNode by lazy {
-        val version = branch.hierarchy.relativize(project.hierarchy)
-        branch.getOrThrow(version) { "Node for '$it' not found in ${keys.present()}" }
-    }
-    override val flags: FlagContainer get() = controller.flags
-
-    override val constants: ConstantContainer get() = data.constants
-    override val dependencies: DependencyContainer get() = data.dependencies
-    override val swaps: SwapContainer get() = data.swaps
-    override val replacements: ReplacementContainer get() = data.replacements
-    override val filters: FilterContainer get() = data.filters
-
+internal open class StonecutterBuildImpl(val project: Project) :
+    StonecutterBuildExtension, VersionOperations<ParsedVersion> by LenientOperations {
     internal val parent: Project get() = project.parent!!
-    internal val controller: StonecutterControllerImpl get() = tree.getControllerImpl()
-    internal val data: StonecutterBuildProperties get() = controller.getOrCreateParameters(project.hierarchy)
+    internal val properties: StonecutterBuildProperties by lazy { project.gradle.getContainer<BuildPropertiesContainer>()[node] }
+
+    override val node: ProjectNode by lazy {
+        val container = project.gradle.getContainer<ProjectNodeContainer>()
+        checkNotNull(container[project]) { "${project.hierarchy} is not a registered Stonecutter node" }
+    }
+    override val tasks: StonecutterBuildTasksImpl = StonecutterBuildTasksImpl(this)
+    override val flags: FlagContainer by lazy { tree.project.the<StonecutterControllerExtension>().flags }
+
+    override val constants: ConstantContainer get() = properties.constants
+    override val dependencies: DependencyContainer get() = properties.dependencies
+    override val swaps: SwapContainer get() = properties.swaps
+    override val replacements: ReplacementContainer get() = properties.replacements
+    override val filters: PatternFilterable get() = properties.filters
 
     init {
         configureProject()
@@ -59,34 +45,33 @@ internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuil
 
     private fun configureProject() = with(project) {
         plugins.apply("java")
-        val params = objects.property<String>()
-            .value(provider { Json.encodeToString(data.convert(flags[StonecutterFlag.IMPLICIT_RECEIVER], parse(current.version))) })
-            .apply(Property<String>::finalizeValueOnRead)
         sourceSets.all {
-            createProcessingTasks(this, params)
+            createProcessingTasks(this)
             this@StonecutterBuildImpl.tasks.configureSource(this)
         }
+        filters.include("**/*.java", "**/*.kt", "**/*.kts", "**/*.groovy", "**/*.gradle", "**/*.scala", "**/*.sc", "**/*.json5", "**/*.hjson")
         this@StonecutterBuildImpl.tasks.registerNodeModelTask()
         configureTaskDependencies()
+        afterEvaluate {
+            val deps = this@StonecutterBuildImpl.properties.dependencies as DependencyContainerImpl
+            val default = deps.getOrDefault(flags[StonecutterFlag.IMPLICIT_RECEIVER], current.version)
+            deps[flags[StonecutterFlag.IMPLICIT_RECEIVER]] = default
+            deps.property[""] = default
+        }
     }
 
     private fun configureTaskDependencies() = project.afterEvaluate {
         if (flags[StonecutterFlag.APPEND_SOURCES_AFTER_EVAL]) sourceSets.forEach(this@StonecutterBuildImpl.tasks::configureSource)
         if (flags[StonecutterFlag.GENERATE_SOURCES_ON_SYNC] && isIdeaSync) this@StonecutterBuildImpl.tasks.generate.keys.map { "$path:$it" }
             .let { gradle.requestTasks(it, path, projectDir) }
-
-        controller.tasks.switchTaskProvider(current.project)?.configure {
-            dependsOn(this@StonecutterBuildImpl.tasks.merge)
-        }
     }
 
-    private fun createProcessingTasks(src: SourceSet, data: Provider<String>) {
+    private fun createProcessingTasks(src: SourceSet) {
         val overrides = project.projectDirectory.resolve("src/${src.name}")
         val prepareTask = tasks.registerPrepareTask(src) {
-            params.set(data)
+            params.set(properties.data)
             parent.file("src/${src.name}").let(root::set)
-            parent.fileTree("src/${src.name}").filter { (filters as FilterContainerImpl).filter(it.toPath()) }
-                .let(source::setFrom)
+            project.provider { parent.fileTree("src/${src.name}").matching(filters) }.let { source.setFrom(it) }
             tasks.processedCacheDir.resolve(src.name).let(destination::set)
         }
 
@@ -98,14 +83,10 @@ internal open class StonecutterBuildImpl(val project: Project) : StonecutterBuil
             dependsOn(prepareTask)
         }
 
-        val merge = tasks.registerMergeTask(src) {
+        tasks.registerMergeTask(src) {
             from(tasks.processedCacheDir.resolve(src.name))
             into(parent.projectDirectory.resolve("src/${src.name}"))
             dependsOn(prepareTask)
-        }
-
-        controller.tasks.switchTaskProvider(current.project)?.configure {
-            dependsOn(merge)
         }
     }
 }

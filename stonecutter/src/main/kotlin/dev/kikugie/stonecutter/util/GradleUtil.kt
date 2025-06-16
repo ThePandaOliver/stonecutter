@@ -44,6 +44,11 @@ internal inline operator fun <K : Any, V> MapProperty<K, V>.invoke(vararg pairs:
 internal inline operator fun <K : Any, V : Any> MapProperty<K, V>.set(key: K, value: V) = put(key, value)
 internal inline operator fun <K : Any, V : Any> MapProperty<K, V>.set(key: K, value: Provider<V>) = put(key, value)
 
+
+internal fun <E> Provider<Set<E>>.orEmpty(): Set<E> = orNull ?: emptySet()
+internal fun <E> Provider<List<E>>.orEmpty(): List<E> = orNull ?: emptyList()
+internal fun <K, V> Provider<Map<K, V>>.orEmpty(): Map<K, V> = orNull ?: emptyMap()
+
 internal inline fun <reified T : Any> ObjectFactory.newInstance(vararg parameters: Any, build: T.() -> Unit)
     = newInstance<T>(*parameters).apply(build)
 

@@ -2,25 +2,25 @@ package dev.kikugie.stonecutter.process
 
 import dev.kikugie.stitcher.data.replacement.ReplacementExecutor.Companion.replaceWithScannedTokens
 import dev.kikugie.stitcher.data.replacement.ReplacementPhase
-import dev.kikugie.stitcher.data.token.ContentType
 import dev.kikugie.stitcher.eval.join
 import dev.kikugie.stitcher.exception.ErrorHandler
 import dev.kikugie.stitcher.exception.StoringErrorHandler
 import dev.kikugie.stitcher.exception.join
 import dev.kikugie.stitcher.parser.FileParser
 import dev.kikugie.stitcher.scanner.CommentRecognizers
-import dev.kikugie.stitcher.scanner.Scanner
 import dev.kikugie.stitcher.transformer.TransformParameters
 import dev.kikugie.stitcher.transformer.Transformer
+import dev.kikugie.stonecutter.build.param.StonecutterBuildData
 import dev.kikugie.stonecutter.util.clearIfNotIncremental
 import dev.kikugie.stonecutter.util.execute
 import dev.kikugie.stonecutter.util.invoke
-import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileType
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import org.gradle.kotlin.dsl.submit
@@ -38,13 +38,13 @@ import javax.inject.Inject
 import kotlin.io.path.*
 
 public abstract class SCPrepareTask : DefaultTask() {
-    @get:Input
-    public abstract val params: Property<String>
+    @get:Nested
+    public abstract val params: Property<StonecutterBuildData>
 
     @get:Input
     public abstract val root: Property<File>
 
-    @get:[InputFiles Incremental IgnoreEmptyDirectories]
+    @get:InputFiles @get:Incremental @get:IgnoreEmptyDirectories
     public abstract val source: ConfigurableFileCollection
 
     @get:OutputDirectory
@@ -63,7 +63,10 @@ public abstract class SCPrepareTask : DefaultTask() {
     }
 
     private fun WorkQueue.processFile(change: FileChange) = submit(SCPrepareAction::class) {
-        params.set(this@SCPrepareTask.params)
+        constants.set(params().constantsProperty)
+        swaps.set(params().swapsProperty)
+        dependencies.set(params().dependenciesProperty)
+        replacements.set(params().replacementsProperty)
         source.set(change.file)
         output.set(change.file.cacheFile())
     }
@@ -73,7 +76,10 @@ public abstract class SCPrepareTask : DefaultTask() {
 
 private interface SCPrepareAction : WorkAction<SCPrepareAction.Parameters> {
     interface Parameters : WorkParameters {
-        val params: Property<String>
+        val constants: MapProperty<String, Boolean>
+        val swaps: MapProperty<String, String>
+        val dependencies: MapProperty<String, String>
+        val replacements: ListProperty<StonecutterBuildData.ReplacementStub>
         val source: RegularFileProperty
         val output: RegularFileProperty
     }
@@ -83,17 +89,20 @@ private interface SCPrepareAction : WorkAction<SCPrepareAction.Parameters> {
         val output: Path = parameters.output.asFile().toPath()
 
         if (!source.exists()) { output.deleteIfExists(); return }
-        val transforms: TransformParameters = Json.decodeFromString(parameters.params())
+        val transforms = StonecutterBuildData.Serializer.convert(
+            parameters.constants, parameters.swaps, parameters.dependencies, parameters.replacements
+        )
 
         val original: CharSequence = source.readText(Charsets.UTF_8)
         val modified: CharSequence = original
             .applyReplacements(transforms, ReplacementPhase.FIRST)
             .applyTransformation(transforms)
             .applyReplacements(transforms, ReplacementPhase.LAST)
-        if (original == modified) { output.deleteIfExists(); return }
-
-        output.parent.createDirectories()
-        output.writeText(modified, Charsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
+        if (original == modified) output.deleteIfExists()
+        else with(output) {
+            parent.createDirectories()
+            writeText(modified, Charsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
+        }
     }
 
     private fun CharSequence.applyReplacements(transforms: TransformParameters, phase: ReplacementPhase): CharSequence =

@@ -19,19 +19,16 @@ public final class dev/kikugie/stonecutter/UtilitiesKt {
 	public static final field STONECUTTER Ljava/lang/String;
 }
 
-public abstract interface class dev/kikugie/stonecutter/build/StonecutterBuildExtension : dev/kikugie/stonecutter/build/param/DeprecatedBuildParams {
+public abstract interface class dev/kikugie/stonecutter/build/StonecutterBuildExtension : dev/kikugie/stonecutter/build/param/DeprecatedBuildConfig {
 	public fun flags (Lorg/gradle/api/Action;)V
 	public fun getActive ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public abstract fun getBranch ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectBranch;
 	public fun getCurrent ()Ldev/kikugie/stonecutter/data/StonecutterProject;
 	public abstract fun getFlags ()Ldev/kikugie/stonecutter/controller/flag/FlagContainer;
-	public abstract fun getNode ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectNode;
 	public abstract fun getTasks ()Ldev/kikugie/stonecutter/build/task/StonecutterBuildTasks;
-	public abstract fun getTree ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectTree;
 	public fun getVersions ()Ljava/util/Collection;
 }
 
-public abstract interface class dev/kikugie/stonecutter/build/param/DeprecatedBuildParams : dev/kikugie/stonecutter/build/param/StonecutterBuildParams {
+public abstract interface class dev/kikugie/stonecutter/build/param/DeprecatedBuildConfig : dev/kikugie/stonecutter/build/param/StonecutterBuildConfig {
 	public fun allowExtensions (Ljava/lang/Iterable;)V
 	public fun allowExtensions ([Ljava/lang/String;)V
 	public fun const (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
@@ -54,8 +51,8 @@ public abstract interface class dev/kikugie/stonecutter/build/param/DeprecatedBu
 	public fun replacement (Ljava/util/Map;)V
 	public fun replacement (ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
 	public fun replacement (ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public static synthetic fun replacement$default (Ldev/kikugie/stonecutter/build/param/DeprecatedBuildParams;ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)V
-	public static synthetic fun replacement$default (Ldev/kikugie/stonecutter/build/param/DeprecatedBuildParams;ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)V
+	public static synthetic fun replacement$default (Ldev/kikugie/stonecutter/build/param/DeprecatedBuildConfig;ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)V
+	public static synthetic fun replacement$default (Ldev/kikugie/stonecutter/build/param/DeprecatedBuildConfig;ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)V
 	public fun stringReplacement (Lorg/gradle/api/Action;)V
 	public fun swap (Ljava/lang/String;Ljava/lang/String;)V
 	public fun swap (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
@@ -64,56 +61,67 @@ public abstract interface class dev/kikugie/stonecutter/build/param/DeprecatedBu
 	public fun swaps ([Lkotlin/Pair;)V
 }
 
-public final class dev/kikugie/stonecutter/build/param/StonecutterBuildData {
-	public static final field Companion Ldev/kikugie/stonecutter/build/param/StonecutterBuildData$Companion;
-	public static final field DEFAULT_EXTENSIONS Ljava/util/Set;
-	public synthetic fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/List;Ljava/util/Set;Ljava/util/Set;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public synthetic fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/List;Ljava/util/Set;Ljava/util/Set;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/util/Map;
-	public final fun component2 ()Ljava/util/Map;
-	public final fun component3 ()Ljava/util/Map;
-	public final fun component4-Q2D5v-g ()Ljava/util/List;
-	public final fun component5 ()Ljava/util/Set;
-	public final fun component6 ()Ljava/util/Set;
-	public final fun copy--nkaOCQ (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/List;Ljava/util/Set;Ljava/util/Set;)Ldev/kikugie/stonecutter/build/param/StonecutterBuildData;
-	public static synthetic fun copy--nkaOCQ$default (Ldev/kikugie/stonecutter/build/param/StonecutterBuildData;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/List;Ljava/util/Set;Ljava/util/Set;ILjava/lang/Object;)Ldev/kikugie/stonecutter/build/param/StonecutterBuildData;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getConstants ()Ljava/util/Map;
-	public final fun getDependencies ()Ljava/util/Map;
-	public final fun getExcludes ()Ljava/util/Set;
-	public final fun getExtensions ()Ljava/util/Set;
-	public final fun getReplacements-Q2D5v-g ()Ljava/util/List;
-	public final fun getSwaps ()Ljava/util/Map;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
+public abstract interface class dev/kikugie/stonecutter/build/param/StonecutterBuildConfig : dev/kikugie/stonecutter/data/dsl/VersionOperations {
+	public fun constants (Lorg/gradle/api/Action;)V
+	public fun dependencies (Lorg/gradle/api/Action;)V
+	public fun filters (Lorg/gradle/api/Action;)V
+	public fun getBranch ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectBranch;
+	public abstract fun getConstants ()Ldev/kikugie/stonecutter/data/dsl/ConstantContainer;
+	public abstract fun getDependencies ()Ldev/kikugie/stonecutter/data/dsl/DependencyContainer;
+	public abstract fun getFilters ()Lorg/gradle/api/tasks/util/PatternFilterable;
+	public abstract fun getNode ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectNode;
+	public abstract fun getReplacements ()Ldev/kikugie/stonecutter/data/dsl/ReplacementContainer;
+	public fun getSemantics ()Ldev/kikugie/stonecutter/data/dsl/VersionOperations;
+	public abstract fun getSwaps ()Ldev/kikugie/stonecutter/data/dsl/SwapContainer;
+	public fun getTree ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectTree;
+	public fun replacements (Lorg/gradle/api/Action;)V
+	public fun swaps (Lorg/gradle/api/Action;)V
 }
 
-public synthetic class dev/kikugie/stonecutter/build/param/StonecutterBuildData$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Ldev/kikugie/stonecutter/build/param/StonecutterBuildData$$serializer;
-	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/kikugie/stonecutter/build/param/StonecutterBuildData;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/kikugie/stonecutter/build/param/StonecutterBuildData;)V
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+public abstract class dev/kikugie/stonecutter/build/param/StonecutterBuildData {
+	public static final field Companion Ldev/kikugie/stonecutter/build/param/StonecutterBuildData$Companion;
+	public fun <init> (Lorg/gradle/api/model/ObjectFactory;Ljava/util/List;)V
+	public abstract fun getConstantsProperty ()Lorg/gradle/api/provider/MapProperty;
+	public abstract fun getDependenciesProperty ()Lorg/gradle/api/provider/MapProperty;
+	public abstract fun getReplacementsProperty ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getSwapsProperty ()Lorg/gradle/api/provider/MapProperty;
 }
 
 public final class dev/kikugie/stonecutter/build/param/StonecutterBuildData$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public abstract interface class dev/kikugie/stonecutter/build/param/StonecutterBuildParams : dev/kikugie/stonecutter/data/dsl/VersionOperations {
-	public fun constants (Lorg/gradle/api/Action;)V
-	public fun dependencies (Lorg/gradle/api/Action;)V
-	public fun filters (Lorg/gradle/api/Action;)V
-	public abstract fun getConstants ()Ldev/kikugie/stonecutter/data/dsl/ConstantContainer;
-	public abstract fun getDependencies ()Ldev/kikugie/stonecutter/data/dsl/DependencyContainer;
-	public abstract fun getFilters ()Ldev/kikugie/stonecutter/data/dsl/FilterContainer;
-	public abstract fun getReplacements ()Ldev/kikugie/stonecutter/data/dsl/ReplacementContainer;
-	public fun getSemantics ()Ldev/kikugie/stonecutter/data/dsl/VersionOperations;
-	public abstract fun getSwaps ()Ldev/kikugie/stonecutter/data/dsl/SwapContainer;
-	public fun replacements (Lorg/gradle/api/Action;)V
-	public fun swaps (Lorg/gradle/api/Action;)V
+public abstract interface class dev/kikugie/stonecutter/build/param/StonecutterBuildData$ReplacementStub {
+	public abstract fun getIdentifier ()Lorg/gradle/api/provider/Property;
+	public abstract fun getPhase ()Lorg/gradle/api/provider/Property;
+	public abstract fun getSources ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getTarget ()Lorg/gradle/api/provider/Property;
+	public abstract fun getType ()Lorg/gradle/api/provider/Property;
+	public fun toReplacement ()Ldev/kikugie/stitcher/data/replacement/Replacement;
+}
+
+public final class dev/kikugie/stonecutter/build/param/StonecutterBuildData$Serializer : kotlinx/serialization/KSerializer {
+	public static final field INSTANCE Ldev/kikugie/stonecutter/build/param/StonecutterBuildData$Serializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/kikugie/stonecutter/build/param/StonecutterBuildData;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/kikugie/stonecutter/build/param/StonecutterBuildData;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+}
+
+public abstract class dev/kikugie/stonecutter/build/param/StonecutterBuildProperties : dev/kikugie/stonecutter/build/param/DeprecatedBuildConfig, dev/kikugie/stonecutter/data/dsl/VersionOperations, org/gradle/api/Named {
+	public fun <init> (Ldev/kikugie/stonecutter/data/tree/struct/ProjectNode;Lorg/gradle/api/model/ObjectFactory;Lorg/gradle/api/provider/ProviderFactory;)V
+	public fun compare (Ljava/lang/String;Ljava/lang/String;)I
+	public fun eval (Ldev/kikugie/semver/data/Version;[Ljava/lang/String;)Z
+	public fun eval (Ljava/lang/String;[Ljava/lang/String;)Z
+	public fun getConstants ()Ldev/kikugie/stonecutter/data/dsl/ConstantContainer;
+	public fun getDependencies ()Ldev/kikugie/stonecutter/data/dsl/DependencyContainer;
+	public fun getFilters ()Lorg/gradle/api/tasks/util/PatternFilterable;
+	public fun getName ()Ljava/lang/String;
+	public fun getNode ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectNode;
+	public fun getReplacements ()Ldev/kikugie/stonecutter/data/dsl/ReplacementContainer;
+	public fun getSwaps ()Ldev/kikugie/stonecutter/data/dsl/SwapContainer;
+	public fun parse (Ljava/lang/String;)Ldev/kikugie/semver/data/Version;
 }
 
 public abstract interface class dev/kikugie/stonecutter/build/task/StonecutterBuildTasks {
@@ -127,6 +135,11 @@ public abstract interface class dev/kikugie/stonecutter/build/task/StonecutterBu
 	public fun mergeTaskName (Lorg/gradle/api/tasks/SourceSet;)Ljava/lang/String;
 	public fun prepareTaskName (Lorg/gradle/api/tasks/SourceSet;)Ljava/lang/String;
 	public fun taskSuffix (Lorg/gradle/api/tasks/SourceSet;)Ljava/lang/String;
+}
+
+public final class dev/kikugie/stonecutter/build/task/StonecutterBuildTasksImpl$inlined$sam$i$org_gradle_api_Action$0 : org/gradle/api/Action {
+	public fun <init> (Lkotlin/jvm/functions/Function1;)V
+	public final synthetic fun execute (Ljava/lang/Object;)V
 }
 
 public abstract interface class dev/kikugie/stonecutter/controller/StonecutterControllerExtension : dev/kikugie/stonecutter/data/dsl/VersionOperations {
@@ -164,55 +177,6 @@ public final class dev/kikugie/stonecutter/controller/StonecutterControllerManag
 	public static final field INSTANCE Ldev/kikugie/stonecutter/controller/StonecutterControllerManager$Kotlin;
 	public fun create (Ljava/nio/file/Path;Ljava/lang/String;)V
 	public fun getFilename ()Ljava/lang/String;
-}
-
-public final class dev/kikugie/stonecutter/controller/StonecutterDelegatedBuildParams : dev/kikugie/stonecutter/build/param/DeprecatedBuildParams {
-	public fun allowExtensions (Ljava/lang/Iterable;)V
-	public fun allowExtensions ([Ljava/lang/String;)V
-	public fun compare (Ljava/lang/String;Ljava/lang/String;)I
-	public fun const (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
-	public fun const (Ljava/lang/String;Z)V
-	public fun constants (Lorg/gradle/api/Action;)V
-	public fun consts (Ljava/lang/Iterable;)V
-	public fun consts (Ljava/lang/String;Ljava/lang/Iterable;)V
-	public fun consts (Ljava/lang/String;[Ljava/lang/String;)V
-	public fun consts (Ljava/util/Map;)V
-	public fun consts ([Lkotlin/Pair;)V
-	public fun dependencies (Ljava/lang/Iterable;)V
-	public fun dependencies (Ljava/util/Map;)V
-	public fun dependencies (Lorg/gradle/api/Action;)V
-	public fun dependencies ([Lkotlin/Pair;)V
-	public fun dependency (Ljava/lang/String;Ljava/lang/String;)V
-	public fun dependency (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
-	public fun eval (Ldev/kikugie/semver/data/Version;[Ljava/lang/String;)Z
-	public fun eval (Ljava/lang/String;[Ljava/lang/String;)Z
-	public fun excludeFiles (Ljava/lang/Iterable;)V
-	public fun excludeFiles ([Ljava/lang/String;)V
-	public fun filters (Lorg/gradle/api/Action;)V
-	public final fun getBranch ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectBranch;
-	public fun getConstants ()Ldev/kikugie/stonecutter/data/dsl/ConstantContainer;
-	public fun getDependencies ()Ldev/kikugie/stonecutter/data/dsl/DependencyContainer;
-	public fun getFilters ()Ldev/kikugie/stonecutter/data/dsl/FilterContainer;
-	public final fun getMetadata ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public final fun getNode ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectNode;
-	public fun getReplacements ()Ldev/kikugie/stonecutter/data/dsl/ReplacementContainer;
-	public fun getSemantics ()Ldev/kikugie/stonecutter/data/dsl/VersionOperations;
-	public fun getSwaps ()Ldev/kikugie/stonecutter/data/dsl/SwapContainer;
-	public fun overrideExtensions (Ljava/lang/Iterable;)V
-	public fun overrideExtensions ([Ljava/lang/String;)V
-	public fun parse (Ljava/lang/String;)Ldev/kikugie/semver/data/Version;
-	public fun regexReplacement (Lorg/gradle/api/Action;)V
-	public fun replacement (Ljava/util/Map;)V
-	public fun replacement (ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public fun replacement (ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public fun replacements (Lorg/gradle/api/Action;)V
-	public fun stringReplacement (Lorg/gradle/api/Action;)V
-	public fun swap (Ljava/lang/String;Ljava/lang/String;)V
-	public fun swap (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
-	public fun swaps (Ljava/lang/Iterable;)V
-	public fun swaps (Ljava/util/Map;)V
-	public fun swaps (Lorg/gradle/api/Action;)V
-	public fun swaps ([Lkotlin/Pair;)V
 }
 
 public abstract interface class dev/kikugie/stonecutter/controller/flag/FlagContainer {
@@ -255,12 +219,14 @@ public final class dev/kikugie/stonecutter/controller/flag/StonecutterFlag$Compa
 
 public abstract interface class dev/kikugie/stonecutter/controller/tasks/StonecutterControllerTasks {
 	public abstract fun getSwitch ()Ljava/util/Map;
-	public fun named (Ljava/lang/String;)Lorg/gradle/api/provider/MapProperty;
-	public fun named (Ljava/lang/String;Ljava/lang/Class;)Lorg/gradle/api/provider/MapProperty;
 	public abstract fun named (Ljava/lang/String;Ljava/lang/Class;Lkotlin/jvm/functions/Function1;)Lorg/gradle/api/provider/MapProperty;
 	public abstract fun named (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lorg/gradle/api/provider/MapProperty;
-	public fun order (Lorg/gradle/api/provider/MapProperty;)V
-	public abstract fun order (Lorg/gradle/api/provider/MapProperty;Ljava/util/Comparator;)V
+	public fun named (Ljava/lang/String;Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;)Lorg/gradle/api/provider/MapProperty;
+	public static synthetic fun named$default (Ldev/kikugie/stonecutter/controller/tasks/StonecutterControllerTasks;Ljava/lang/String;Ljava/lang/Class;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lorg/gradle/api/provider/MapProperty;
+	public static synthetic fun named$default (Ldev/kikugie/stonecutter/controller/tasks/StonecutterControllerTasks;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lorg/gradle/api/provider/MapProperty;
+	public static synthetic fun named$default (Ldev/kikugie/stonecutter/controller/tasks/StonecutterControllerTasks;Ljava/lang/String;Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lorg/gradle/api/provider/MapProperty;
+	public abstract fun order (Ljava/lang/String;Ljava/util/Comparator;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun order$default (Ldev/kikugie/stonecutter/controller/tasks/StonecutterControllerTasks;Ljava/lang/String;Ljava/util/Comparator;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public fun switchTaskName (Ljava/lang/String;)Ljava/lang/String;
 	public fun switchTaskProvider (Ljava/lang/String;)Lorg/gradle/api/tasks/TaskProvider;
 }
@@ -392,40 +358,23 @@ public final class dev/kikugie/stonecutter/data/StonecutterProject$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public abstract interface class dev/kikugie/stonecutter/data/dsl/ConstantContainer : java/util/Map, kotlin/jvm/internal/markers/KMutableMap {
+public abstract interface class dev/kikugie/stonecutter/data/dsl/ConstantContainer : dev/kikugie/stonecutter/data/dsl/DynamicMap {
 	public fun match (Ljava/lang/String;Ljava/lang/Iterable;)V
 	public fun match (Ljava/lang/String;[Ljava/lang/String;)V
-	public fun put (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ljava/lang/Boolean;
 }
 
-public abstract interface class dev/kikugie/stonecutter/data/dsl/DependencyContainer : java/util/Map, kotlin/jvm/internal/markers/KMutableMap {
-	public abstract fun put (Ljava/lang/String;Ljava/lang/String;)Ldev/kikugie/semver/data/Version;
-	public fun put (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ldev/kikugie/semver/data/Version;
-	public fun putIfAbsent (Ljava/lang/String;Ljava/lang/String;)Ldev/kikugie/semver/data/Version;
-	public fun set (Ljava/lang/String;Ljava/lang/String;)Ldev/kikugie/semver/data/Version;
+public abstract interface class dev/kikugie/stonecutter/data/dsl/DependencyContainer : dev/kikugie/stonecutter/data/dsl/DynamicMap {
 }
 
-public abstract interface class dev/kikugie/stonecutter/data/dsl/FilterContainer {
-	public fun excludes (Lorg/gradle/api/Action;)V
-	public fun extensions (Lorg/gradle/api/Action;)V
-	public abstract fun getExcludes ()Ldev/kikugie/stonecutter/data/dsl/FilterContainer$ExcludedFiles;
-	public abstract fun getExtensions ()Ldev/kikugie/stonecutter/data/dsl/FilterContainer$AllowedExtensions;
+public abstract interface class dev/kikugie/stonecutter/data/dsl/DynamicMap : java/util/Map, kotlin/jvm/internal/markers/KMutableMap {
+	public abstract fun put (Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public abstract fun put (Ljava/lang/Object;Lorg/gradle/api/provider/Provider;)Ljava/lang/Object;
+	public fun set (Ljava/lang/Object;Ljava/lang/Object;)V
+	public fun set (Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)V
+	public fun set (Ljava/lang/Object;Lorg/gradle/api/provider/Provider;)V
 }
 
-public abstract interface class dev/kikugie/stonecutter/data/dsl/FilterContainer$AllowedExtensions : java/util/Set, kotlin/jvm/internal/markers/KMutableSet {
-	public fun allow (Ljava/lang/Iterable;)Z
-	public fun allow ([Ljava/lang/String;)Z
-	public fun disallow (Ljava/lang/Iterable;)Z
-	public fun disallow ([Ljava/lang/String;)Z
-	public fun replace (Ljava/lang/Iterable;)Z
-	public fun replace ([Ljava/lang/String;)Z
-}
-
-public abstract interface class dev/kikugie/stonecutter/data/dsl/FilterContainer$ExcludedFiles : java/util/Set, kotlin/jvm/internal/markers/KMutableSet {
-	public fun exclude (Ljava/lang/Iterable;)Z
-	public fun exclude ([Ljava/lang/String;)Z
-	public fun replace (Ljava/lang/Iterable;)Z
-	public fun replace ([Ljava/lang/String;)Z
+public abstract interface annotation class dev/kikugie/stonecutter/data/dsl/EagerOperation : java/lang/annotation/Annotation {
 }
 
 public abstract interface class dev/kikugie/stonecutter/data/dsl/ReplacementContainer {
@@ -456,8 +405,7 @@ public abstract interface class dev/kikugie/stonecutter/data/dsl/ReplacementCont
 	public fun replace (Ljava/lang/String;Ljava/lang/String;)V
 }
 
-public abstract interface class dev/kikugie/stonecutter/data/dsl/SwapContainer : java/util/Map, kotlin/jvm/internal/markers/KMutableMap {
-	public fun put (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ljava/lang/String;
+public abstract interface class dev/kikugie/stonecutter/data/dsl/SwapContainer : dev/kikugie/stonecutter/data/dsl/DynamicMap {
 }
 
 public abstract interface class dev/kikugie/stonecutter/data/dsl/VersionOperations {
@@ -772,17 +720,9 @@ public abstract interface class dev/kikugie/stonecutter/data/tree/struct/Project
 	public abstract fun node-qHRS2DI (Ljava/lang/String;)Ldev/kikugie/stonecutter/data/tree/struct/ProjectNode;
 }
 
-public abstract class dev/kikugie/stonecutter/process/ControllerExternalUpdateTask : org/gradle/api/DefaultTask, dev/kikugie/stonecutter/process/StonecutterUpdateTask {
+public abstract class dev/kikugie/stonecutter/process/SCExternalSwitchTask : org/gradle/api/DefaultTask, dev/kikugie/stonecutter/process/SCSwitchTask {
 	public fun <init> ()V
 	public abstract fun getFile ()Lorg/gradle/api/file/RegularFileProperty;
-	public abstract fun getVersion ()Lorg/gradle/api/provider/Property;
-	public final fun run ()V
-}
-
-public abstract class dev/kikugie/stonecutter/process/ControllerScriptUpdateTask : org/gradle/api/DefaultTask, dev/kikugie/stonecutter/process/StonecutterUpdateTask {
-	public fun <init> ()V
-	public abstract fun getManager ()Lorg/gradle/api/provider/Property;
-	public abstract fun getScript ()Lorg/gradle/api/file/RegularFileProperty;
 	public abstract fun getVersion ()Lorg/gradle/api/provider/Property;
 	public final fun run ()V
 }
@@ -797,7 +737,15 @@ public abstract class dev/kikugie/stonecutter/process/SCPrepareTask : org/gradle
 	public final fun run (Lorg/gradle/work/InputChanges;)V
 }
 
-public abstract interface class dev/kikugie/stonecutter/process/StonecutterUpdateTask : org/gradle/api/Task {
+public abstract class dev/kikugie/stonecutter/process/SCScriptSwitchTask : org/gradle/api/DefaultTask, dev/kikugie/stonecutter/process/SCSwitchTask {
+	public fun <init> ()V
+	public abstract fun getManager ()Lorg/gradle/api/provider/Property;
+	public abstract fun getScript ()Lorg/gradle/api/file/RegularFileProperty;
+	public abstract fun getVersion ()Lorg/gradle/api/provider/Property;
+	public final fun run ()V
+}
+
+public abstract interface class dev/kikugie/stonecutter/process/SCSwitchTask : org/gradle/api/Task {
 }
 
 public abstract class dev/kikugie/stonecutter/settings/StonecutterSettingsExtension : dev/kikugie/stonecutter/data/dsl/VersionOperations {
