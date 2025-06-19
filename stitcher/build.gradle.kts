@@ -19,6 +19,9 @@ dependencies {
     api(project(path = ":semver"))
     implementation(common.kotlin.reflect)
     implementation(common.kotlin.serialization)
+
+    testImplementation(kotlin("test"))
+    testImplementation(common.kotlin.serialization.yaml)
 }
 
 dokka {

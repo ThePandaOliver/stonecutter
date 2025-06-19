@@ -3,7 +3,6 @@ package dev.kikugie.stitcher.scanner
 import dev.kikugie.stitcher.data.token.ContentType
 import dev.kikugie.stitcher.data.token.ContentType.*
 import dev.kikugie.stitcher.data.token.Token
-import dev.kikugie.stitcher.transformer.getOrSpace
 
 /**
  * Determines which parts of the input string are considered to be comments.
@@ -54,8 +53,6 @@ class Scanner(
      * Updated by [quoteStatus].
      */
     private var quote: Quote? = null
-
-    private var escaped: Boolean = false
 
     /**
      * The current comment type. Must match [CommentRecognizer.end] to exit the comment.
@@ -141,25 +138,33 @@ class Scanner(
      */
     private fun quoteStatus(): Boolean {
         if (comment != null || cursor >= length) return false
-        if (quote == null) for (it in Quote.entries) {
-            val offset = it.match(input, cursor)
-            if (offset < 0) continue
+        when (input[cursor]) {
+            '\'' -> if (getAt(cursor - 1) != '\\') when (quote) {
+                Quote.SINGLE -> quote = null
+                Quote.DOC_SINGLE -> if (next2Are('\'')) {
+                    cursor += 2; quote = null
+                }
 
-            quote = it
-            cursor += offset
-            return true
-        } else if (getAt(cursor) == '\\') {
-            escaped = !escaped
-        } else {
-            if (escaped) { escaped = false; return true }
-            val offset = quote!!.match(input, cursor)
-            if (offset < 0) return true
+                null -> if (next2Are('\'')) {
+                    cursor += 2; quote = Quote.DOC_SINGLE
+                } else quote = Quote.SINGLE
 
-            quote = null
-            cursor += offset
-            escaped = false
+                else -> {}
+            }
+
+            '"' -> if (getAt(cursor - 1) != '\\') when (quote) {
+                Quote.DOUBLE -> quote = null
+                Quote.DOC_DOUBLE -> if (next2Are('"')) {
+                    cursor += 2; quote = null
+                }
+
+                null -> if (next2Are('"')) {
+                    cursor += 2; quote = Quote.DOC_DOUBLE
+                } else quote = Quote.DOUBLE
+
+                else -> {}
+            }
         }
-
         return quote != null
     }
 
@@ -167,29 +172,13 @@ class Scanner(
         buffer.add(Token(input.substring(start, end), type))
     }
 
+    private fun next2Are(char: Char): Boolean =
+        getAt(cursor + 1) == char && getAt(cursor + 2) == char
+
     private fun getAt(index: Int, default: Char = ' ') =
         if (index >= 0 && index < length) input[index] else default
 
     private enum class Quote {
-        SINGLE {
-            override fun match(text: CharSequence, cursor: Int): Int = text.matchn(cursor, 1, '\'')
-        },
-        DOUBLE {
-            override fun match(text: CharSequence, cursor: Int): Int = text.matchn(cursor, 1, '"')
-        },
-        DOC_SINGLE {
-            override fun match(text: CharSequence, cursor: Int): Int = text.matchn(cursor, 3, '\'')
-        },
-        DOC_DOUBLE {
-            override fun match(text: CharSequence, cursor: Int): Int = text.matchn(cursor, 3, '"')
-        };
-
-        abstract fun match(text: CharSequence, cursor: Int): Int
-
-        protected fun CharSequence.matchn(cursor: Int, n: Int, ch: Char): Int {
-            for (i in cursor..<cursor + n)
-                if (getOrSpace(i) != ch) return n - 1
-            return -1
-        }
+        SINGLE, DOUBLE, DOC_SINGLE, DOC_DOUBLE
     }
 }
