@@ -66,11 +66,11 @@ public interface StonecutterControllerExtension : VersionOperations<ParsedVersio
      */
     public infix fun active(provider: Any?)
 
-    public infix fun tasks(action: StonecutterControllerTasks.() -> Unit): Unit =
-        action(tasks)
+    public infix fun flags(action: MutableFlagContainer.() -> Unit): Unit = flags.action()
+    public fun flags(action: Closure<*>): Unit = flags(action::call)
 
-    public fun tasks(action: Closure<StonecutterControllerTasks>): Unit =
-        tasks(action::call)
+    public infix fun tasks(action: StonecutterControllerTasks.() -> Unit): Unit = action(tasks)
+    public fun tasks(action: Closure<StonecutterControllerTasks>): Unit = tasks(action::call)
 
     /**
      * Configures [stonecutter parameters][dev.kikugie.stonecutter.build.param.StonecutterBuildConfig] for each subproject in the tree.
@@ -88,6 +88,5 @@ public interface StonecutterControllerExtension : VersionOperations<ParsedVersio
      * as it's lazily evaluated when the build plugin is applied to the subproject,
      * instead of resolving it immediately.
      */
-    public fun parameters(config: Closure<StonecutterBuildProperties>): Unit =
-        parameters(config::call)
+    public fun parameters(config: Closure<StonecutterBuildProperties>): Unit = parameters(config::call)
 }

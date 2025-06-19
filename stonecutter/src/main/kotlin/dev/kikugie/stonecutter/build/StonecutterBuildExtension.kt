@@ -4,8 +4,7 @@ import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.build.param.DeprecatedBuildConfig
 import dev.kikugie.stonecutter.build.task.StonecutterBuildTasks
 import dev.kikugie.stonecutter.controller.flag.FlagContainer
-import dev.kikugie.stonecutter.data.StonecutterProject
-import org.gradle.api.Action
+import groovy.lang.Closure
 
 /**Stonecutter plugin available in `build.gradle[.kts]`.*/
 @StonecutterAPI
@@ -23,29 +22,9 @@ public interface StonecutterBuildExtension : DeprecatedBuildConfig {
      */
     public val tasks: StonecutterBuildTasks
 
-    /**
-     * Metadata of the active subproject, which has root `src/` sources assigned to it.
-     */
-    public val active: StonecutterProject?
-        get() = tree.current
+    public infix fun flags(action: FlagContainer.() -> Unit): Unit = flags.action()
+    public fun flags(action: Closure<*>): Unit = flags(action::call)
 
-    /**
-     * Metadata of the subproject assigned to this instance of the versioned buildscript.
-     * Can be active, which can be checked with `stonecutter.current.isActive`
-     * or `stonecutter.current == stonecutter.active`.
-     */
-    public val current: StonecutterProject
-        get() = node.metadata
-
-    /**
-     * All subproject metadata entries in this branch (or project when a single branch is used).
-     * Entries maintain instance identity:
-     * ```kotlin
-     * assert(stonecutter.versions.first { it.isActive } === stonecutter.active)
-     * ```
-     */
-    public val versions: Collection<StonecutterProject>
-        get() = branch.versions
-
-    public fun flags(block: Action<FlagContainer>): Unit = block.execute(flags)
+    public infix fun tasks(action: StonecutterBuildTasks.() -> Unit): Unit = tasks.action()
+    public fun tasks(action: Closure<*>): Unit = tasks(action::call)
 }

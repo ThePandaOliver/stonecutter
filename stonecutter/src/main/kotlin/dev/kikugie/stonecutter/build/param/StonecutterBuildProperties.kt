@@ -19,7 +19,7 @@ public abstract class StonecutterBuildProperties @Inject constructor(
     factory: ProviderFactory
 ) : DeprecatedBuildConfig, Named, VersionOperations<ParsedVersion> by LenientOperations {
     private val list: MutableList<Replacement> = mutableListOf()
-    internal val data: StonecutterBuildData = objects.newInstance(list)
+    internal val data: StonecutterBuildData = objects.newInstance(factory, list)
 
     override val constants: ConstantContainer = ConstantContainerImpl(factory, data.constantsProperty)
     override val dependencies: DependencyContainer = DependencyContainerImpl(factory, data.dependenciesProperty)

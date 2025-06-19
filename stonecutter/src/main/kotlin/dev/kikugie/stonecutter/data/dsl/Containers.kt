@@ -3,28 +3,24 @@ package dev.kikugie.stonecutter.data.dsl
 import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.Version
+import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.provider.Property
 
 @StonecutterAPI @StonecutterParametersDSL
 public interface ConstantContainer : DynamicMap<Identifier, Boolean> {
-    /**
-     * Puts all [choices] into the constant map, with their values set to `true` if they equal [sample].
-     */
+    /**Puts all [choices] into the constant map, with their values set to `true` if they equal [sample].*/
     public fun match(sample: Identifier, vararg choices: Identifier): Unit = choices.forEach { put(it, it == sample) }
-    /**
-     * Puts all [choices] into the constant map, with their values set to `true` if they equal [sample].
-     */
+
+    /**Puts all [choices] into the constant map, with their values set to `true` if they equal [sample].*/
     public fun match(sample: Identifier, choices: Iterable<Identifier>): Unit = choices.forEach { put(it, it == sample) }
 }
 
 @StonecutterAPI @StonecutterParametersDSL
-public interface SwapContainer : DynamicMap<Identifier, String> {
-}
+public interface SwapContainer : DynamicMap<Identifier, String>
 
 @StonecutterAPI @StonecutterParametersDSL
-public interface DependencyContainer : DynamicMap<Identifier, Version> {
-}
+public interface DependencyContainer : DynamicMap<Identifier, Version>
 
 @StonecutterAPI @StonecutterParametersDSL
 public interface ReplacementContainer {
@@ -63,11 +59,15 @@ public interface ReplacementContainer {
         }
     }
 
-    public fun string(block: Action<StringReplacementBuilder>)
-    public fun string(id: Identifier, block: Action<StringReplacementBuilder>): Unit =
-        string { this.id.set(id); block.execute(this) }
+    public fun string(action: Action<StringReplacementBuilder>)
+    public fun string(action: Closure<*>): Unit = string(action::call)
 
-    public fun regex(block: Action<RegexReplacementBuilder>)
-    public fun regex(id: Identifier, block: Action<RegexReplacementBuilder>): Unit =
-        regex { this.id.set(id); block.execute(this) }
+    public fun string(id: Identifier, action: Action<StringReplacementBuilder>): Unit = string { this.id.set(id); action.execute(this) }
+    public fun string(id: Identifier, action: Closure<*>): Unit = string(id, action::call)
+
+    public fun regex(action: Action<RegexReplacementBuilder>)
+    public fun regex(action: Closure<*>): Unit = regex(action::call)
+
+    public fun regex(id: Identifier, action: Action<RegexReplacementBuilder>): Unit = regex { this.id.set(id); action.execute(this) }
+    public fun regex(id: Identifier, action: Closure<*>): Unit = regex(id, action::call)
 }

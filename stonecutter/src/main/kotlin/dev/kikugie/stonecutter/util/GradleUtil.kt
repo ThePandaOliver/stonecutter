@@ -2,9 +2,6 @@
 
 package dev.kikugie.stonecutter.util
 
-import dev.kikugie.stonecutter.controller.StonecutterControllerExtension
-import dev.kikugie.stonecutter.controller.StonecutterControllerImpl
-import dev.kikugie.stonecutter.data.tree.struct.ProjectTree
 import org.gradle.api.Project
 import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.invocation.Gradle
@@ -13,19 +10,16 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import org.gradle.api.services.BuildService
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.internal.DefaultTaskExecutionRequest
 import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.newInstance
 import org.gradle.kotlin.dsl.the
 import org.gradle.work.InputChanges
 import org.gradle.workers.WorkQueue
 import org.gradle.workers.WorkerExecutor
 import java.io.File
-import kotlin.reflect.KClass
 
 internal val Project.sourceSets: SourceSetContainer
     get() = project.the<SourceSetContainer>()
@@ -61,9 +55,6 @@ internal fun SourceSet.allSources() = sequence {
         .let { yieldAll(it) }
 }
 
-internal fun ProjectTree.getControllerImpl(): StonecutterControllerImpl =
-    project.extensions.getByType<StonecutterControllerExtension>() as StonecutterControllerImpl
-
 internal fun InputChanges.clearIfNotIncremental(vararg files: File) {
     if (isIncremental) return
     for (it in files) if (it.exists()) {
@@ -82,9 +73,3 @@ internal val Project.buildDirectory get() = layout.buildDirectory.asFile()
 
 internal inline fun WorkerExecutor.execute(action: (queue: WorkQueue) -> Unit) =
     noIsolation().apply(action).await()
-
-internal inline fun <reified T : BuildService<*>> Gradle.getService(name: String): T =
-    getService(name, T::class)
-
-internal fun <T : BuildService<*>> Gradle.getService(name: String, cls: KClass<T>): T =
-    sharedServices.registrations[name].service.get() as T

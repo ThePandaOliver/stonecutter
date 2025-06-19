@@ -54,9 +54,9 @@ dokka {
 }
 
 tasks {
-//    withType<Test> {
-//        useJUnitPlatform()
-//    }
+    test {
+        useJUnitPlatform()
+    }
 
     withType<KotlinCompile> {
         compilerOptions {

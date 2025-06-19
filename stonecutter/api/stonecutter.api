@@ -20,12 +20,12 @@ public final class dev/kikugie/stonecutter/UtilitiesKt {
 }
 
 public abstract interface class dev/kikugie/stonecutter/build/StonecutterBuildExtension : dev/kikugie/stonecutter/build/param/DeprecatedBuildConfig {
-	public fun flags (Lorg/gradle/api/Action;)V
-	public fun getActive ()Ldev/kikugie/stonecutter/data/StonecutterProject;
-	public fun getCurrent ()Ldev/kikugie/stonecutter/data/StonecutterProject;
+	public fun flags (Lgroovy/lang/Closure;)V
+	public fun flags (Lkotlin/jvm/functions/Function1;)V
 	public abstract fun getFlags ()Ldev/kikugie/stonecutter/controller/flag/FlagContainer;
 	public abstract fun getTasks ()Ldev/kikugie/stonecutter/build/task/StonecutterBuildTasks;
-	public fun getVersions ()Ljava/util/Collection;
+	public fun tasks (Lgroovy/lang/Closure;)V
+	public fun tasks (Lkotlin/jvm/functions/Function1;)V
 }
 
 public abstract interface class dev/kikugie/stonecutter/build/param/DeprecatedBuildConfig : dev/kikugie/stonecutter/build/param/StonecutterBuildConfig {
@@ -62,11 +62,16 @@ public abstract interface class dev/kikugie/stonecutter/build/param/DeprecatedBu
 }
 
 public abstract interface class dev/kikugie/stonecutter/build/param/StonecutterBuildConfig : dev/kikugie/stonecutter/data/dsl/VersionOperations {
-	public fun constants (Lorg/gradle/api/Action;)V
-	public fun dependencies (Lorg/gradle/api/Action;)V
-	public fun filters (Lorg/gradle/api/Action;)V
+	public fun constants (Lgroovy/lang/Closure;)V
+	public fun constants (Lkotlin/jvm/functions/Function1;)V
+	public fun dependencies (Lgroovy/lang/Closure;)V
+	public fun dependencies (Lkotlin/jvm/functions/Function1;)V
+	public fun filters (Lgroovy/lang/Closure;)V
+	public fun filters (Lkotlin/jvm/functions/Function1;)V
+	public fun getActive ()Ldev/kikugie/stonecutter/data/StonecutterProject;
 	public fun getBranch ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectBranch;
 	public abstract fun getConstants ()Ldev/kikugie/stonecutter/data/dsl/ConstantContainer;
+	public fun getCurrent ()Ldev/kikugie/stonecutter/data/StonecutterProject;
 	public abstract fun getDependencies ()Ldev/kikugie/stonecutter/data/dsl/DependencyContainer;
 	public abstract fun getFilters ()Lorg/gradle/api/tasks/util/PatternFilterable;
 	public abstract fun getNode ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectNode;
@@ -74,13 +79,16 @@ public abstract interface class dev/kikugie/stonecutter/build/param/StonecutterB
 	public fun getSemantics ()Ldev/kikugie/stonecutter/data/dsl/VersionOperations;
 	public abstract fun getSwaps ()Ldev/kikugie/stonecutter/data/dsl/SwapContainer;
 	public fun getTree ()Ldev/kikugie/stonecutter/data/tree/struct/ProjectTree;
-	public fun replacements (Lorg/gradle/api/Action;)V
-	public fun swaps (Lorg/gradle/api/Action;)V
+	public fun getVersions ()Ljava/util/Collection;
+	public fun replacements (Lgroovy/lang/Closure;)V
+	public fun replacements (Lkotlin/jvm/functions/Function1;)V
+	public fun swaps (Lgroovy/lang/Closure;)V
+	public fun swaps (Lkotlin/jvm/functions/Function1;)V
 }
 
 public abstract class dev/kikugie/stonecutter/build/param/StonecutterBuildData {
 	public static final field Companion Ldev/kikugie/stonecutter/build/param/StonecutterBuildData$Companion;
-	public fun <init> (Lorg/gradle/api/model/ObjectFactory;Ljava/util/List;)V
+	public fun <init> (Lorg/gradle/api/model/ObjectFactory;Lorg/gradle/api/provider/ProviderFactory;Ljava/util/List;)V
 	public abstract fun getConstantsProperty ()Lorg/gradle/api/provider/MapProperty;
 	public abstract fun getDependenciesProperty ()Lorg/gradle/api/provider/MapProperty;
 	public abstract fun getReplacementsProperty ()Lorg/gradle/api/provider/ListProperty;
@@ -145,6 +153,8 @@ public final class dev/kikugie/stonecutter/build/task/StonecutterBuildTasksImpl$
 public abstract interface class dev/kikugie/stonecutter/controller/StonecutterControllerExtension : dev/kikugie/stonecutter/data/dsl/VersionOperations {
 	public abstract fun active (Ljava/lang/Object;)V
 	public fun assign (Ldev/kikugie/stonecutter/controller/flag/StonecutterFlag;Ljava/lang/Object;)V
+	public fun flags (Lgroovy/lang/Closure;)V
+	public fun flags (Lkotlin/jvm/functions/Function1;)V
 	public fun getCurrent ()Ldev/kikugie/stonecutter/data/StonecutterProject;
 	public abstract fun getFlags ()Ldev/kikugie/stonecutter/controller/flag/MutableFlagContainer;
 	public fun getSemantics ()Ldev/kikugie/stonecutter/data/dsl/VersionOperations;
@@ -378,8 +388,12 @@ public abstract interface annotation class dev/kikugie/stonecutter/data/dsl/Eage
 }
 
 public abstract interface class dev/kikugie/stonecutter/data/dsl/ReplacementContainer {
+	public fun regex (Lgroovy/lang/Closure;)V
+	public fun regex (Ljava/lang/String;Lgroovy/lang/Closure;)V
 	public fun regex (Ljava/lang/String;Lorg/gradle/api/Action;)V
 	public abstract fun regex (Lorg/gradle/api/Action;)V
+	public fun string (Lgroovy/lang/Closure;)V
+	public fun string (Ljava/lang/String;Lgroovy/lang/Closure;)V
 	public fun string (Ljava/lang/String;Lorg/gradle/api/Action;)V
 	public abstract fun string (Lorg/gradle/api/Action;)V
 }

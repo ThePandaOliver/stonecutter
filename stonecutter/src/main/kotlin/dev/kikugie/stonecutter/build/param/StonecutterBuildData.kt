@@ -21,10 +21,10 @@ import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
-import org.gradle.kotlin.dsl.property
 import javax.inject.Inject
 import kotlin.collections.MutableList
 import kotlin.collections.first
@@ -34,7 +34,7 @@ import kotlin.collections.mutableMapOf
 import kotlin.collections.toMutableSet
 
 @Serializable(with = StonecutterBuildData.Serializer::class)
-public abstract class StonecutterBuildData @Inject constructor(private val objects: ObjectFactory, private val list: MutableList<Replacement>) {
+public abstract class StonecutterBuildData @Inject constructor(private val objects: ObjectFactory, private val factory: ProviderFactory, private val list: MutableList<Replacement>) {
     @get:Input @get:Optional public abstract val constantsProperty: MapProperty<Identifier, Boolean>
     @get:Input @get:Optional public abstract val dependenciesProperty: MapProperty<Identifier, Version>
     @get:Input @get:Optional public abstract val swapsProperty: MapProperty<Identifier, String>
@@ -44,7 +44,7 @@ public abstract class StonecutterBuildData @Inject constructor(private val objec
         constantsProperty.set(mutableMapOf())
         dependenciesProperty.set(mutableMapOf())
         swapsProperty.set(mutableMapOf())
-        replacementsProperty.set(objects.property<Any>().map { list.map(::toStub) })
+        replacementsProperty.set(factory.provider { list.map(::toStub) })
     }
 
     private fun toStub(it: Replacement): ReplacementStub = when (it) {
@@ -64,8 +64,8 @@ public abstract class StonecutterBuildData @Inject constructor(private val objec
 
     public interface ReplacementStub {
         @get:Input public val type: Property<String>
-        @get:Input public val phase: Property<String>
-        @get:Input public val identifier: Property<String>
+        @get:Input @get:Optional public val phase: Property<String>
+        @get:Input @get:Optional public val identifier: Property<String>
         @get:Input public val sources: ListProperty<String>
         @get:Input public val target: Property<String>
 
