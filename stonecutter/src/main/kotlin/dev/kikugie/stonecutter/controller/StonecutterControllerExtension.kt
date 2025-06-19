@@ -66,10 +66,16 @@ public interface StonecutterControllerExtension : VersionOperations<ParsedVersio
      */
     public infix fun active(provider: Any?)
 
+    /**Configures [flags] with the provided [action].*/
     public infix fun flags(action: MutableFlagContainer.() -> Unit): Unit = flags.action()
+
+    /**Configures [flags] with the provided [action].*/
     public fun flags(action: Closure<*>): Unit = flags(action::call)
 
+    /**Configures [tasks] with the provided [action].*/
     public infix fun tasks(action: StonecutterControllerTasks.() -> Unit): Unit = action(tasks)
+
+    /**Configures [tasks] with the provided [action].*/
     public fun tasks(action: Closure<StonecutterControllerTasks>): Unit = tasks(action::call)
 
     /**

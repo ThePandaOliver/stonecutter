@@ -46,6 +46,11 @@ public interface StonecutterControllerTasks {
      */
     public fun <T : Task> named(name: String, cls: Class<T>, filter: (ProjectNode.() -> Boolean)? = null): TaskProviderMapProperty<ProjectNode, T>
 
+    /**
+     * Finds tasks in [ProjectTree.nodes][dev.kikugie.stonecutter.data.tree.struct.ProjectTree.nodes] matching the given [name], [class][cls] and [filter].
+     * The list is live and may be empty if realised before subprojects are evaluated.
+     * It can be used as-is in [Task.dependsOn], where it's final value will be used.
+     */
     public fun <T : Task> named(name: String, cls: KClass<T>, filter: (ProjectNode.() -> Boolean)? = null): TaskProviderMapProperty<ProjectNode, T> =
         named(name, cls.java, filter)
 
