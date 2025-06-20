@@ -40,12 +40,9 @@ class Scanner(private val input: CharSequence) : Iterator<Token> {
         checkpoint = flex.tokenEnd
     }
 
-    private fun wrapRemaining() = if (checkpoint >= 0) {
-        token(checkpoint, input.length, ContentType.CONTENT)
-        buffer.add(Token.EMPTY)
-        checkpoint = input.length
-    } else {
-        token(-checkpoint, input.length, ContentType.COMMENT)
+    private fun wrapRemaining() {
+        if (checkpoint >= 0) token(checkpoint, input.length, ContentType.CONTENT)
+        else token(-checkpoint, input.length, ContentType.COMMENT)
         buffer.add(Token.EMPTY)
         checkpoint = input.length
     }
