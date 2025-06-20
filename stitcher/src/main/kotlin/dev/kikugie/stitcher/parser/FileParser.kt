@@ -12,7 +12,6 @@ import dev.kikugie.stitcher.eval.isEmpty
 import dev.kikugie.stitcher.eval.isNotEmpty
 import dev.kikugie.stitcher.exception.ErrorHandler
 import dev.kikugie.stitcher.lexer.Lexer
-import dev.kikugie.stitcher.scanner.CommentRecognizer
 import dev.kikugie.stitcher.scanner.Scanner
 import dev.kikugie.stitcher.transformer.TransformParameters
 import java.util.*
@@ -30,15 +29,8 @@ class FileParser(
     private val handler: ErrorHandler,
 ) {
     companion object {
-        fun create(
-            input: CharSequence,
-            handler: ErrorHandler,
-            recognizers: Iterable<CommentRecognizer>,
-            params: TransformParameters? = null,
-        ): FileParser {
-            val scanner = Scanner(input, recognizers)
-            return FileParser(scanner.asIterable(), params, handler)
-        }
+        fun create(input: CharSequence, handler: ErrorHandler, params: TransformParameters? = null): FileParser =
+            FileParser(Scanner.factory(input), params, handler)
     }
     private val iter: LookaroundIterator<Token> = LookaroundIterator(input)
     private val scopes: Stack<Scope> = Stack<Scope>().apply { push(Scope()) }

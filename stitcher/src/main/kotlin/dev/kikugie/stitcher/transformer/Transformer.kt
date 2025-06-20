@@ -12,12 +12,10 @@ import dev.kikugie.stitcher.exception.ErrorHandler
 import dev.kikugie.stitcher.exception.StoringErrorHandler
 import dev.kikugie.stitcher.lexer.LexSlice
 import dev.kikugie.stitcher.parser.FileParser
-import dev.kikugie.stitcher.scanner.CommentRecognizer
 import dev.kikugie.stitcher.scanner.Scanner
 
 class Transformer(
     private val source: Scope,
-    private val recognizers: Iterable<CommentRecognizer>,
     private val params: TransformParameters,
     private val handler: ErrorHandler = StoringErrorHandler()
 ) : Block.Visitor<Unit> {
@@ -69,8 +67,8 @@ class Transformer(
         if (contents != new) withSource(new.parse()).process().assignTo(it.scope)
     }
 
-    private fun withSource(scope: Scope) = Transformer(scope, recognizers, params, handler)
-    private fun String.parse() = FileParser(Scanner(this, recognizers).asIterable(), params, handler).parse()
+    private fun withSource(scope: Scope) = Transformer(scope, params, handler)
+    private fun String.parse() = FileParser(Scanner.factory(this), params, handler).parse()
     private fun Iterable<Block>.assignTo(scope: Scope) {
         scope.clear()
         scope.addAll(this)

@@ -1,7 +1,6 @@
 package dev.kikugie.stitcher.data.replacement
 
 import dev.kikugie.stitcher.data.token.ContentType
-import dev.kikugie.stitcher.scanner.CommentRecognizer
 import dev.kikugie.stitcher.scanner.Scanner
 import dev.kikugie.stitcher.transformer.getOrSpace
 import kotlinx.serialization.KSerializer
@@ -240,8 +239,8 @@ class ReplacementExecutor(replacements: ReplacementList, phase: ReplacementPhase
          * /*~ token3*/  // ignored
          * ```
          */
-        fun CharSequence.getReplacementTokens(recognizers: Iterable<CommentRecognizer>): Set<String> = buildSet {
-            for (token in Scanner(this@getReplacementTokens, recognizers)) when (token.type as? ContentType) {
+        fun CharSequence.getReplacementTokens(): Set<String> = buildSet {
+            for (token in Scanner(this@getReplacementTokens)) when (token.type as? ContentType) {
                 ContentType.COMMENT_START, ContentType.COMMENT_END -> continue
                 ContentType.CONTENT -> if (token.value.isNotBlank()) break
                 ContentType.COMMENT -> if (token.value.getOrSpace(0) == PREFIX)
@@ -253,9 +252,9 @@ class ReplacementExecutor(replacements: ReplacementList, phase: ReplacementPhase
         /**
          * Combines [getReplacementTokens] and [ReplacementExecutor.replace] operations.
          */
-        fun CharSequence.replaceWithScannedTokens(replacements: ReplacementList, phase: ReplacementPhase, recognizers: Iterable<CommentRecognizer>): CharSequence {
+        fun CharSequence.replaceWithScannedTokens(replacements: ReplacementList, phase: ReplacementPhase): CharSequence {
             if (replacements.isEmpty() || isEmpty()) return this
-            val tokens = getReplacementTokens(recognizers)
+            val tokens = getReplacementTokens()
             val executor = ReplacementExecutor(replacements, phase, tokens)
             return executor.replace(this)
         }

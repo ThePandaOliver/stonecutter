@@ -7,7 +7,6 @@ import dev.kikugie.stitcher.exception.ErrorHandler
 import dev.kikugie.stitcher.exception.StoringErrorHandler
 import dev.kikugie.stitcher.exception.join
 import dev.kikugie.stitcher.parser.FileParser
-import dev.kikugie.stitcher.scanner.CommentRecognizers
 import dev.kikugie.stitcher.transformer.TransformParameters
 import dev.kikugie.stitcher.transformer.Transformer
 import dev.kikugie.stonecutter.build.param.StonecutterBuildData
@@ -106,14 +105,14 @@ private interface SCPrepareAction : WorkAction<SCPrepareAction.Parameters> {
     }
 
     private fun CharSequence.applyReplacements(transforms: TransformParameters, phase: ReplacementPhase): CharSequence =
-        replaceWithScannedTokens(transforms.replacements, phase, CommentRecognizers.DEFAULT)
+        replaceWithScannedTokens(transforms.replacements, phase)
 
     private fun CharSequence.applyTransformation(transforms: TransformParameters): CharSequence {
         val handler: ErrorHandler = StoringErrorHandler()
-        val parser: FileParser = FileParser.create(this, handler, CommentRecognizers.DEFAULT, transforms)
+        val parser: FileParser = FileParser.create(this, handler, transforms)
         val ast = parser.parse()
         handler.throwIfHasErrors()
-        Transformer(ast, CommentRecognizers.DEFAULT, transforms, handler).process()
+        Transformer(ast, transforms, handler).process()
         handler.throwIfHasErrors()
         return ast.join()
     }

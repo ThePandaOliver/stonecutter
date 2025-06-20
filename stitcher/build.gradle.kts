@@ -13,10 +13,12 @@ version = "SNAPSHOT"
 
 repositories {
     mavenCentral()
+    maven("https://central.sonatype.com/repository/maven-snapshots/")
 }
 
 dependencies {
     api(project(path = ":semver"))
+    implementation(common.misc.commons)
     implementation(common.kotlin.reflect)
     implementation(common.kotlin.serialization)
 
