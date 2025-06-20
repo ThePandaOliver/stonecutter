@@ -31,7 +31,7 @@ class Scanner(private val input: CharSequence) : Iterator<Token> {
     }
 
     private fun consumeTokens() = if (checkpoint >= 0) {
-        token(checkpoint, flex.tokenStart, ContentType.CONTENT)
+        if (checkpoint != flex.tokenStart) token(checkpoint, flex.tokenStart, ContentType.CONTENT)
         token(flex.tokenStart, flex.tokenEnd, ContentType.COMMENT_START)
         checkpoint = -flex.tokenEnd
     } else {

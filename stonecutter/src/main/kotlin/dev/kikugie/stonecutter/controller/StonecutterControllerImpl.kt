@@ -79,7 +79,7 @@ internal open class StonecutterControllerImpl(val root: Project) :
         }
 
         fun registerExternal(file: File) {
-            tree.current = findByName(file.readText())
+            tree.current = findByName(file.useLines { it.first() }.trim())
             for (it in tree.versions) tasks.registerExternalSwitchTask(it.project, file)
         }
 
