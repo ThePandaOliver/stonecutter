@@ -34,18 +34,20 @@ internal class SwapContainerImpl(factory: ProviderFactory, property: MapProperty
 
 internal class DependencyContainerImpl(factory: ProviderFactory, property: MapProperty<Identifier, Version>) :
     PropertyBackedMap<Identifier, Version>(factory, property), DependencyContainer {
-    override fun checkKey(key: Identifier) = checkKeyImpl(key, "Dependency")
+    override fun checkKey(key: Identifier) {
+        if (key.isNotEmpty()) checkKeyImpl(key, "Dependency")
+    }
     override fun checkValue(value: Version) { LenientOperations.parse(value) }
 }
 
 internal class ReplacementContainerImpl(private val objects: ObjectFactory, internal val list: MutableList<Replacement>) : ReplacementContainer {
     private val replacements: ReplacementList inline get() = ReplacementList(list)
 
-    override fun string(block: Action<ReplacementContainer.StringReplacementBuilder>) =
-        objects.newInstance<ReplacementContainer.StringReplacementBuilder> { block.execute(this) }.build()
+    override fun string(action: Action<ReplacementContainer.StringReplacementBuilder>) =
+        objects.newInstance<ReplacementContainer.StringReplacementBuilder> { action.execute(this) }.build()
 
-    override fun regex(block: Action<ReplacementContainer.RegexReplacementBuilder>) =
-        objects.newInstance<ReplacementContainer.RegexReplacementBuilder> { block.execute(this) }.build()
+    override fun regex(action: Action<ReplacementContainer.RegexReplacementBuilder>) =
+        objects.newInstance<ReplacementContainer.RegexReplacementBuilder> { action.execute(this) }.build()
 
     private fun ReplacementContainer.StringReplacementBuilder.build() {
         require(!id.isPresent || isIdentifier(id())) { "Invalid identifier: '${id()}'" }

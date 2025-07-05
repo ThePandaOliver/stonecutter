@@ -35,6 +35,7 @@ import kotlin.collections.toMutableSet
 
 @Serializable(with = StonecutterBuildData.Serializer::class)
 public abstract class StonecutterBuildData @Inject constructor(private val objects: ObjectFactory, private val factory: ProviderFactory, private val list: MutableList<Replacement>) {
+    @get:Input internal abstract val implicitReceiver: Property<String>
     @get:Input @get:Optional public abstract val constantsProperty: MapProperty<Identifier, Boolean>
     @get:Input @get:Optional public abstract val dependenciesProperty: MapProperty<Identifier, Version>
     @get:Input @get:Optional public abstract val swapsProperty: MapProperty<Identifier, String>

@@ -50,14 +50,11 @@ internal open class StonecutterBuildImpl(val project: Project) :
             this@StonecutterBuildImpl.tasks.configureSource(this)
         }
         filters.include("**/*.java", "**/*.kt", "**/*.kts", "**/*.groovy", "**/*.gradle", "**/*.scala", "**/*.sc", "**/*.json5", "**/*.hjson")
+        (this@StonecutterBuildImpl.properties.dependencies as DependencyContainerImpl)
+            .property[""] = current.version
+        this@StonecutterBuildImpl.properties.data.implicitReceiver.set(flags[StonecutterFlag.IMPLICIT_RECEIVER])
         this@StonecutterBuildImpl.tasks.registerNodeModelTask()
         configureTaskDependencies()
-        afterEvaluate {
-            val deps = this@StonecutterBuildImpl.properties.dependencies as DependencyContainerImpl
-            val default = deps.getOrDefault(flags[StonecutterFlag.IMPLICIT_RECEIVER], current.version)
-            deps[flags[StonecutterFlag.IMPLICIT_RECEIVER]] = default
-            deps.property[""] = default
-        }
     }
 
     private fun configureTaskDependencies() = project.afterEvaluate {
