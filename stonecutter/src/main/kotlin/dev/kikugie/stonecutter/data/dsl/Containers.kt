@@ -33,8 +33,8 @@ public interface ReplacementContainer {
         public val to: Property<String>
 
         public fun replace(from: String, to: String) {
-            this.from.set(from)
-            this.to.set(to)
+            this.from.value(from).disallowChanges()
+            this.to.value(to).disallowChanges()
         }
     }
 
@@ -49,13 +49,13 @@ public interface ReplacementContainer {
         public val reverseValue: Property<String>
 
         public fun replace(from: String, to: String) {
-            fromPattern.set(from)
-            toValue.set(to)
+            fromPattern.value(from).disallowChanges()
+            toValue.value(to).disallowChanges()
         }
 
         public fun reverse(from: String, to: String) {
-            reversePattern.set(from)
-            reverseValue.set(to)
+            reversePattern.value(from).disallowChanges()
+            reverseValue.value(to).disallowChanges()
         }
     }
 
