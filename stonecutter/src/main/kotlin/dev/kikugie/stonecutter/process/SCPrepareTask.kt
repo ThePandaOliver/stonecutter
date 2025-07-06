@@ -1,6 +1,5 @@
 package dev.kikugie.stonecutter.process
 
-import dev.kikugie.commons.collections.getOrThrow
 import dev.kikugie.stitcher.data.replacement.ReplacementExecutor.Companion.replaceWithScannedTokens
 import dev.kikugie.stitcher.data.replacement.ReplacementPhase
 import dev.kikugie.stitcher.eval.join
@@ -19,7 +18,6 @@ import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileType
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
@@ -66,13 +64,13 @@ public abstract class SCPrepareTask : DefaultTask() {
     private fun WorkQueue.processFile(change: FileChange) = submit(SCPrepareAction::class) {
         constants.set(params().constantsProperty)
         swaps.set(params().swapsProperty)
-        dependencies.set(params().dependenciesProperty.comfigureImplicitVersion())
+        dependencies.set(params().dependenciesProperty.configureImplicitVersion())
         replacements.set(params().replacementsProperty)
         source.set(change.file)
         output.set(change.file.cacheFile())
     }
 
-    private fun MapProperty<String, String>.comfigureImplicitVersion(): MapProperty<String, String> = apply {
+    private fun MapProperty<String, String>.configureImplicitVersion(): MapProperty<String, String> = apply {
         val receiver = params().implicitReceiver()
         val default = getting(receiver).getOrElse(getting("").get())
         put(receiver, default)
