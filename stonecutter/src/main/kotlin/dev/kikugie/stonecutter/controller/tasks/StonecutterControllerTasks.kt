@@ -4,6 +4,7 @@ import dev.kikugie.stonecutter.Identifier
 import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.TaskProviderMap
 import dev.kikugie.stonecutter.TaskProviderMapProperty
+import dev.kikugie.stonecutter.data.dsl.impl.LenientOperations
 import dev.kikugie.stonecutter.data.tree.struct.ProjectNode
 import dev.kikugie.stonecutter.process.SCSwitchTask
 import org.gradle.api.Task
@@ -15,6 +16,20 @@ import kotlin.reflect.KClass
  */
 @StonecutterAPI
 public interface StonecutterControllerTasks {
+    public companion object {
+        /**
+         * Compares nodes by evaluating the [ProjectNode.metadata.version][dev.kikugie.stonecutter.data.StonecutterProject.version]
+         * with [StonecutterControllerExtension.parse][dev.kikugie.stonecutter.controller.StonecutterControllerExtension.parse].
+         */
+        @JvmField public val VERSION_COMPARATOR: Comparator<ProjectNode> =
+            Comparator.comparing { LenientOperations.parse(it.metadata.version) }
+    }
+
+    /**
+     * Compares nodes by evaluating the [ProjectNode.metadata.version][dev.kikugie.stonecutter.data.StonecutterProject.version]
+     * with [StonecutterControllerExtension.parse][dev.kikugie.stonecutter.controller.StonecutterControllerExtension.parse].
+     */
+    public val versionComparator: Comparator<ProjectNode> get() = VERSION_COMPARATOR
     /**
      * All underlying active version switch tasks.
      * Each task depends on all [StonecutterBuildTasks.merge][dev.kikugie.stonecutter.build.task.StonecutterBuildTasks.merge]
@@ -37,7 +52,7 @@ public interface StonecutterControllerTasks {
      * The list is live and may be empty if realised before subprojects are evaluated.
      * It can be used as-is in [Task.dependsOn], where it's final value will be used.
      */
-    public fun named(name: String, filter:(ProjectNode.() -> Boolean)? = null): TaskProviderMapProperty<ProjectNode, *>
+    public fun named(name: String, filter: (ProjectNode.() -> Boolean)? = null): TaskProviderMapProperty<ProjectNode, *>
 
     /**
      * Finds tasks in [ProjectTree.nodes][dev.kikugie.stonecutter.data.tree.struct.ProjectTree.nodes] matching the given [name], [class][cls] and [filter].

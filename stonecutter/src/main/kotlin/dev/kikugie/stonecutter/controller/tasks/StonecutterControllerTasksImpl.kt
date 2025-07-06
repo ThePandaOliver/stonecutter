@@ -28,7 +28,6 @@ import org.gradle.kotlin.dsl.the
 import java.io.File
 
 private val TRUE: (Any) -> Boolean = { true }
-private val BY_VERSION: Comparator<ProjectNode> = Comparator.comparing { LenientOperations.parse(it.metadata.version) }
 
 @OptIn(StonecutterInternalAPI::class)
 internal class StonecutterControllerTasksImpl(val ext: StonecutterControllerImpl) : StonecutterControllerTasks {
@@ -49,7 +48,7 @@ internal class StonecutterControllerTasksImpl(val ext: StonecutterControllerImpl
 
     override fun order(name: String, ordering: Comparator<ProjectNode>?, filter: (ProjectNode.() -> Boolean)?) {
         val lock = ext.root.buildDirectory.resolve("stonecutter-cache/sc.lock")
-        val nodes = ext.tree.nodes.filter(filter ?: TRUE).sortedWith(ordering ?: BY_VERSION)
+        val nodes = ext.tree.nodes.filter(filter ?: TRUE).sortedWith(ordering ?: StonecutterControllerTasks.VERSION_COMPARATOR)
 
         for ((a, b) in nodes.zipWithNext()) {
             val prev = "${a.hierarchy.orBlank()}:$name"
