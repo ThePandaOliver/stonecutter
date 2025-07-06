@@ -18,10 +18,12 @@ import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileType
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
+import org.gradle.kotlin.dsl.mapProperty
 import org.gradle.kotlin.dsl.submit
 import org.gradle.work.FileChange
 import org.gradle.work.Incremental
@@ -50,6 +52,9 @@ public abstract class SCPrepareTask : DefaultTask() {
     public abstract val destination: DirectoryProperty
 
     @get:Inject
+    public abstract val objects: ObjectFactory
+
+    @get:Inject
     public abstract val executor: WorkerExecutor
 
     @TaskAction
@@ -70,7 +75,8 @@ public abstract class SCPrepareTask : DefaultTask() {
         output.set(change.file.cacheFile())
     }
 
-    private fun MapProperty<String, String>.configureImplicitVersion(): MapProperty<String, String> = apply {
+    private fun MapProperty<String, String>.configureImplicitVersion(): MapProperty<String, String> = objects.mapProperty<String, String>().apply {
+        putAll(this@configureImplicitVersion())
         val receiver = params().implicitReceiver()
         val default = getting(receiver).getOrElse(getting("").get())
         put(receiver, default)

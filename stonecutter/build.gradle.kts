@@ -5,6 +5,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import kotlin.io.path.ExperimentalPathApi
 
 plugins {
@@ -96,7 +97,7 @@ java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
     withSourcesJar()
-//    withJavadocJar()
+    withJavadocJar()
 }
 
 tasks {
@@ -112,19 +113,19 @@ tasks {
         }
     }
 
-//    named<Jar>("javadocJar") {
-//        from(named("dokkaGeneratePublicationJavadoc"))
-//    }
+    named<Jar>("javadocJar") {
+        from(named("dokkaGeneratePublicationJavadoc"))
+    }
 
     shadowJar {
         archiveClassifier = ""
     }
 
-    compileKotlin {
+    withType<KotlinCompile> {
         explicitApiMode = ExplicitApiMode.Strict
         compilerOptions {
-            languageVersion = KotlinVersion.KOTLIN_2_1
-            apiVersion = KotlinVersion.KOTLIN_2_1
+            languageVersion = KotlinVersion.KOTLIN_2_0
+            apiVersion = KotlinVersion.KOTLIN_2_0
             jvmTarget = JvmTarget.JVM_17
         }
     }
