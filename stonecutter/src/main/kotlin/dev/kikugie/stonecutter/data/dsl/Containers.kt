@@ -62,12 +62,26 @@ public interface ReplacementContainer {
     public fun string(action: Action<StringReplacementBuilder>)
     public fun string(action: Closure<*>): Unit = string(action::call)
 
-    public fun string(id: Identifier, action: Action<StringReplacementBuilder>): Unit = string { this.id.set(id); action.execute(this) }
-    public fun string(id: Identifier, action: Closure<*>): Unit = string(id, action::call)
+    public fun string(direction: Boolean, action: Action<StringReplacementBuilder>): Unit =
+        string { this.direction.set(direction); action.execute(this) }
+    public fun string(direction: Boolean, action: Closure<*>): Unit =
+        string(direction, action::call)
+
+    public fun string(id: Identifier, direction: Boolean? = null, action: Action<StringReplacementBuilder>): Unit =
+        string { this.id.set(id); this.direction.set(direction); action.execute(this) }
+    public fun string(id: Identifier, direction: Boolean? = null, action: Closure<*>): Unit =
+        string(id, direction, action::call)
 
     public fun regex(action: Action<RegexReplacementBuilder>)
     public fun regex(action: Closure<*>): Unit = regex(action::call)
 
-    public fun regex(id: Identifier, action: Action<RegexReplacementBuilder>): Unit = regex { this.id.set(id); action.execute(this) }
-    public fun regex(id: Identifier, action: Closure<*>): Unit = regex(id, action::call)
+    public fun regex(direction: Boolean, action: Action<RegexReplacementBuilder>): Unit =
+        regex { this.direction.set(direction); action.execute(this) }
+    public fun regex(direction: Boolean, action: Closure<*>): Unit =
+        regex(direction, action::call)
+
+    public fun regex(id: Identifier, direction: Boolean? = null, action: Action<RegexReplacementBuilder>): Unit =
+        regex { this.id.set(id); this.direction.set(direction); action.execute(this) }
+    public fun regex(id: Identifier, direction: Boolean? = null, action: Closure<*>): Unit =
+        regex(id, direction, action::call)
 }

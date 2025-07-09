@@ -51,14 +51,14 @@ internal class ReplacementContainerImpl(private val objects: ObjectFactory, inte
 
     private fun ReplacementContainer.StringReplacementBuilder.build() {
         require(!id.isPresent || isIdentifier(id())) { "Invalid identifier: '${id()}'" }
-        val phase = ReplacementPhase.valueOf(phase().uppercase())
+        val phase = ReplacementPhase.valueOf(phase.getOrElse("last").uppercase())
         if (direction()) replacements.addString(from(), to(), phase, id.orNull)
         else replacements.addString(to(), from(), phase, id.orNull)
     }
 
     private fun ReplacementContainer.RegexReplacementBuilder.build() {
         require(!id.isPresent || isIdentifier(id())) { "Invalid identifier: '${id()}'" }
-        val phase = ReplacementPhase.valueOf(phase().uppercase())
+        val phase = ReplacementPhase.valueOf(phase.getOrElse("last").uppercase())
         if (direction()) replacements.addRegex(fromPattern().toRegex(), toValue(), phase, id.orNull)
         else replacements.addRegex(reversePattern().toRegex(), reverseValue(), phase, id.orNull)
     }

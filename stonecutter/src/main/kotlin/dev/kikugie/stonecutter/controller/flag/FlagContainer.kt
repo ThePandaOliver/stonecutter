@@ -1,7 +1,7 @@
 package dev.kikugie.stonecutter.controller.flag
 
 public sealed interface FlagContainer {
-    public operator fun get(key: String): Any = StonecutterFlag.named(key).let(::get)
+    public operator fun get(key: String): Any = get(StonecutterFlag.named(key))
     public operator fun <T : Any> get(key: StonecutterFlag<T>): T
     public operator fun <T : Any> StonecutterFlag<T>.invoke(): T = get(this)
 }
