@@ -117,9 +117,9 @@ value class ReplacementList(val delegate: MutableList<Replacement> = mutableList
     fun addRegex(pattern: Regex, target: String, phase: ReplacementPhase = ReplacementPhase.LAST, identifier: String? = null) {
         require(pattern.pattern.isNotEmpty()) { "Can't replace empty pattern" }
         require(target.isNotEmpty()) { "Replacing with an empty string is not reversible" }
-        if (isEmpty() || identifier != null) delegate += RegexReplacement(pattern, target, phase, identifier)
+        if (isEmpty() || identifier == null) delegate += RegexReplacement(pattern, target, phase, identifier)
         else find { it.identifier == identifier }.let {
-            if (it != null) throw IllegalArgumentException("Replacement '${identifier}' is already registered for $it")
+            require(it == null) { "Replacement '${identifier}' is already registered for $it" }
             delegate += RegexReplacement(pattern, target, phase, null)
         }
     }
