@@ -141,6 +141,7 @@ gradlePlugin {
             implementationClass = "dev.kikugie.stonecutter.StonecutterPlugin"
             displayName = "Stonecutter"
             description = "Modern Gradle plugin for multi-version management"
+            tags.addAll("preprocessor", "java", "kotlin", "resources")
         }
     }
 }
