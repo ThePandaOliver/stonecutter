@@ -52,6 +52,28 @@ data class StringReplacement(
         if (identifier != null) append("$identifier, ")
         append("$phase) [${sources.joinToString { "'$it'" }} -> '$target']")
     }
+
+    internal fun tryMerge(from: String, to: String): Boolean {
+        // sources -> from|target -> to
+        if (from == target) {
+            require(to !in sources) { "Replacement '$from' -> '$to' forms a cycle with $this" }
+            require(sources.none { to in it }) { "Replacement '$from' -> '$target' is irreversible" }
+            sources += from
+            target = to
+            return true
+        }
+
+        // sources, from -> to|target
+        // from -> sources|to -> target
+        if (to == target || to in sources) {
+            require(target !in from) { "Replacement '$from' -> '$target' is irreversible" }
+            sources += from
+            return true
+        }
+
+        require(from !in sources) { "Value '$from' can't be replaced with both '$to' and $target" }
+        return false
+    }
 }
 
 /**
@@ -134,8 +156,9 @@ value class ReplacementList(val delegate: MutableList<Replacement> = mutableList
         fun addImpl() {
             delegate += StringReplacement(source, target, phase, identifier)
         }
-        require(source.isNotEmpty()) { "Can't replace empty string" }
+        require(source.isNotEmpty()) { "Can't replace an empty string" }
         require(target.isNotEmpty()) { "Replacing with an empty string is not reversible" }
+        require(target !in source) { "Replacement '$source' -> '$target' is irreversible" }
         when {
             isEmpty() -> addImpl()
             identifier != null -> find { it.identifier == identifier }?.let {
@@ -155,25 +178,6 @@ value class ReplacementList(val delegate: MutableList<Replacement> = mutableList
                 if (!merged) addImpl()
             }
         }
-    }
-
-    // TODO: Check for reversible replacements
-    private fun StringReplacement.tryMerge(from: String, to: String): Boolean = when {
-        from == target -> {
-            require(to !in sources) { "Replacement '$from' -> '$to' forms a cycle with $this" }
-            target = to; sources += from; true
-        }
-
-        to == target || to in sources -> {
-            sources += from; true
-        }
-
-        from in sources -> {
-            val message = "Replacement '$to' can't be replaced by both '$from' and $this"
-            throw IllegalArgumentException(message)
-        }
-
-        else -> false
     }
 }
 
