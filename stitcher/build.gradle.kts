@@ -13,11 +13,12 @@ version = "SNAPSHOT"
 
 repositories {
     mavenCentral()
+    maven("https://maven.kikugie.dev/releases")
     maven("https://central.sonatype.com/repository/maven-snapshots/")
 }
 
 dependencies {
-    api(project(path = ":semver"))
+    api("dev.kikugie:semver:1.0.2")
     implementation(common.misc.commons)
     implementation(common.kotlin.reflect)
     implementation(common.kotlin.serialization)

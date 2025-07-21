@@ -17,7 +17,6 @@ repositories {
 dependencies {
     dokka(project(":stonecutter"))
     dokka(project(":stitcher"))
-    dokka(project(":semver"))
 }
 
 dokka {
