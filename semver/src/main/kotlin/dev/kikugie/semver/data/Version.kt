@@ -74,8 +74,6 @@ value class StringVersion(val value: String) : Version {
  *   The modifiers are split at dots, with each segment being compared numerically or lexicographically:
  *   `1.0-alpha < 1.0-alpha.1 < 1.0-beta < 1.0-beta.2 < 1.0-rc.1 < 1.0`.
  *  - Build metadata modifiers can contain dashes, dots, and underscores.
- *    When comparing versions, if one has build metadata and the other doesn't, the one with metadata is considered greater.
- *    If both versions have build metadata, they are ignored.
  *
  *  The default constructor **does not** validate the input - for this purpose use [SemanticVersion.parse].
  */
@@ -150,11 +148,15 @@ data class SemanticVersion(
         return 0
     }
 
+    private fun compareModifiers(a: String, b: String) = when {
+        a.isEmpty() && b.isNotEmpty() -> -1
+        a.isNotEmpty() && b.isEmpty() -> 1
+        else -> 0
+    }
+
     private fun compareToPreModifier(other: SemanticVersion): Int {
-        if (preRelease.isEmpty() && preRelease.isEmpty()) return 0
-        if (preRelease.isEmpty() && other.preRelease.isNotEmpty()) return 1
-        if (buildMetadata.isNotEmpty() && other.buildMetadata.isEmpty()) return -1
-        if (buildMetadata.isEmpty() && other.buildMetadata.isNotEmpty()) return 1
+        val byPreRelease = compareModifiers(preRelease, other.preRelease)
+        if (byPreRelease != 0 && preRelease.isNotEmpty()) return -byPreRelease
 
         val myTokenizer = StringTokenizer(preRelease, ".")
         val otherTokenizer = StringTokenizer(other.preRelease, ".")
