@@ -45,7 +45,7 @@ sourceSets {
 
 dependencies {
     api(project(path = ":stitcher"))
-    api("dev.kikugie:semver:1.0.3")
+    api("dev.kikugie:semver:1.0.4")
     implementation(common.misc.commons)
     implementation(common.kotlin.serialization)
     implementation(common.kotlin.serialization.json)
@@ -115,6 +115,10 @@ tasks {
 
     named<Jar>("javadocJar") {
         from(named("dokkaGeneratePublicationJavadoc"))
+    }
+
+    publishPlugins {
+        dependOnPublishTasks()
     }
 
     shadowJar {

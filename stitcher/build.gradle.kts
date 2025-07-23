@@ -18,7 +18,7 @@ repositories {
 }
 
 dependencies {
-    api("dev.kikugie:semver:1.0.3")
+    api("dev.kikugie:semver:1.0.4")
     implementation(common.misc.commons)
     implementation(common.kotlin.reflect)
     implementation(common.kotlin.serialization)
