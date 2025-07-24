@@ -121,17 +121,18 @@ public sealed interface TreeSettings {
         override val vcs: Identifier? = null,
         @SerialName("kotlin_controller")
         override val kotlinController: Boolean? = null,
-        val versions: Map<ExpandedProject, BranchList>
+        val versions: Map<Identifier, BranchList>
     ) : TreeSettings {
         init {
             for (it in versions.entries.flatMap { it.value.entries }.filter(Identifier::isNotEmpty))
                 require(isIdentifier(it)) { "Invalid identifier: $it" }
         }
 
+        @OptIn(StonecutterInternalAPI::class)
         override val entries: Map<Identifier, List<ExpandedProject>>
             get() = buildMap<_, MutableList<ExpandedProject>> {
                 for ((version, branches) in versions) branches.entries.forEach { branch ->
-                    getOrPut(branch) { mutableListOf() } += version
+                    getOrPut(branch) { mutableListOf() } += ExpandedProject.StringProject(version)
                 }
             }
     }
@@ -168,9 +169,9 @@ public sealed interface ExpandedProject {
     public val entry: StonecutterProject
     public val buildscript: String?
 
-    @OptIn(StonecutterInternalAPI::class)
+    @StonecutterInternalAPI
     @JvmInline @Serializable
-    private value class StringProject(val string: String) : ExpandedProject {
+    public value class StringProject(private val string: String) : ExpandedProject {
         override val entry: StonecutterProject
             get() = parseVersion(string.split(':', limit = 2))
         override val buildscript: String?
@@ -200,6 +201,7 @@ public sealed interface ExpandedProject {
         }
     }
 
+    @OptIn(StonecutterInternalAPI::class)
     public object JsonSerializer : JsonContentPolymorphicSerializer<ExpandedProject>(ExpandedProject::class) {
         override fun selectDeserializer(element: JsonElement): KSerializer<out ExpandedProject> = when(element) {
             is JsonObject -> CompositeProject.serializer()

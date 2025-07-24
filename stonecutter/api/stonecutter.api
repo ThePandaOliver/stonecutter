@@ -444,6 +444,20 @@ public final class dev/kikugie/stonecutter/data/tree/ExpandedProject$JsonSeriali
 	public synthetic fun selectDeserializer (Lkotlinx/serialization/json/JsonElement;)Lkotlinx/serialization/DeserializationStrategy;
 }
 
+public final synthetic class dev/kikugie/stonecutter/data/tree/ExpandedProject$StringProject$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Ldev/kikugie/stonecutter/data/tree/ExpandedProject$StringProject$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun deserialize-qaOAxzE (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/String;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public final fun serialize-m29lS6c (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/String;)V
+}
+
+public final class dev/kikugie/stonecutter/data/tree/ExpandedProject$StringProject$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
 public final class dev/kikugie/stonecutter/data/tree/NodeProvider {
 	public final fun buildscript (Ljava/lang/String;)V
 	public final synthetic fun getBuildscript ()Ljava/lang/String;
