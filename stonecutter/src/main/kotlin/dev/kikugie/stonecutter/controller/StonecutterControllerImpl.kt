@@ -19,6 +19,7 @@ import dev.kikugie.stonecutter.data.dsl.VersionOperations
 import dev.kikugie.stonecutter.data.dsl.impl.LenientOperations
 import dev.kikugie.stonecutter.data.tree.builder.BranchBuilderImpl
 import dev.kikugie.stonecutter.data.tree.builder.TreeBuilderImpl
+import dev.kikugie.stonecutter.data.tree.model.ActiveInfo
 import dev.kikugie.stonecutter.data.tree.struct.ProjectBranchImpl
 import dev.kikugie.stonecutter.data.tree.struct.ProjectNodeImpl
 import dev.kikugie.stonecutter.data.tree.struct.ProjectTreeImpl
@@ -27,6 +28,7 @@ import dev.kikugie.stonecutter.util.isIdeaSync
 import dev.kikugie.stonecutter.util.requestTasks
 import dev.kikugie.stonecutter.util.set
 import org.gradle.api.Project
+import org.gradle.api.file.RegularFile
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.apply
@@ -46,6 +48,8 @@ internal open class StonecutterControllerImpl(val root: Project) :
         lookup = { root.findProperty("dev.kikugie.stonecutter.${it.key}")?.toString() }
     }
     override val tasks: StonecutterControllerTasksImpl = StonecutterControllerTasksImpl(this)
+    internal var activeInfo: ActiveInfo = ActiveInfo.empty()
+        private set
 
     init {
         nodes += tree
@@ -83,13 +87,22 @@ internal open class StonecutterControllerImpl(val root: Project) :
             for (it in tree.versions) tasks.registerExternalSwitchTask(it.project, file)
         }
 
-        if (active != null) when (active) {
-            is String -> registerSelf(active)
-            is File -> registerExternal(active)
-            is RegularFileProperty -> registerExternal(active.asFile.get())
-            is Provider<*> -> active.orNull?.let { registerExternal(it as File) }
+        fun handleActive(active: Any?): Unit = when(active) {
+            null -> {}
+            is String -> {
+                registerSelf(active)
+                activeInfo = ActiveInfo.of(active)
+            }
+            is File -> {
+                registerExternal(active)
+                activeInfo = ActiveInfo.of(active.toPath())
+            }
+            is RegularFile -> handleActive(active.asFile)
+            is Provider<*> -> handleActive(active.orNull)
             else -> error("Invalid active project type ${active::class.qualifiedName}")
         }
+
+        handleActive(active)
 
         if (flags[StonecutterFlag.APPLY_PLUGIN_TO_NODES]) for (it in tree.nodes)
             it.project.plugins.apply(StonecutterPlugin::class)

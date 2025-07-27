@@ -6,9 +6,24 @@ import dev.kikugie.stonecutter.Version
 import dev.kikugie.stonecutter.build.param.StonecutterBuildData
 import dev.kikugie.stonecutter.controller.flag.FlagContainer
 import dev.kikugie.stonecutter.data.StonecutterProject
+import dev.kikugie.stonecutter.util.isIdentifier
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import java.nio.file.Path
+import kotlin.io.path.Path
+import kotlin.io.path.invariantSeparatorsPathString
+
+@Serializable @JvmInline
+public value class ActiveInfo(private val value: String?) {
+    public companion object {
+        public fun empty(): ActiveInfo = ActiveInfo(null)
+        public fun of(identifier: Identifier): ActiveInfo = ActiveInfo(identifier)
+        public fun of(path: Path): ActiveInfo = ActiveInfo(path.invariantSeparatorsPathString)
+    }
+
+    public fun asPathOrNull(): Path? = value?.runCatching(::Path)?.getOrNull()
+    public fun asIdentifierOrNull(): Identifier? = value?.takeIf(::isIdentifier)
+}
 
 @Serializable
 public data class NodeInfo(
@@ -51,6 +66,8 @@ public data class BranchModel(
 public data class TreeModel(
     val stonecutter: String,
     val vcs: Identifier,
+    val active: ActiveInfo,
+    @Deprecated("Use active instead")
     val current: Identifier? = null,
     val branches: List<BranchInfo>,
     val nodes: List<NodeInfo>,

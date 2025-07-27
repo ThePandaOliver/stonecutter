@@ -4,7 +4,6 @@ import dev.kikugie.stonecutter.*
 import dev.kikugie.stonecutter.build.StonecutterBuildExtension
 import dev.kikugie.stonecutter.controller.StonecutterControllerImpl
 import dev.kikugie.stonecutter.controller.StonecutterControllerManager
-import dev.kikugie.stonecutter.data.dsl.impl.LenientOperations
 import dev.kikugie.stonecutter.data.tree.model.BranchInfo
 import dev.kikugie.stonecutter.data.tree.model.BranchModel
 import dev.kikugie.stonecutter.data.tree.model.NodeInfo
@@ -84,7 +83,7 @@ internal class StonecutterControllerTasksImpl(val ext: StonecutterControllerImpl
         json.set(ext.root.provider {
             val branches = ext.tree.branches.map { BranchInfo(it.id, it.location) }
             val nodes = ext.tree.nodes.map { NodeInfo(it.metadata, it.location) }
-            TreeModel(StonecutterPlugin.VERSION, ext.tree.vcs.project, ext.tree.current?.project, branches, nodes, ext.flags)
+            TreeModel(StonecutterPlugin.VERSION, ext.tree.vcs.project, ext.activeInfo, ext.tree.current?.project, branches, nodes, ext.flags)
                 .let(encoder::encodeToString)
         })
     }.also {
