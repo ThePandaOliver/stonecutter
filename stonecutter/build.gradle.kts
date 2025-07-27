@@ -121,6 +121,10 @@ tasks {
         from(named("dokkaGeneratePublicationJavadoc"))
     }
 
+    test {
+        useJUnitPlatform()
+    }
+
     publishPlugins {
         dependOnPublishTasks()
     }
