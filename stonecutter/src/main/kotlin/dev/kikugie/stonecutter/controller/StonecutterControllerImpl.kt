@@ -17,8 +17,8 @@ import dev.kikugie.stonecutter.data.container.TreeBuilderContainer
 import dev.kikugie.stonecutter.data.container.getContainer
 import dev.kikugie.stonecutter.data.dsl.VersionOperations
 import dev.kikugie.stonecutter.data.dsl.impl.LenientOperations
-import dev.kikugie.stonecutter.data.tree.BranchBuilder
-import dev.kikugie.stonecutter.data.tree.TreeBuilder
+import dev.kikugie.stonecutter.data.tree.builder.BranchBuilderImpl
+import dev.kikugie.stonecutter.data.tree.builder.TreeBuilderImpl
 import dev.kikugie.stonecutter.data.tree.struct.ProjectBranchImpl
 import dev.kikugie.stonecutter.data.tree.struct.ProjectNodeImpl
 import dev.kikugie.stonecutter.data.tree.struct.ProjectTreeImpl
@@ -133,23 +133,23 @@ internal open class StonecutterControllerImpl(val root: Project) :
     }
 
     private fun constructTree(): ProjectTreeImpl {
-        val builder = checkNotNull(root.gradle.getContainer<TreeBuilderContainer>()[root]) {
-            "Project ${root.path} is not registered. This might've been caused by removing a project while its active"
+        val builder = checkNotNull(root.gradle.getContainer<TreeBuilderContainer>()[root] as? TreeBuilderImpl) {
+            "Project ${root.path} is not registered. This might've been caused by removing a project while it's active"
         }
         val branches = builder.constructBranches(root.hierarchy)
-        return ProjectTreeImpl(root.gradle, root.hierarchy, builder.vcsProject, branches).apply {
+        return ProjectTreeImpl(root.gradle, root.hierarchy, builder.getVcsProject(), branches).apply {
             for (it in branches) it.tree = this
         }
     }
 
-    private fun TreeBuilder.constructBranches(tree: ProjectHierarchy) = branches.values.map {
-        val nodes = it.constructNodes(tree + it.id)
-        ProjectBranchImpl(root.gradle, tree + it.id, it.id, nodes).apply {
+    private fun TreeBuilderImpl.constructBranches(tree: ProjectHierarchy) = branches.values.map {
+        val nodes = it.constructNodes(tree + it.name)
+        ProjectBranchImpl(root.gradle, tree + it.name, it.name, nodes).apply {
             for (node in nodes) node.branch = this
         }
     }
 
-    private fun BranchBuilder.constructNodes(branch: ProjectHierarchy) = nodes.values.map {
-        ProjectNodeImpl(root.gradle, branch + it.metadata.project, it.metadata)
+    private fun BranchBuilderImpl.constructNodes(branch: ProjectHierarchy) = allProjects().map {
+        ProjectNodeImpl(root.gradle, branch + it.project, it)
     }
 }

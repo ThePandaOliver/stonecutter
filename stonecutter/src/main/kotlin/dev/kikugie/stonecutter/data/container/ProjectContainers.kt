@@ -3,7 +3,7 @@ package dev.kikugie.stonecutter.data.container
 import dev.kikugie.stonecutter.build.param.StonecutterBuildProperties
 import dev.kikugie.stonecutter.data.ProjectHierarchy
 import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
-import dev.kikugie.stonecutter.data.tree.TreeBuilder
+import dev.kikugie.stonecutter.data.tree.builder.TreeBuilder
 import dev.kikugie.stonecutter.data.tree.struct.ProjectNode
 import dev.kikugie.stonecutter.data.tree.struct.ProjectTree
 import org.gradle.api.NamedDomainObjectContainer

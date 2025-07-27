@@ -5,8 +5,9 @@ import dev.kikugie.stonecutter.ProjectReference
 import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.data.dsl.VersionOperations
 import dev.kikugie.stonecutter.data.dsl.impl.SemanticOperations
-import dev.kikugie.stonecutter.data.tree.TreeBuilder
-import dev.kikugie.stonecutter.data.tree.TreeSettings
+import dev.kikugie.stonecutter.data.tree.builder.TreeBuilder
+import dev.kikugie.stonecutter.data.tree.builder.TreeBuilderImpl
+import dev.kikugie.stonecutter.data.tree.json.SerializedTree
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
@@ -17,23 +18,28 @@ import org.gradle.kotlin.dsl.newInstance
 import java.io.File
 import dev.kikugie.semver.data.Version as ParsedVersion
 
+@OptIn(ExperimentalSerializationApi::class)
 private val LENIENT_JSON = Json {
     ignoreUnknownKeys = true
     coerceInputValues = true
     isLenient = true
+    allowComments = true
+    allowTrailingComma = true
 }
 
 @OptIn(ExperimentalSerializationApi::class)
-private fun readTreeSettings(file: File): Action<TreeBuilder> {
+private fun readTreeSettings(file: File, action: Action<TreeBuilder>): Action<TreeBuilder> {
     require(file.extension.let { it == "json" || it == "json5" })
-    { "Version setup file must be in JSON or JSON5 format. See Stonecutter wiki for more information." }
-    val data: TreeSettings = file.inputStream().use { LENIENT_JSON.decodeFromStream(it) }
-    return Action { applyData(data) }
+        { "Version setup file must be in JSON or JSON5 format. See Stonecutter wiki for more information." }
+    return Action {
+        file.inputStream().use { LENIENT_JSON.decodeFromStream<SerializedTree>(it) }.applyTo(this)
+        action.execute(this)
+    }
 }
 
 @StonecutterAPI
 public abstract class StonecutterSettingsExtension(internal val objects: ObjectFactory) : VersionOperations<ParsedVersion> {
-    private lateinit var shared: Action<TreeBuilder>
+    private var shared: Action<TreeBuilder> = Action {}
 
     /**
      * Enables Kotlin buildscripts for the controller.
@@ -59,22 +65,25 @@ public abstract class StonecutterSettingsExtension(internal val objects: ObjectF
      * Configures the specified [project] to be versioned with setup provided by [file].
      * @see ProjectReference
      */
-    public fun create(project: ProjectReference, file: File): Unit =
-        create(listOf(project), file)
+    @JvmOverloads
+    public fun create(project: ProjectReference, file: File, action: Action<TreeBuilder> = shared): Unit =
+        create(listOf(project), readTreeSettings(file, action))
 
     /**
      * Configures the specified [projects] to be versioned with setup provided by [file].
      * @see ProjectReference
      */
-    public fun create(vararg projects: ProjectReference, file: File): Unit =
-        create(projects.asIterable(), file)
+    @JvmOverloads
+    public fun create(vararg projects: ProjectReference, file: File, action: Action<TreeBuilder> = shared): Unit =
+        create(projects.asIterable(), readTreeSettings(file, action))
 
     /**
      * Configures the specified [projects] to be versioned with setup provided by [file].
      * @see ProjectReference
      */
-    public fun create(projects: Iterable<ProjectReference>, file: File): Unit =
-        create(projects, readTreeSettings(file))
+    @JvmOverloads
+    public fun create(projects: Iterable<ProjectReference>, file: File, action: Action<TreeBuilder> = shared): Unit =
+        create(projects, readTreeSettings(file, action))
 
     /* Action configuration */
     /**
@@ -99,8 +108,8 @@ public abstract class StonecutterSettingsExtension(internal val objects: ObjectF
      */
     @JvmOverloads
     public fun create(projects: Iterable<ProjectReference>, action: Action<TreeBuilder> = shared): Unit =
-        projects.forEach { create(it, objects.newInstance<TreeBuilder>(this).also(action::execute)) }
+        projects.forEach { create(it, objects.newInstance<TreeBuilderImpl>(this).also(action::execute)) }
 
     /* Base configuration */
-    protected abstract fun create(ref: ProjectReference, setup: TreeBuilder)
+    protected abstract fun create(ref: ProjectReference, builder: TreeBuilder)
 }

@@ -49,6 +49,10 @@ dependencies {
     implementation(common.misc.commons)
     implementation(common.kotlin.serialization)
     implementation(common.kotlin.serialization.json)
+
+    testImplementation(common.kotest.runner)
+    testImplementation(common.kotest.datatest)
+    testImplementation(common.kotest.assertions)
 }
 
 apiValidation {

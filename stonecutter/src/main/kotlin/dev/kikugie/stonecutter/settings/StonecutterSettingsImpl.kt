@@ -3,124 +3,61 @@ package dev.kikugie.stonecutter.settings
 import dev.kikugie.stonecutter.ProjectReference
 import dev.kikugie.stonecutter.StonecutterInternalAPI
 import dev.kikugie.stonecutter.StonecutterPlugin
-import dev.kikugie.stonecutter.data.ProjectHierarchy
-import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
 import dev.kikugie.stonecutter.data.container.BuildPropertiesContainer
 import dev.kikugie.stonecutter.data.container.ProjectNodeContainer
 import dev.kikugie.stonecutter.data.container.TreeBuilderContainer
 import dev.kikugie.stonecutter.data.container.createContainer
 import dev.kikugie.stonecutter.data.dsl.VersionOperations
 import dev.kikugie.stonecutter.data.dsl.impl.LenientOperations
-import dev.kikugie.stonecutter.data.tree.BranchBuilder
-import dev.kikugie.stonecutter.data.tree.NodeBuilder
-import dev.kikugie.stonecutter.data.tree.TreeBuilder
+import dev.kikugie.stonecutter.data.tree.builder.TreeBuilder
+import dev.kikugie.stonecutter.data.tree.builder.TreeBuilderImpl
 import dev.kikugie.stonecutter.process.SCIdeaConfigTask
 import dev.kikugie.stonecutter.util.isIdeaSync
 import dev.kikugie.stonecutter.util.lifecycle
 import dev.kikugie.stonecutter.util.logger
 import dev.kikugie.stonecutter.util.requestTasks
 import org.gradle.api.Project
-import org.gradle.api.initialization.ProjectDescriptor
 import org.gradle.api.initialization.Settings
 import org.gradle.api.invocation.Gradle
 import org.gradle.api.logging.Logger
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
-import org.gradle.api.provider.Provider
-import org.gradle.api.provider.ProviderFactory
 import org.gradle.kotlin.dsl.property
 import org.gradle.kotlin.dsl.register
-import java.io.File
-import java.nio.file.Path
 import javax.inject.Inject
-import kotlin.io.path.createDirectories
-import kotlin.io.path.exists
-import kotlin.io.path.notExists
 import dev.kikugie.semver.data.Version as ParsedVersion
 
 @OptIn(StonecutterInternalAPI::class)
-internal open class StonecutterSettingsImpl @Inject constructor(private val settings: Settings, objects: ObjectFactory) :
+internal open class StonecutterSettingsImpl @Inject constructor(internal val settings: Settings, objects: ObjectFactory) :
     StonecutterSettingsExtension(objects), VersionOperations<ParsedVersion> by LenientOperations {
     final override val kotlinController: Property<Boolean> = objects.property()
     final override val centralScript: Property<String> = objects.property()
-    internal val providers: ProviderFactory get() = settings.providers
-    private var groovy = false
-    private val container: TreeBuilderContainer = settings.gradle.createContainer()
+    internal val container: TreeBuilderContainer = settings.gradle.createContainer()
+    internal val isHardMode: Boolean by lazy {
+        settings.providers.gradleProperty("dev.kikugie.stonecutter.hard_mode").getOrElse("false").toBoolean()
+    }
+
     private val logger: Logger by logger("StonecutterSettings")
-    private val isHardMode: Boolean get() = settings.providers.gradleProperty("dev.kikugie.stonecutter.hard_mode").getOrElse("false").toBoolean()
+    private var groovy: Boolean = false
 
     init {
         logger.lifecycle { "Running Stonecutter ${StonecutterPlugin.VERSION}" }
         settings.gradle.createContainer<ProjectNodeContainer>()
         settings.gradle.createContainer<BuildPropertiesContainer>(objects, settings.providers)
         settings.gradle.settingsEvaluated {
-            if (groovy) reportGroovyComplaint()
+            if (groovy && !isHardMode) reportGroovyComplaint()
         }
         settings.gradle.projectsLoaded {
             createIdeaConfigurations(this, rootProject)
         }
     }
 
-    override fun create(ref: ProjectReference, setup: TreeBuilder): Unit = with(setup) {
-        val project = getDescriptor(ref)
-        require(container.putIfAbsent(project.hierarchy, this) == null) { "Project ${project.path} is already registered" }
-
-        val controller = controllerTypeFor()
-        project.buildFileName = controller.filename.also(::checkGroovy)
-        with(project.projectDir.resolve(controller.filename).toPath()) {
-            if (notExists()) controller.create(this, vcsProject.project)
-        }
-
-        for (branch in branches.values) createBranch(project, branch)
+    override fun create(ref: ProjectReference, builder: TreeBuilder) {
+        (builder as TreeBuilderImpl).createWith(this, ref)
     }
 
-    internal fun getDefaultBuildScript(relative: String = "", type: String) =
-        getDefaultBuildScript(settings.rootDir.toPath().let { if (relative.isEmpty()) it else it.resolve(relative) }, type)
-
-    private fun getDefaultBuildScript(dir: Path, type: String): String = when {
-        dir.resolve("$type.gradle.kts").exists() -> "$type.gradle.kts"
-        dir.resolve("$type.gradle").exists() || isHardMode -> "$type.gradle"
-        else -> "$type.gradle.kts"
-    }
-
-    private fun createBranch(root: ProjectDescriptor, branch: BranchBuilder) = with(branch) {
-        require(nodes.isNotEmpty()) { "Registered branch '$id' has no nodes" }
-        val project = if (id.isEmpty()) root else createDescriptor("${root.path}:$id")
-        project.projectDir.toPath().createDirectories()
-        if (id.isNotEmpty()) project.buildFileName = tree.controllerTypeFor(id).filename // TODO: to be tested
-            .replace("stonecutter", "stonecutter_branch").also(::checkGroovy)
-
-        for (node in nodes.values) createProject(project, node)
-    }
-
-    private fun createProject(root: ProjectDescriptor, node: NodeBuilder) = with(node) {
-        val project = createDescriptor("${root.path}:${metadata.project}")
-        val versionDir = File("${root.projectDir}/versions/${metadata.project}")
-        versionDir.mkdirs()
-
-        val script = buildscript.also(::checkGroovy)
-        project.projectDir = versionDir
-        project.name = metadata.project
-        project.buildFileName = "../../$script"
-    }
-
-    private fun getDescriptor(ref: ProjectReference): ProjectDescriptor = when (ref) {
-        is ProjectDescriptor -> ref
-        is Provider<*> -> (ref.orNull as? String)?.let(::createDescriptor)
-            ?: error("Project descriptor not found for $ref")
-
-        is CharSequence -> createDescriptor(ref.toString())
-        else -> error("Unsupported type ${ref::class.qualifiedName}")
-    }
-
-    private fun createDescriptor(path: String): ProjectDescriptor {
-        val hierarchy = ProjectHierarchy.of(path)
-        return if (hierarchy == ProjectHierarchy.ROOT)
-            settings.rootProject
-        else settings.run {
-            include(hierarchy.toString().removePrefix(":"))
-            project(hierarchy.toString())
-        }
+    internal fun checkGroovy(file: String): String = file.also {
+        if (it.endsWith(".gradle")) groovy = true
     }
 
     private fun createIdeaConfigurations(gradle: Gradle, root: Project) {
@@ -131,14 +68,7 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
         if (isIdeaSync) gradle.requestTasks(listOf("stonecutterIdea"), root.path, root.projectDir)
     }
 
-    private fun checkGroovy(file: String) {
-        if (groovy || file.endsWith(".gradle")) groovy = true
-    }
-
-    private fun reportGroovyComplaint() {
-        if (isHardMode) return
-
-        """
+    private fun reportGroovyComplaint() = logger.warn("""
         NOTICE: Limited Groovy DSL support for Stonecutter
         
         While functional, the plugin's features are limited 
@@ -148,6 +78,5 @@ internal open class StonecutterSettingsImpl @Inject constructor(private val sett
         
         For more information see: 
           - https://stonecutter.codeberg.page/wiki/faq#groovy-support
-        """.trimIndent().let(logger::warn)
-    }
+        """.trimIndent())
 }
