@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package dev.kikugie.stonecutter.settings
 
 import dev.kikugie.semver.data.SemanticVersion
@@ -18,7 +20,6 @@ import org.gradle.kotlin.dsl.newInstance
 import java.io.File
 import dev.kikugie.semver.data.Version as ParsedVersion
 
-@OptIn(ExperimentalSerializationApi::class)
 private val LENIENT_JSON = Json {
     ignoreUnknownKeys = true
     coerceInputValues = true
@@ -27,7 +28,6 @@ private val LENIENT_JSON = Json {
     allowTrailingComma = true
 }
 
-@OptIn(ExperimentalSerializationApi::class)
 private fun readTreeSettings(file: File, action: Action<TreeBuilder>): Action<TreeBuilder> {
     require(file.extension.let { it == "json" || it == "json5" })
         { "Version setup file must be in JSON or JSON5 format. See Stonecutter wiki for more information." }
@@ -108,7 +108,7 @@ public abstract class StonecutterSettingsExtension(internal val objects: ObjectF
      */
     @JvmOverloads
     public fun create(projects: Iterable<ProjectReference>, action: Action<TreeBuilder> = shared): Unit =
-        projects.forEach { create(it, objects.newInstance<TreeBuilderImpl>(this).also(action::execute)) }
+        projects.forEach { create(it, objects.newInstance<TreeBuilderImpl>().also(action::execute)) }
 
     /* Base configuration */
     protected abstract fun create(ref: ProjectReference, builder: TreeBuilder)

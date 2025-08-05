@@ -22,14 +22,16 @@ import kotlin.io.path.exists
 import kotlin.io.path.notExists
 
 private fun ProjectReference.resolve(settings: Settings): ProjectDescriptor = when(this) {
-    is ProjectDescriptor -> include(settings)
-    is CharSequence -> settings.project(":${trimStart(':')}").include(settings)
+    is ProjectDescriptor -> path.include(settings)
+    is CharSequence -> include(settings)
     is Provider<*> -> get().resolve(settings)
     else -> error("Unsupported type ${this::class.qualifiedName}")
 }
 
-private fun ProjectDescriptor.include(settings: Settings): ProjectDescriptor = apply {
-    if (path != ":") settings.include(path.removePrefix(":"))
+private fun CharSequence.include(settings: Settings): ProjectDescriptor {
+    val trimmed = trimStart(':').toString()
+    if (this != ":") settings.include(trimmed)
+    return settings.project(":$trimmed")
 }
 
 private fun getDefaultBuildscript(ext: StonecutterSettingsImpl, dir: Path, type: String) = when {
@@ -153,4 +155,4 @@ internal abstract class BranchBuilderImpl @Inject constructor(val name: String, 
     }
 }
 
-internal abstract class NodeBuilderImpl(val versions: List<StonecutterProject>, val branch: BranchBuilderImpl) : NodeBuilder()
+internal abstract class NodeBuilderImpl @Inject constructor(val versions: List<StonecutterProject>, val branch: BranchBuilderImpl) : NodeBuilder()
