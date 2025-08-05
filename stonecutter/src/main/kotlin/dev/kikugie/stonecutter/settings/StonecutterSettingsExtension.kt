@@ -29,8 +29,9 @@ private val LENIENT_JSON = Json {
 }
 
 private fun readTreeSettings(file: File, action: Action<TreeBuilder>): Action<TreeBuilder> {
-    require(file.extension.let { it == "json" || it == "json5" })
-        { "Version setup file must be in JSON or JSON5 format. See Stonecutter wiki for more information." }
+    require(file.extension.let { it == "json" || it == "json5" }) {
+        "Version setup file must be in JSON or JSON5 format.\nSee https://stonecutter.kikugie.dev/wiki/config/projects."
+    }
     return Action {
         file.inputStream().use { LENIENT_JSON.decodeFromStream<SerializedTree>(it) }.applyTo(this)
         action.execute(this)
@@ -39,23 +40,45 @@ private fun readTreeSettings(file: File, action: Action<TreeBuilder>): Action<Tr
 
 @StonecutterAPI
 public abstract class StonecutterSettingsExtension(internal val objects: ObjectFactory) : VersionOperations<ParsedVersion> {
-    private var shared: Action<TreeBuilder> = Action {}
+    /**
+     * Defines a shared [Action] for configuring instances of [TreeBuilder].
+     *
+     * This action is applied when using [create] methods with no explicit configuration,
+     * and can be added manually with `shared.execute(this)` in a [TreeBuilder] scope.
+     */
+    public var shared: Action<TreeBuilder> = Action {}
+        private set
 
     /**
-     * Enables Kotlin buildscripts for the controller.
-     * - `stonecutter.gradle` -> `stonecutter.gradle.kts`
+     * Defines the name for the shared buildscript for all versions.
+     * It cannot be set to `stonecutter.gradle[.kts]`.
+     * When unset, prefers `build.gradle.kts`, but uses `build.gradle` if it already exists.
+     *
+     * This value applies to all registered trees, and can be overridden with
+     * [TreeBuilder.centralScript], [TreeBuilder.mapBuilds] or [NodeBuilder.buildscript][dev.kikugie.stonecutter.data.tree.builder.NodeBuilder.buildscript].
+     */
+    public abstract val centralScript: Property<String>
+
+    /**
+     * Configures whenever `stonecutter.gradle.kts` or `stonecutter.gradle` is used.
+     * When unset, prefers the `.kts` variant, but uses `.gradle` one if it already exists.
+     *
+     * This value applies to all registered trees, and can be overridden with
+     * [TreeBuilder.kotlinController]
      */
     public abstract val kotlinController: Property<Boolean>
-
-    /**Buildscript used by all subprojects. Defaults to `build.gradle`.*/
-    public abstract val centralScript: Property<String>
 
     /**Provides [VersionOperations], which work strictly with [SemanticVersion]s.*/
     public val semantics: VersionOperations<SemanticVersion>
         get() = SemanticOperations
 
     /* Shared configuration */
-    /**Stores the provided configuration to be used in [create] methods.*/
+    /**
+     * Defines a shared [Action] for configuring instances of [TreeBuilder].
+     *
+     * This action is applied when using [create] methods with no explicit configuration,
+     * and can be added manually with `shared.execute(this)` in a [TreeBuilder] scope.
+     */
     public fun shared(action: Action<TreeBuilder>) {
         shared = action
     }

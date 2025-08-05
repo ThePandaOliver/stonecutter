@@ -46,6 +46,10 @@ internal abstract class TreeBuilderImpl @Inject constructor(val objects: ObjectF
     internal val branches: MutableMap<Identifier, BranchBuilderImpl> = mutableMapOf()
     internal val versions: MutableMap<Identifier, StonecutterProject> = mutableMapOf()
 
+    init {
+        branchScript.disallowChanges()
+    }
+
     override fun mapBuilds(action: (Identifier, StonecutterProject) -> String) {
         localBuildScriptProvider = action
     }
