@@ -9,30 +9,16 @@ import dev.kikugie.stonecutter.controller.StonecutterControllerManager
 import dev.kikugie.stonecutter.data.ProjectHierarchy.Companion.hierarchy
 import dev.kikugie.stonecutter.data.StonecutterProject
 import dev.kikugie.stonecutter.settings.StonecutterSettingsImpl
+import dev.kikugie.stonecutter.util.ProjectProvider
 import dev.kikugie.stonecutter.util.isIdentifier
 import org.gradle.api.initialization.ProjectDescriptor
-import org.gradle.api.initialization.Settings
 import org.gradle.api.model.ObjectFactory
-import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.newInstance
 import java.nio.file.Path
 import javax.inject.Inject
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.notExists
-
-private fun ProjectReference.resolve(settings: Settings): ProjectDescriptor = when(this) {
-    is ProjectDescriptor -> path.include(settings)
-    is CharSequence -> include(settings)
-    is Provider<*> -> get().resolve(settings)
-    else -> error("Unsupported type ${this::class.qualifiedName}")
-}
-
-private fun CharSequence.include(settings: Settings): ProjectDescriptor {
-    val trimmed = trimStart(':').toString()
-    if (this != ":") settings.include(trimmed)
-    return settings.project(":$trimmed")
-}
 
 private fun getDefaultBuildscript(ext: StonecutterSettingsImpl, dir: Path, type: String) = when {
     dir.resolve("$type.gradle.kts").exists() -> "$type.gradle.kts"
@@ -76,7 +62,7 @@ internal abstract class TreeBuilderImpl @Inject constructor(val objects: ObjectF
     }
 
     internal fun createWith(ext: StonecutterSettingsImpl, ref: ProjectReference) {
-        val project = ref.resolve(ext.settings)
+        val project = ProjectProvider.of(ref, ext.settings).value
         check(ext.container.putIfAbsent(project.hierarchy, this) == null) { "Project ${project.path} is already registered" }
 
         val vcs = resolveVcs()
@@ -125,7 +111,7 @@ internal abstract class BranchBuilderImpl @Inject constructor(val name: String, 
 
     internal fun createWith(ext: StonecutterSettingsImpl, root: ProjectDescriptor) {
         check(nodes.isNotEmpty()) { "Branch '$name' has no registered nodes" }
-        val project = if (name.isEmpty()) root else name.resolve(ext.settings)
+        val project = if (name.isEmpty()) root else ProjectProvider.of(name, ext.settings).value
             .apply { projectDir.toPath().createDirectories() }
         if (project.path != root.path)
             project.buildFileName = ext.checkGroovy(resolveBuild(ext, project))
@@ -135,7 +121,7 @@ internal abstract class BranchBuilderImpl @Inject constructor(val name: String, 
     }
 
     private fun createNode(ext: StonecutterSettingsImpl, parent: ProjectDescriptor, data: StonecutterProject, buildscript: String) {
-        val project = "${parent.path}:${data.project}".resolve(ext.settings)
+        val project = ProjectProvider.of("${parent.path}:${data.project}", ext.settings).value
         val directory = parent.projectDir.resolve("versions/${data.project}")
             .apply { toPath().createDirectories() }
         with(project) {

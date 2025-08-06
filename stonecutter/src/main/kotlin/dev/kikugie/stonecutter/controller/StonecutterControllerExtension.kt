@@ -1,6 +1,7 @@
 package dev.kikugie.stonecutter.controller
 
 import dev.kikugie.semver.data.SemanticVersion
+import dev.kikugie.stonecutter.ActiveReference
 import dev.kikugie.semver.data.Version as ParsedVersion
 import dev.kikugie.stonecutter.StonecutterAPI
 import dev.kikugie.stonecutter.build.param.StonecutterBuildProperties
@@ -54,17 +55,11 @@ public interface StonecutterControllerExtension : VersionOperations<ParsedVersio
 
     /**
      * Initialises the plugin with the given active version.
-     * This function must be called **exactly once**.
-     * The provider can be one of:
-     * - [File], [Provider<File>][org.gradle.api.provider.Provider], [RegularFileProperty][org.gradle.api.file.RegularFileProperty]:
-     *   a text file in UTF-8/ASCII encoding containing **only** the project name.
-     *   The file will be overridden when switching versions.
-     * - [String]: a literal string passed directly as a function argument.
-     *   The build script file will be overridden, replacing the string when switching versions.
-     * - `null`: initialises the plugin without attaching the root source.
-     *   **This functionality is currently experimental.**
+     * **This function must be called exactly once**.
+     *
+     * @see ActiveReference
      */
-    public infix fun active(provider: Any?)
+    public infix fun active(provider: ActiveReference)
 
     /**Configures [flags] with the provided [action].*/
     public infix fun flags(action: MutableFlagContainer.() -> Unit): Unit = flags.action()
