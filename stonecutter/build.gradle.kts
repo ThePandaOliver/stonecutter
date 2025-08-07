@@ -137,8 +137,8 @@ tasks {
     withType<KotlinCompile> {
         explicitApiMode = ExplicitApiMode.Strict
         compilerOptions {
-            languageVersion = KotlinVersion.KOTLIN_2_0
-            apiVersion = KotlinVersion.KOTLIN_2_0
+            languageVersion = KotlinVersion.KOTLIN_2_2
+            apiVersion = KotlinVersion.KOTLIN_2_2
             jvmTarget = JvmTarget.JVM_17
             freeCompilerArgs.addAll("-Xnested-type-aliases", "-Xcontext-sensitive-resolution", "-Xwhen-guards")
         }
