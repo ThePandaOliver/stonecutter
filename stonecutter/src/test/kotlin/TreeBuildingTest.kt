@@ -1,5 +1,6 @@
 import dev.kikugie.stonecutter.data.StonecutterProject
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.engine.spec.tempdir
 import io.kotest.matchers.string.shouldContain
@@ -10,9 +11,10 @@ import org.intellij.lang.annotations.Language
 import util.*
 
 public class TreeBuildingTest : StringSpec({
+    isolationMode = IsolationMode.InstancePerLeaf
     val directory = tempdir()
 
-    "basic configuration" {
+    "basic configuration".config(blockingTest = true) {
         val task = "printStonecutterMetadata"
 
         directory.resolve(SETTINGS) with """
