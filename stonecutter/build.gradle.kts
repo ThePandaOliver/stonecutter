@@ -100,30 +100,31 @@ dokka {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
     withSourcesJar()
     withJavadocJar()
 }
 
+kotlin {
+    explicitApi = ExplicitApiMode.Strict
+    jvmToolchain(17)
+    compilerOptions {
+        languageVersion = KotlinVersion.KOTLIN_2_2
+        apiVersion = KotlinVersion.KOTLIN_2_2
+//        freeCompilerArgs.addAll("-Xnested-type-aliases", "-Xcontext-sensitive-resolution", "-Xwhen-guards")
+    }
+}
+
 tasks {
-    register<ShadowJar>("slimJar") {
-        group = "build"
-        archiveClassifier = "slim"
-        configurations = project.configurations.runtimeClasspath.map(::listOf)
-
-        from(sourceSets.main.map(SourceSet::getOutput))
-        dependencies {
-            include(project(":stitcher"))
-        }
-    }
-
-    named<Jar>("javadocJar") {
-        from(named("dokkaGeneratePublicationJavadoc"))
-    }
-
     test {
         useJUnitPlatform()
+    }
+
+    compileTestKotlin {
+        compilerOptions {
+            languageVersion = KotlinVersion.KOTLIN_2_2
+            apiVersion = KotlinVersion.KOTLIN_2_2
+//            freeCompilerArgs.addAll("-Xnested-type-aliases", "-Xcontext-sensitive-resolution", "-Xwhen-guards")
+        }
     }
 
     publishPlugins {
@@ -134,13 +135,28 @@ tasks {
         archiveClassifier = ""
     }
 
-    withType<KotlinCompile> {
-        explicitApiMode = ExplicitApiMode.Strict
-        compilerOptions {
-            languageVersion = KotlinVersion.KOTLIN_2_2
-            apiVersion = KotlinVersion.KOTLIN_2_2
-            jvmTarget = JvmTarget.JVM_17
-            freeCompilerArgs.addAll("-Xnested-type-aliases", "-Xcontext-sensitive-resolution", "-Xwhen-guards")
+    named<Jar>("javadocJar") {
+        from(named("dokkaGeneratePublicationJavadoc"))
+    }
+
+    register<Test>("lightTest") {
+        group = "verification"
+        jvmArgs("-Dkotest.tags=\"!HeavyTest\"")
+    }
+
+    register<Test>("heavyTest") {
+        group = "verification"
+        jvmArgs("-Dkotest.tags=\"HeavyTest\"")
+    }
+
+    register<ShadowJar>("slimJar") {
+        group = "build"
+        archiveClassifier = "slim"
+        configurations = project.configurations.runtimeClasspath.map(::listOf)
+
+        from(sourceSets.main.map(SourceSet::getOutput))
+        dependencies {
+            include(project(":stitcher"))
         }
     }
 }
