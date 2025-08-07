@@ -50,6 +50,7 @@ dependencies {
     implementation(common.kotlin.serialization)
     implementation(common.kotlin.serialization.json)
 
+    testImplementation(gradleTestKit())
     testImplementation(common.kotest.runner)
     testImplementation(common.kotest.datatest)
     testImplementation(common.kotest.assertions)
@@ -139,6 +140,7 @@ tasks {
             languageVersion = KotlinVersion.KOTLIN_2_0
             apiVersion = KotlinVersion.KOTLIN_2_0
             jvmTarget = JvmTarget.JVM_17
+            freeCompilerArgs.addAll("-Xnested-type-aliases", "-Xcontext-sensitive-resolution", "-Xwhen-guards")
         }
     }
 }
