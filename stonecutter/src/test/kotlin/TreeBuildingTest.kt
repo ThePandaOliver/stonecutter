@@ -10,9 +10,10 @@ import org.gradle.testkit.runner.UnexpectedBuildFailure
 import org.intellij.lang.annotations.Language
 import util.*
 
-public class TreeBuildingTest : StringSpec({
-    isolationMode = IsolationMode.InstancePerLeaf
+class TreeBuildingTest : StringSpec({
     val directory = tempdir()
+    isolationMode = IsolationMode.InstancePerLeaf
+    tags(HeavyTest)
 
     "basic configuration".config(blockingTest = true) {
         val task = "printStonecutterMetadata"

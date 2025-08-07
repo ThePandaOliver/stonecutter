@@ -22,7 +22,7 @@ private val JSON = Json {
 
 private fun deserializeTree(@Language("JSON5") input: String) = JSON.decodeFromString(SerializedTree.serializer(), input)
 
-public class TreeSerializationTest : StringSpec({
+class TreeSerializationTest : StringSpec({
     "by version plain" {
         val tree = deserializeTree("""
             {

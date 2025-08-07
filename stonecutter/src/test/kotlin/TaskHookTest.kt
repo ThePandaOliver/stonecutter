@@ -14,9 +14,10 @@ import util.SETTINGS_TEMPLATE
 import util.build
 import util.with
 
-public class TaskHookTest : StringSpec({
-    isolationMode = IsolationMode.InstancePerLeaf
+class TaskHookTest : StringSpec({
     val directory = tempdir()
+    isolationMode = IsolationMode.InstancePerLeaf
+    tags(HeavyTest)
 
     "aggregation" {
         directory.resolve(SETTINGS) with """
