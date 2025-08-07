@@ -16,6 +16,18 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
+import kotlin.reflect.full.functions
+
+private fun kotlinCompilerShittingItselfWorkaround(decoder: JsonDecoder): JsonObject {
+//    return decoder.decodeJsonElement().jsonObject
+
+    val function = checkNotNull(decoder::class.functions.find { it.name == "decodeJsonElement" })
+    { "No 'decodeJsonElement' function found" }
+
+    val result = function.call(decoder)
+    return checkNotNull(result as? JsonObject)
+    { "Result is ${if (result == null) null else result::class.qualifiedName}" }
+}
 
 private inline fun <T> serCheckNotNull(value: T?, message: () -> String): T {
     contract {
@@ -37,7 +49,7 @@ internal data class SerializedTree(
         for (it in schemes) it.applyTo(builder)
     }
 
-    private object TreeJsonSerializer : KSerializer<SerializedTree> {
+    internal object TreeJsonSerializer : KSerializer<SerializedTree> {
         override val descriptor: SerialDescriptor = buildClassSerialDescriptor(this::class.simpleName!!)
 
         override fun serialize(encoder: Encoder, value: SerializedTree) {
@@ -45,8 +57,7 @@ internal data class SerializedTree(
         }
 
         override fun deserialize(decoder: Decoder): SerializedTree {
-            decoder as JsonDecoder
-            val element = decoder.decodeJsonElement().jsonObject
+            val element = kotlinCompilerShittingItselfWorkaround(decoder as JsonDecoder)
             val vcs = element["vcs"]?.jsonPrimitive?.content
             val controller = element["kotlinController"]?.jsonPrimitive?.boolean ?: true
 
@@ -56,13 +67,13 @@ internal data class SerializedTree(
         }
 
         private fun deserializeByVersions(decoder: JsonDecoder, element: JsonElement): TreeScheme = when (element) {
-            is JsonObject -> decoder.json.decodeFromJsonElement(TreeScheme.Inverted.serializer(), element)
-            is JsonArray -> decoder.json.decodeFromJsonElement(TreeScheme.Plain.serializer(), element)
+            is JsonObject -> Json.decodeFromJsonElement(TreeScheme.Inverted.serializer(), element)
+            is JsonArray -> Json.decodeFromJsonElement(TreeScheme.Plain.serializer(), element)
             else -> throw SerializationException("Unable to decode tree from ${element::class.simpleName}")
         }
 
         private fun deserializeByBranches(decoder: JsonDecoder, element: JsonElement): TreeScheme =
-            decoder.json.decodeFromJsonElement(TreeScheme.Branched.serializer(), element)
+            Json.decodeFromJsonElement(TreeScheme.Branched.serializer(), element)
     }
 }
 
@@ -100,7 +111,7 @@ internal data class SerializedVersion(
         }
 
         override fun deserialize(decoder: Decoder): SerializedVersion {
-            val element = (decoder as JsonDecoder).decodeJsonElement().jsonObject
+            val element = kotlinCompilerShittingItselfWorkaround(decoder as JsonDecoder)
             val project = serCheckNotNull(element["project"]) { "Missing project component" }.jsonPrimitive.content
             val version = element["version"]?.jsonPrimitive?.content ?: project
             val buildscript = element["buildscript"]?.jsonPrimitive?.content
