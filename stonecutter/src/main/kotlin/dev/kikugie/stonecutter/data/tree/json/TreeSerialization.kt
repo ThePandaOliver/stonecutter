@@ -16,18 +16,8 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
-import kotlin.reflect.full.functions
 
-private fun kotlinCompilerShittingItselfWorkaround(decoder: JsonDecoder): JsonObject {
-//    return decoder.decodeJsonElement().jsonObject
-
-    val function = checkNotNull(decoder::class.functions.find { it.name == "decodeJsonElement" })
-    { "No 'decodeJsonElement' function found" }
-
-    val result = function.call(decoder)
-    return checkNotNull(result as? JsonObject)
-    { "Result is ${if (result == null) null else result::class.qualifiedName}" }
-}
+private val DECODE_JSON = JsonDecoder::decodeJsonElement
 
 private inline fun <T> serCheckNotNull(value: T?, message: () -> String): T {
     contract {
@@ -57,7 +47,7 @@ internal data class SerializedTree(
         }
 
         override fun deserialize(decoder: Decoder): SerializedTree {
-            val element = kotlinCompilerShittingItselfWorkaround(decoder as JsonDecoder)
+            val element = DECODE_JSON(decoder as JsonDecoder).jsonObject
             val vcs = element["vcs"]?.jsonPrimitive?.content
             val controller = element["kotlinController"]?.jsonPrimitive?.boolean ?: true
 
@@ -111,7 +101,7 @@ internal data class SerializedVersion(
         }
 
         override fun deserialize(decoder: Decoder): SerializedVersion {
-            val element = kotlinCompilerShittingItselfWorkaround(decoder as JsonDecoder)
+            val element = DECODE_JSON(decoder as JsonDecoder).jsonObject
             val project = serCheckNotNull(element["project"]) { "Missing project component" }.jsonPrimitive.content
             val version = element["version"]?.jsonPrimitive?.content ?: project
             val buildscript = element["buildscript"]?.jsonPrimitive?.content
