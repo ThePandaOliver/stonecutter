@@ -6,7 +6,7 @@ import dev.kikugie.stonecutter.Version
 import dev.kikugie.stonecutter.build.param.StonecutterBuildData
 import dev.kikugie.stonecutter.controller.flag.FlagContainer
 import dev.kikugie.stonecutter.data.StonecutterProject
-import dev.kikugie.stonecutter.util.isIdentifier
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import java.nio.file.Path
@@ -14,15 +14,28 @@ import kotlin.io.path.Path
 import kotlin.io.path.invariantSeparatorsPathString
 
 @Serializable @JvmInline
-public value class ActiveInfo(private val value: String?) {
+public value class ActiveInfo private constructor(private val value: String?) {
     public companion object {
         public fun empty(): ActiveInfo = ActiveInfo(null)
-        public fun of(identifier: Identifier): ActiveInfo = ActiveInfo(identifier)
-        public fun of(path: Path): ActiveInfo = ActiveInfo(path.invariantSeparatorsPathString)
+        public fun of(identifier: Identifier): ActiveInfo = ActiveInfo("name@$identifier")
+        public fun of(path: Path): ActiveInfo = ActiveInfo("path@${path.invariantSeparatorsPathString}")
     }
 
-    public fun asPathOrNull(): Path? = value?.runCatching(::Path)?.getOrNull()
-    public fun asIdentifierOrNull(): Identifier? = value?.takeIf(::isIdentifier)
+    public val isPath: Boolean get() = value?.startsWith("path@") == true
+    public val isIdentifier: Boolean get() = value?.startsWith("name@") == true
+
+    public fun asPathOrNull(): Path? = value?.split { type, str ->
+        if (type == "path") Path(str) else null
+    }
+
+    public fun asIdentifierOrNull(): Identifier? = value?.split { type, str ->
+        str.takeIf { type == "name" }
+    }
+
+    private inline fun <T> String.split(action: (String, String) -> T): T {
+        val index = indexOf('@')
+        return action(take(index), substring(index + 1))
+    }
 }
 
 @Serializable
@@ -62,14 +75,25 @@ public data class BranchModel(
     val nodes: List<NodeInfo>,
 )
 
+/**
+ * Represents the Stonecutter tree model serialized in `build/stonecutter-cache/tree.json`.
+ *
+ * @property stonecutter The used Stonecutter Gradle plugin version as set in [StonecutterPlugin.VERSION][dev.kikugie.stonecutter.StonecutterPlugin.VERSION].
+ * @property vcs The VCS version project name.
+ * @property current The resolved active version.
+ * @property currentProvider The source of the active version.
+ * @property branches References to the branch model locations.
+ * @property nodes References to node model locations.
+ * @property flags Overridden Stonecutter flags.
+ */
 @Serializable
 public data class TreeModel(
     val stonecutter: String,
     val vcs: Identifier,
-    val active: ActiveInfo,
-    @Deprecated("Use active instead")
     val current: Identifier? = null,
     val branches: List<BranchInfo>,
     val nodes: List<NodeInfo>,
     val flags: FlagContainer,
+    @SerialName("current_provider")
+    val currentProvider: ActiveInfo,
 )

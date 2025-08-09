@@ -83,7 +83,7 @@ internal class StonecutterControllerTasksImpl(val ext: StonecutterControllerImpl
         json.set(ext.root.provider {
             val branches = ext.tree.branches.map { BranchInfo(it.id, it.location) }
             val nodes = ext.tree.nodes.map { NodeInfo(it.metadata, it.location) }
-            TreeModel(StonecutterPlugin.VERSION, ext.tree.vcs.project, ext.activeInfo, ext.tree.current?.project, branches, nodes, ext.flags)
+            TreeModel(StonecutterPlugin.VERSION, ext.tree.vcs.project, ext.tree.current?.project, branches, nodes, ext.flags, ext.activeInfo)
                 .let(encoder::encodeToString)
         })
     }.also {
