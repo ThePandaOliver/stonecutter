@@ -80,11 +80,13 @@ internal open class StonecutterControllerImpl(val root: Project) :
         ActiveProvider.of(active)
             .ifString { name ->
                 tree.current = findByName(name)
+                activeInfo = ActiveInfo.of(name)
                 val controller = checkNotNull(root.getController()) { "Tree ${tree.hierarchy} has no Stonecutter controller" }
                 for (it in tree.versions) tasks.registerSelfSwitchTask(it.project, controller)
             }
             .ifFile { file ->
                 tree.current = findByName(file.readText().trim())
+                activeInfo = ActiveInfo.of(file.toPath())
                 for (it in tree.versions) tasks.registerExternalSwitchTask(it.project, file)
             }
 
