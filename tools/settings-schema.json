@@ -1,41 +1,80 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/stonecutter-versioning/stonecutter/blob/0.6/tools/settings-schema.json",
+  "$id": "https://codeberg.org/stonecutter/stonecutter/src/branch/0.7/tools/settings-schema.json",
   "title": "Stonecutter Versions",
   "description": "Defines version set used by Stonecutter",
   "type": "object",
   "definitions": {
-    "identifier": {
+    "project": {
       "type": "string",
-      "pattern": "^[a-zA-Z0-9_\\-+.]+$"
+      "pattern": "^[A-Za-z0-9_][A-Za-z0-9_\\-+.]*$"
+    },
+    "file": {
+      "type": "string",
+      "pattern": "[A-Za-z_][A-Za-z0-9_\\-+.]*(\\.gradle)(\\.kts)?"
     },
     "branch": {
       "type": "string",
-      "pattern": "^$|^[a-zA-Z0-9_\\-+.]*$"
+      "pattern": "^([A-Za-z0-9_][A-Za-z0-9_\\-+.]*)?$"
     },
-    "project": {
+    "identifier": {
       "type": "string",
-      "pattern": "^[a-zA-Z0-9_\\-+.]+(:[a-zA-Z0-9_\\-+.]+)?$"
+      "pattern": "^[A-Za-z_][A-Za-z0-9_\\-+.]*$"
     },
-    "branch-collection": {
+    "semver": {
+      "type": "string",
+      "pattern": "^\\d+(?:\\.\\d+)*(?:-[A-Za-z0-9_\\-+.]+(?:\\.[A-Za-z0-9_\\-+.]+)*)?(?:\\+[A-Za-z0-9_\\-+.]+(?:\\.[A-Za-z0-9_\\-+.]+)*)?$"
+    },
+    "primitive_project": {
+      "type": "string",
+      "pattern": "^([A-Za-z0-9_][A-Za-z0-9_\\-+.]*)(:(([A-Za-z_][A-Za-z0-9_\\-+.]*)|(\\d+(?:\\.\\d+)*(?:-[A-Za-z0-9_\\-+.]+(?:\\.[A-Za-z0-9_\\-+.]+)*)?(?:\\+[A-Za-z0-9_\\-+.]+(?:\\.[A-Za-z0-9_\\-+.]+)*)?))?)?(:([A-Za-z_][A-Za-z0-9_\\-+.]*(\\.gradle)(\\.kts)?))?$"
+    },
+    "composite_project": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "$ref": "#/definitions/project"
+        },
+        "version": {
+          "oneOf": [
+            {"$ref": "#/definitions/identifier"},
+            {"$ref": "#/definitions/semver"}
+          ]
+        },
+        "buildscript": {
+          "$ref": "#/definitions/file"
+        }
+      },
+      "required": ["project"]
+    },
+    "project_array": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "anyOf": [
+          { "$ref": "#/definitions/primitive_project" },
+          { "$ref": "#/definitions/composite_project" }
+        ]
+      }
+    },
+    "branch_entry": {
       "oneOf": [
         {
-          "$ref": "#/definitions/branch-array"
+          "$ref": "#/definitions/project_array"
         },
         {
           "type": "object",
           "properties": {
-            "branches": {
-              "$ref": "#/definitions/branch-array"
+            "versions": {
+              "$ref": "#/definitions/project_array"
             }
           },
-          "required": [
-            "branches"
-          ]
+          "required": ["versions"]
         }
       ]
     },
-    "branch-array": {
+    "branch_array": {
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
@@ -43,67 +82,19 @@
         "$ref": "#/definitions/branch"
       }
     },
-    "project-collection": {
+    "version_entry": {
       "oneOf": [
         {
-          "$ref": "#/definitions/project-array"
+          "$ref": "#/definitions/branch_array"
         },
         {
           "type": "object",
           "properties": {
-            "versions": {
-              "$ref": "#/definitions/project-array"
+            "branches": {
+              "$ref": "#/definitions/branch_array"
             }
           },
-          "required": [
-            "versions"
-          ]
-        }
-      ]
-    },
-    "project-array": {
-      "type": "array",
-      "minItems": 1,
-      "uniqueItems": true,
-      "items": {
-        "$ref": "#/definitions/project-def"
-      }
-    },
-    "project-def": {
-      "oneOf": [
-        {
-          "$ref": "#/definitions/project"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "node": {
-              "$ref": "#/definitions/project"
-            },
-            "buildscript": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "node"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
-            "project": {
-              "$ref": "#/definitions/identifier"
-            },
-            "version": {
-              "$ref": "#/definitions/identifier"
-            },
-            "buildscript": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "project"
-          ]
+          "required": ["branches"]
         }
       ]
     }
@@ -119,7 +110,7 @@
     "branches": {
       "type": "object",
       "additionalProperties": {
-        "$ref": "#/definitions/project-collection"
+        "$ref": "#/definitions/branch_entry"
       },
       "minProperties": 1,
       "propertyNames": {
@@ -129,22 +120,22 @@
     "versions": {
       "oneOf": [
         {
-          "$ref": "#/definitions/project-array"
+          "$ref": "#/definitions/project_array"
         },
         {
           "type": "object",
           "additionalProperties": {
-            "$ref": "#/definitions/branch-collection"
+            "$ref": "#/definitions/version_entry"
           },
           "minProperties": 1,
           "propertyNames": {
-            "$ref": "#/definitions/project"
+            "$ref": "#/definitions/primitive_project"
           }
         }
       ]
     }
   },
-  "oneOf": [
+  "anyOf": [
     {
       "required": [
         "branches"
