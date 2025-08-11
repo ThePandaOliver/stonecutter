@@ -27,16 +27,16 @@ internal class StonecutterBuildTasksImpl(private val ext: StonecutterBuildImpl) 
     private val registeredSources: MutableSet<File> = mutableSetOf()
     private val encoder = Json { prettyPrint = true }
 
-    inline fun registerPrepareTask(src: SourceSet, crossinline config: SCPrepareTask.() -> Unit): TaskProvider<SCPrepareTask> =
+    internal inline fun registerPrepareTask(src: SourceSet, crossinline config: SCPrepareTask.() -> Unit): TaskProvider<SCPrepareTask> =
         registerDefaultTask(prepareTaskName(src), config).apply { prepare[name] = this }
 
-    inline fun registerGenerateTask(src: SourceSet, crossinline config: Sync.() -> Unit): TaskProvider<Sync> =
+    internal inline fun registerGenerateTask(src: SourceSet, crossinline config: Sync.() -> Unit): TaskProvider<Sync> =
         registerDefaultTask(generateTaskName(src), config).apply { generate[name] = this }
 
-    inline fun registerMergeTask(src: SourceSet, crossinline config: Copy.() -> Unit): TaskProvider<Copy> =
+    internal inline fun registerMergeTask(src: SourceSet, crossinline config: Copy.() -> Unit): TaskProvider<Copy> =
         registerDefaultTask(mergeTaskName(src), config).apply { merge[name] = this }
 
-    fun registerNodeModelTask(): TaskProvider<SCModelTask> = registerDefaultTask<SCModelTask>("stonecutterSaveNodeModel") {
+    internal fun registerNodeModelTask(): TaskProvider<SCModelTask> = registerDefaultTask<SCModelTask>("stonecutterSaveNodeModel") {
         output.set(ext.project.layout.buildDirectory.file("stonecutter-cache/node.json"))
         json.set(ext.project.provider {
             val branch = ext.branch.let { BranchInfo(it.id, it.location) }

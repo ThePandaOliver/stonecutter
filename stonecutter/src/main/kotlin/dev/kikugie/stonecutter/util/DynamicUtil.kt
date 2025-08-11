@@ -27,13 +27,13 @@ internal value class ActiveProvider private constructor(private val value: Any?)
         fun of(value: ActiveReference) = ActiveProvider(resolveActive(value))
     }
 
-    inline fun ifString(action: (String) -> Unit): ActiveProvider {
+    internal inline fun ifString(action: (String) -> Unit): ActiveProvider {
         contract { callsInPlace(action, InvocationKind.AT_MOST_ONCE) }
         if (value is String) action(value)
         return this
     }
 
-    inline fun ifFile(action: (File) -> Unit): ActiveProvider {
+    internal inline fun ifFile(action: (File) -> Unit): ActiveProvider {
         contract { callsInPlace(action, InvocationKind.AT_MOST_ONCE) }
         if (value is File) action(value)
         return this

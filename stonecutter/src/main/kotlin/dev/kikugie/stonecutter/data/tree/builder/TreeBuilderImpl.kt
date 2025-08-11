@@ -139,7 +139,9 @@ internal abstract class BranchBuilderImpl @Inject constructor(val name: String, 
         for (builder in nodes) for (data in builder.versions) {
             val buildscript = builder.buildscript.orNull
                 ?: tree.localBuildScriptProvider?.invoke(name, data)
-                ?: getDefaultBuildscript(ext, branch.resolve("versions/${data.project}"), "build")
+                ?: tree.centralScript.orNull
+                ?: ext.centralScript.orNull
+                ?: getDefaultBuildscript(ext, branch, "build")
             this[data] = buildscript
         }
     }
