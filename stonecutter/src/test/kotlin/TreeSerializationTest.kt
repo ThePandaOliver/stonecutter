@@ -3,15 +3,13 @@
 import dev.kikugie.stonecutter.data.tree.json.SerializedTree
 import dev.kikugie.stonecutter.data.tree.json.SerializedVersion
 import dev.kikugie.stonecutter.data.tree.json.TreeScheme
-import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.collections.*
-import io.kotest.matchers.equals.shouldBeEqual
-import io.kotest.matchers.equals.shouldNotBeEqual
-import io.kotest.matchers.maps.shouldContainAll
+import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import org.intellij.lang.annotations.Language
+import util.shouldHaveAt
 
 private val JSON = Json {
     ignoreUnknownKeys = true
@@ -20,92 +18,117 @@ private val JSON = Json {
     allowTrailingComma = true
 }
 
-private fun deserializeTree(@Language("JSON5") input: String) = JSON.decodeFromString(SerializedTree.serializer(), input)
+class TreeSerializationTest : FunSpec({
+    context("project notation") {
+        fun deserialize(input: String) =
+            JSON.decodeFromString(SerializedVersion.PrimitiveJsonSerializer, "\"$input\"")
 
-class TreeSerializationTest : StringSpec({
-    "by version plain" {
-        val tree = deserializeTree("""
-            {
-              versions: ["1.20.1-fabric:1.20.1", "1.21.1"]
+        test("simple") {
+            with(deserialize("1.21.1")) {
+                project shouldBe version shouldBe "1.21.1"
+                buildscript shouldBe null
             }
-        """.trimIndent())
-
-        val versions = tree.run {
-            val first = (schemes shouldHaveSize 1).first()
-            first::class shouldBe TreeScheme.Plain::class
-            (first as TreeScheme.Plain).versions
         }
 
-        versions shouldHaveSize 2
-        with(versions[0]) {
-            project shouldNotBeEqual version
+        test("with version") {
+            with(deserialize("1.21.1-fabric:1.21.1")) {
+                project shouldBe "1.21.1-fabric"
+                version shouldBe "1.21.1"
+                buildscript shouldBe null
+            }
         }
-        with(versions[1]) {
-            project shouldBeEqual version
+
+        test("with buildscript") {
+            with(deserialize("1.21.1-fabric:1.21.1:fabric.gradle.kts")) {
+                project shouldBe "1.21.1-fabric"
+                version shouldBe "1.21.1"
+                buildscript shouldBe "fabric.gradle.kts"
+            }
+        }
+
+        test("default with buildscript") {
+            with(deserialize("1.21.1::fabric.gradle.kts")) {
+                project shouldBe version shouldBe "1.21.1"
+                buildscript shouldBe "fabric.gradle.kts"
+            }
         }
     }
 
-    "by version expanded" {
-        val tree = deserializeTree("""
-            {
-              versions: [
+    context("tree types") {
+        fun deserialize(@Language("JSON5") input: String) =
+            JSON.decodeFromString(SerializedTree.TreeJsonSerializer, input)
+
+        test("version list") {
+            val tree = deserialize("""
                 {
-                  project: "1.20.1-fabric",
-                  version: "1.20.1"
-                },
-                "1.21.1"
-              ]
-            }
-        """.trimIndent())
+                  versions: [ "example", "1.21.1" ]
+                }
+            """.trimIndent())
 
-        val versions = tree.run {
-            val first = (schemes shouldHaveSize 1).first()
-            first::class shouldBe TreeScheme.Plain::class
-            (first as TreeScheme.Plain).versions
+            (tree.schemes shouldHaveAt 0).shouldBeInstanceOf<TreeScheme.Plain> {
+                (it.versions shouldHaveAt 0).project shouldBe "example"
+                (it.versions shouldHaveAt 1).project shouldBe "1.21.1"
+            }
         }
 
-        versions shouldHaveSize 2
-        with(versions[0]) {
-            project shouldNotBeEqual version
-        }
-        with(versions[1]) {
-            project shouldBeEqual version
-        }
-    }
+        test("branch version list") {
+            val tree = deserialize("""
+                {
+                  branches: { "": [ "example", "1.21.1" ] }
+                }
+            """.trimIndent())
 
-    "by branch default" {
-        val tree = deserializeTree("""
-            {
-              branches: {
-                "": ["1.20.1", "1.21.1"],
-                "fabric": ["1.20.1", "1.21.1"],
-              }
+            (tree.schemes shouldHaveAt 0).shouldBeInstanceOf<TreeScheme.Branched> {
+                val root = it.branches shouldHaveAt ""
+
+                (root shouldHaveAt 0).project shouldBe "example"
+                (root shouldHaveAt 1).project shouldBe "1.21.1"
             }
-        """.trimIndent())
+        }
 
-        @Suppress("UNCHECKED_CAST")
-        val schemes = tree.schemes as List<TreeScheme.Branched>
-        schemes shouldHaveSize 1
-        val first = schemes.first()
+        test("branch version map") {
+            val tree = deserialize("""
+                {
+                  branches: { "": { versions: [ "example", "1.21.1" ] } }
+                }
+            """.trimIndent())
 
-        first.branches[""]!! shouldContainAll first.branches["fabric"]!!
-    }
+            (tree.schemes shouldHaveAt 0).shouldBeInstanceOf<TreeScheme.Branched> {
+                val root = it.branches shouldHaveAt ""
 
-    "by version inverted" {
-        val tree = deserializeTree("""
-            {
-              versions: {
-                "1.20.1": ["", "fabric"],
-                "1.21.1": ["", "fabric"],
-              }
+                (root shouldHaveAt 0).project shouldBe "example"
+                (root shouldHaveAt 1).project shouldBe "1.21.1"
             }
-        """.trimIndent())
+        }
 
-        @Suppress("UNCHECKED_CAST")
-        val schemes = tree.schemes as List<TreeScheme.Inverted>
-        schemes shouldHaveSize 1
-        val first = schemes.first()
+        test("version branch list") {
+            val tree = deserialize("""
+                {
+                  versions: { "example": ["", "subproject"] }
+                }
+            """.trimIndent())
 
-        first.versions[SerializedVersion("1.20.1")]!! shouldContainAll first.versions[SerializedVersion("1.21.1")]!!
+            (tree.schemes shouldHaveAt 0).shouldBeInstanceOf<TreeScheme.Inverted> {
+                val root = it.versions shouldHaveAt SerializedVersion("example")
+
+                root shouldHaveAt 0 shouldBe ""
+                root shouldHaveAt 1 shouldBe "subproject"
+            }
+        }
+
+        test("version branch map") {
+            val tree = deserialize("""
+                {
+                  versions: { example: { branches: ["", "subproject"] } }
+                }
+            """.trimIndent())
+
+            (tree.schemes shouldHaveAt 0).shouldBeInstanceOf<TreeScheme.Inverted> {
+                val root = it.versions shouldHaveAt SerializedVersion("example")
+
+                root shouldHaveAt 0 shouldBe ""
+                root shouldHaveAt 1 shouldBe "subproject"
+            }
+        }
     }
 })

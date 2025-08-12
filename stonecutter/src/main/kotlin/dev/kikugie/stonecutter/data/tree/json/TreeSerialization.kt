@@ -83,7 +83,7 @@ internal data class SerializedVersion(
         override fun deserialize(decoder: Decoder): SerializedVersion {
             val components = decoder.decodeString().split(':', limit = 3)
             val project = serCheckNotNull(components.firstOrNull()) { "Missing project component" }
-            val version = components.getOrNull(1) ?: project
+            val version = components.getOrNull(1)?.takeIf(String::isNotEmpty) ?: project
             val buildscript = components.getOrNull(2)
             return SerializedVersion(project, version, buildscript)
         }
