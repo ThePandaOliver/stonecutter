@@ -19,8 +19,12 @@ import dev.kikugie.semver.data.Version as ParsedVersion
 @StonecutterAPI
 public interface VersionOperations<T : ParsedVersion> {
     /**
+     * Checks if the provided [version] can be parsed.
+     */
+    public fun check(version: String): Boolean
+    /**
      * Parses the provided [version] string into the required type [T].
-     * @throws IllegalArgumentException if the provided [version] cannot be parsed into the required type.
+     * @throws dev.kikugie.semver.impl.VersionParsingException if the provided [version] cannot be parsed into the required type.
      */
     public fun parse(version: String): T
 
@@ -28,7 +32,7 @@ public interface VersionOperations<T : ParsedVersion> {
      * Parses the provided [version] string into the required type [T] and applies the provided [predicates] to it.
      * Each predicate string may contain multiple predicates separated by spaces.
      * All predicates must succeed for the version to be considered valid.
-     * @throws IllegalArgumentException if the provided [version] or any of [predicates] cannot be parsed into the required type.
+     * @throws dev.kikugie.semver.impl.VersionParsingException if the provided [version] or any of [predicates] cannot be parsed into the required type.
      */
     public fun eval(version: String, vararg predicates: String): Boolean =
         eval(parse(version), *predicates)
@@ -37,13 +41,13 @@ public interface VersionOperations<T : ParsedVersion> {
      * Applies the provided [predicates] to the provided [version] and returns whether they all succeed.
      * Each predicate string may contain multiple predicates separated by spaces.
      * All predicates must succeed for the version to be considered valid.
-     * @throws IllegalArgumentException if any of the provided [predicates] cannot be parsed into the required type.
+     * @throws dev.kikugie.semver.impl.VersionParsingException if any of the provided [predicates] cannot be parsed into the required type.
      */
     public fun eval(version: ParsedVersion, vararg predicates: String): Boolean
 
     /**
      * Compares two version strings according to the [Comparable][java.lang.Comparable] specification.
-     * @throws IllegalArgumentException if either of the provided [version] strings cannot be parsed into the required type.
+     * @throws dev.kikugie.semver.impl.VersionParsingException if either of the provided [version] strings cannot be parsed into the required type.
      */
     public fun compare(version: String, other: String): Int =
         parse(version) compareTo parse(other)
