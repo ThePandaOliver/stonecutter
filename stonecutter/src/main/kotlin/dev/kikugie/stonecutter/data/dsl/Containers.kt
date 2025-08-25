@@ -27,6 +27,7 @@ public interface ReplacementContainer {
     @StonecutterReplacementSpec
     public interface StringReplacementBuilder {
         public val direction: Property<Boolean>
+        @get:Deprecated("To be removed in 0.8 due to the file processing engine rework.")
         public val phase: Property<String>
         public val id: Property<Identifier>
         public val from: Property<String>
@@ -41,6 +42,7 @@ public interface ReplacementContainer {
     @StonecutterReplacementSpec
     public interface RegexReplacementBuilder {
         public val direction: Property<Boolean>
+        @get:Deprecated("To be removed in 0.8 due to the file processing engine rework.")
         public val phase: Property<String>
         public val id: Property<Identifier>
         public val fromPattern: Property<String>
