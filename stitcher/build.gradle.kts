@@ -18,8 +18,8 @@ repositories {
 }
 
 dependencies {
-    api("dev.kikugie:semver:2.0.0")
-    implementation("dev.kikugie:commons:0.3.1")
+    api(common.misc.semver)
+    implementation(common.misc.commons)
     implementation(common.kotlin.reflect)
     implementation(common.kotlin.serialization)
 
@@ -66,8 +66,8 @@ tasks {
 
     withType<KotlinCompile> {
         compilerOptions {
-            languageVersion = KotlinVersion.KOTLIN_2_0
-            apiVersion = KotlinVersion.KOTLIN_2_0
+            languageVersion = KotlinVersion.KOTLIN_2_2
+            apiVersion = KotlinVersion.KOTLIN_2_2
             jvmTarget = JvmTarget.JVM_17
         }
     }

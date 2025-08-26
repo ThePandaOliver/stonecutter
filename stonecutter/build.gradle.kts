@@ -45,8 +45,8 @@ sourceSets {
 
 dependencies {
     api(project(path = ":stitcher"))
-    api("dev.kikugie:semver:2.0.0")
-    implementation("dev.kikugie:commons:0.3.1")
+    api(common.misc.semver)
+    implementation(common.misc.commons)
     implementation(common.kotlin.serialization)
     implementation(common.kotlin.serialization.json)
 
@@ -219,7 +219,7 @@ publishing {
                     developer {
                         id = "kikugie"
                         name = "KikuGie"
-                        email = "kikugie@duck.com"
+                        email = "git.kikugie@protonmail.com"
                     }
                 }
 
