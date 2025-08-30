@@ -12,10 +12,9 @@ private val LENIENT_CACHE: MutableMap<String, ParsedVersion> = ConcurrentHashMap
 private val SEMANTIC_CACHE: MutableMap<String, ParsedVersion> = ConcurrentHashMap()
 
 private fun VersionParsingException.present(version: String) = buildString {
+    appendLine("$message:")
     appendLine(version)
-    append("-".repeat(position))
-    append("^")
-    append("-".repeat(version.length - position - 1))
+    append(" ".repeat(position) + "^")
 }
 
 private fun doParse(version: String, parser: ParsedVersion.Operations): ParsedVersion = parser.parse(version)
